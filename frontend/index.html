@@ -7,15 +7,39 @@
     <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
-    <header>
-        <h1>Welcome to the Web Application</h1>
-    </header>
-    <main>
-        <p>This is the main content area.</p>
-    </main>
-    <footer>
-        <p>&copy; 2023 Web Application</p>
-    </footer>
-    <script src="scripts/app.js"></script>
+    <div class="sidebar">
+        <h2>Menú</h2>
+        <ul>
+            <li><a href="#">Panel General</a></li>
+            <li><a href="#">Mapa</a></li>
+            <li><a href="#">Predicciones</a></li>
+            <li><a href="#">Agregar Sensor</a></li>
+            <li><a href="#">Cerrar Sesión</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <h1>Dashboard</h1>
+        <div class="card">
+            <h3>Cámara de Frío</h3>
+            <div class="status">
+                <span>Temperatura: 23.87°C</span>
+                <span>Estado: <strong>Online</strong></span>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Parada de Emergencia</h3>
+            <div class="status">
+                <span>Estado: <strong>Activado</strong></span>
+                <span>Conexión: <strong>Online</strong></span>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Medidor Industrial</h3>
+            <div class="status">
+                <span>Humedad: 78.20%</span>
+                <span>Temperatura: 22.10°C</span>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
