@@ -3,43 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Application</title>
+    <title>Panel General</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="sidebar">
         <h2>Menú</h2>
         <ul>
-            <li><a href="#">Panel General</a></li>
+            <li><a href="index.html">Panel General</a></li>
             <li><a href="#">Mapa</a></li>
             <li><a href="#">Predicciones</a></li>
-            <li><a href="#">Agregar Sensor</a></li>
+            <li><a href="register_sensor.html">Registrar Sensor</a></li>
+            <li><a href="register_user.html">Registrar Usuario</a></li>
+            <li><a href="register_camera.html">Registrar Cámara Frigorífica</a></li>
             <li><a href="#">Cerrar Sesión</a></li>
         </ul>
     </div>
-    <div class="main-content">
-        <h1>Dashboard</h1>
-        <div class="card">
-            <h3>Cámara de Frío</h3>
-            <div class="status">
-                <span>Temperatura: 23.87°C</span>
-                <span>Estado: <strong>Online</strong></span>
-            </div>
-        </div>
-        <div class="card">
-            <h3>Parada de Emergencia</h3>
-            <div class="status">
-                <span>Estado: <strong>Activado</strong></span>
-                <span>Conexión: <strong>Online</strong></span>
-            </div>
-        </div>
-        <div class="card">
-            <h3>Medidor Industrial</h3>
-            <div class="status">
-                <span>Humedad: 78.20%</span>
-                <span>Temperatura: 22.10°C</span>
+    <div class="top-banner">
+        <div class="user-info">
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
             </div>
         </div>
     </div>
+    <div class="main-content">
+        <!-- Centered Title -->
+        <h1 class="centered-title">Alarmas Actuales</h1>
+        <table class="alarms-table">
+            <thead>
+                <tr>
+                    <th>ID Alarma</th>
+                    <th>Mensaje</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Temperatura Alta</td>
+                    <td>Crítica</td>
+                    <td>Pendiente</td>
+                    <td>08/05/2025 14:30</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Puerta Abierta</td>
+                    <td>Preventiva</td>
+                    <td>Resuelto</td>
+                    <td>08/05/2025 13:15</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Sensor Desconectado</td>
+                    <td>Crítica</td>
+                    <td>Pendiente</td>
+                    <td>08/05/2025 12:45</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Assistant Chat Button -->
+    <div class="assistant-container">
+        <button id="assistant-button" class="btn-primary">Preguntar al Asistente</button>
+        <div id="chat-box" class="chat-box hidden">
+            <div class="chat-header">
+                <span>Asistente Virtual</span>
+                <button id="close-chat" class="close-chat">X</button>
+            </div>
+            <div class="chat-body">
+                <p>¡Hola! ¿En qué puedo ayudarte?</p>
+            </div>
+            <div class="chat-footer">
+                <input type="text" placeholder="Escribe tu mensaje..." />
+                <button class="btn-primary">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to toggle the chat box
+        const assistantButton = document.getElementById('assistant-button');
+        const chatBox = document.getElementById('chat-box');
+        const closeChat = document.getElementById('close-chat');
+
+        assistantButton.addEventListener('click', () => {
+            chatBox.classList.toggle('hidden');
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatBox.classList.add('hidden');
+        });
+    </script>
 </body>
 </html>

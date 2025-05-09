@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Cámara Frigorífica</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="top-banner">
+        <div class="user-info">
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Menú</h2>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="#">Mapa</a></li>
+            <li><a href="#">Predicciones</a></li>
+            <li><a href="register_sensor.html">Registrar Sensor</a></li>
+            <li><a href="register_user.html">Registrar Usuario</a></li>
+            <li><a href="#">Cerrar Sesión</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="form-container">
+            <div class="form-card">
+                <h1>Registrar Cámara Frigorífica</h1>
+                <form action="/register_camera" method="POST" class="form">
+                    <div class="form-group">
+                        <label for="uniqueID">ID Único</label>
+                        <input type="text" id="uniqueID" name="uniqueID" placeholder="Ingrese el ID único de la cámara" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nombreCamara">Nombre</label>
+                        <input type="text" id="nombreCamara" name="nombreCamara" placeholder="Ingrese el nombre de la cámara" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ubicacion">Ubicación</label>
+                        <input type="text" id="ubicacion" name="ubicacion" placeholder="Ingrese la ubicación de la cámara" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sensorID">Sensor Asociado</label>
+                        <select id="sensorID" name="sensorID" required>
+                            <option value="">Seleccione un sensor</option>
+                            <option value="1">Sensor 1</option>
+                            <option value="2">Sensor 2</option>
+                            <option value="3">Sensor 3</option>
+                            <!-- Add dynamic sensor options here -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar Cámara</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

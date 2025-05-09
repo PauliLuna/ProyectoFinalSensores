@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Sensor</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="top-banner">
+        <div class="user-info">
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Menú</h2>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="#">Mapa</a></li>
+            <li><a href="#">Predicciones</a></li>
+            <li><a href="register_user.html">Registrar Usuario</a></li>
+            <li><a href="register_camera.html">Registrar Cámara Frigorífica</a></li>
+            <li><a href="#">Cerrar Sesión</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="form-container">
+            <div class="form-card">
+                <h1>Registrar Sensor</h1>
+                <form action="/register_sensor" method="POST" class="form">
+                    <div class="form-group">
+                        <label for="nroSerie">Número de Serie</label>
+                        <input type="text" id="nroSerie" name="nroSerie" placeholder="Ingrese el número de serie" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nroLote">Número de Lote</label>
+                        <input type="text" id="nroLote" name="nroLote" placeholder="Ingrese el número de lote" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alias">Alias</label>
+                        <input type="text" id="alias" name="alias" placeholder="Ingrese un alias para el sensor" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="valorMin">Valor Mínimo</label>
+                            <input type="number" id="valorMin" name="valorMin" placeholder="Ingrese el valor mínimo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="valorMax">Valor Máximo</label>
+                            <input type="number" id="valorMax" name="valorMax" placeholder="Ingrese el valor máximo" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latitud">Latitud</label>
+                            <input type="text" id="latitud" name="latitud" placeholder="Ingrese la latitud" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="longitud">Longitud</label>
+                            <input type="text" id="longitud" name="longitud" placeholder="Ingrese la longitud" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" name="estado" required>
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar Sensor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

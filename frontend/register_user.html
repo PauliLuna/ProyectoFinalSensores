@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Usuario</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="top-banner">
+        <div class="user-info">
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <h2>Menú</h2>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="#">Mapa</a></li>
+            <li><a href="#">Predicciones</a></li>
+            <li><a href="register_sensor.html">Registrar Sensor</a></li>
+            <li><a href="register_camera.html">Registrar Cámara Frigorífica</a></li>
+            <li><a href="#">Cerrar Sesión</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="form-container">
+            <div class="form-card">
+                <h1>Crear Cuenta</h1>
+                <form action="/register" method="POST" class="form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreUsuario">Nombre</label>
+                            <input type="text" id="nombreUsuario" name="nombreUsuario" placeholder="Ingrese su nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="apellidoUsuario">Apellido</label>
+                            <input type="text" id="apellidoUsuario" name="apellidoUsuario" placeholder="Ingrese su apellido" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="mail">Correo Electrónico</label>
+                        <input type="email" id="mail" name="mail" placeholder="Ingrese su correo electrónico" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="numeroCelular">Número de Celular</label>
+                        <input type="tel" id="numeroCelular" name="numeroCelular" placeholder="Ingrese su número de celular" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="claveUsuario">Contraseña</label>
+                            <input type="password" id="claveUsuario" name="claveUsuario" placeholder="Ingrese su contraseña" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmarClave">Confirmar Contraseña</label>
+                            <input type="password" id="confirmarClave" name="confirmarClave" placeholder="Confirme su contraseña" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Crear Cuenta</button>
+                    <p class="form-footer">¿Ya tienes una cuenta? <a href="login.html">Inicia sesión</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
