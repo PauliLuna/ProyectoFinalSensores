@@ -65,6 +65,7 @@ body {
 /* Main Content */
 .main-content {
     margin-top: 60px; /* Height of the fixed banner */
+    margin-left: 250px; /* Account for the sidebar width */
     padding: 20px;
 }
 
@@ -77,11 +78,11 @@ body {
 /* Card Component */
 .card {
     background-color: #FFFFFF; /* White for contrast */
-    border-radius: 8px;
+    border: 1px solid #A8DADC; /* Primary color: Ice Blue */
+    border-radius: 10px;
     padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: calc(33% - 20px); /* Three cards per row */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .card:hover {
@@ -90,10 +91,10 @@ body {
 }
 
 .card h3 {
-    margin: 0 0 10px;
-    color: #457B9D; /* Secondary color: Steel Blue */
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1rem;
+    color: #1D3557; /* Accent color: Midnight Blue */
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 /* Status Section */
@@ -438,4 +439,48 @@ button:hover {
 
 .chat-footer button:hover {
     background-color: #1D3557; /* Accent color: Midnight Blue */
+}
+
+/* KPI Container */
+.kpi-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+/* KPI Cards */
+.kpi-cards {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.kpi-card {
+    flex: 1;
+    margin: 0 10px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.kpi-card.primary {
+    background-color: #457B9D; /* Steel Blue */
+}
+
+.kpi-card.warning {
+    background-color: #E9C46A; /* Yellow */
+}
+
+.kpi-card.success {
+    background-color: #2A9D8F; /* Green */
+}
+
+/* Canvas for Charts */
+canvas {
+    width: 100%; /* Ensure the canvas takes up the full width of the card */
+    height: 150px; /* Fixed height for consistent proportions */
 }

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarmas</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for graphs -->
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Menú</h2>
+        <ul>
+            <li><a href="index.html">Panel General</a></li>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="alarmas.html">Alarmas</a></li>
+            <li><a href="register_sensor.html">Registrar Sensor</a></li>
+            <li><a href="register_user.html">Registrar Usuario</a></li>
+            <li><a href="register_camera.html">Registrar Cámara Frigorífica</a></li>
+            <li><a href="#">Cerrar Sesión</a></li>
+        </ul>
+    </div>
+    <div class="top-banner">
+        <div class="user-info">
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <h1 class="centered-title">Alarmas</h1>
+
+        <!-- KPI Cards -->
+        <div class="kpi-cards">
+            <div class="kpi-card primary">
+                <h3>Alertas Críticas</h3>
+                <p>5</p>
+            </div>
+            <div class="kpi-card warning">
+                <h3>Alertas Informativas</h3>
+                <p>12</p>
+            </div>
+            <div class="kpi-card success">
+                <h3>Alertas de Seguridad</h3>
+                <p>3</p>
+            </div>
+        </div>
+
+        <!-- Alarm Graphs -->
+        <section>
+            <h2>Gráficos de Alarmas</h2>
+            <div class="kpi-container">
+                <div class="card">
+                    <h3>Alertas por Tipo</h3>
+                    <canvas id="alertsByTypeChart"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Alertas por Sucursal</h3>
+                    <canvas id="alertsByBranchChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Chart.js Example for Alerts by Type
+        const alertsByTypeCtx = document.getElementById('alertsByTypeChart').getContext('2d');
+        new Chart(alertsByTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Críticas', 'Informativas', 'Seguridad'],
+                datasets: [{
+                    data: [5, 12, 3], // Example data
+                    backgroundColor: ['#E76F51', '#E9C46A', '#2A9D8F']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+
+        // Chart.js Example for Alerts by Branch
+        const alertsByBranchCtx = document.getElementById('alertsByBranchChart').getContext('2d');
+        new Chart(alertsByBranchCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Sucursal 1', 'Sucursal 2', 'Sucursal 3'], // Example branches
+                datasets: [{
+                    label: 'Cantidad de Alertas',
+                    data: [10, 7, 5], // Example data
+                    backgroundColor: '#457B9D'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+    </script>
+</body>
+</html>
