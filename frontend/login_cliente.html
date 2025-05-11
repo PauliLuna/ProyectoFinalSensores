@@ -5,83 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Inicial</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main-content">
+        <div class="form-container">
+            <div class="form-card">
+                <h1>Registro Inicial</h1>
+                <form id="initialRegistrationForm" class="form">
+                    <!-- Datos de la Empresa -->
+                    <h2>Datos de la Empresa</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="companyName">Nombre de la Empresa</label>
+                            <input type="text" id="companyName" name="companyName" placeholder="Ingrese el nombre de la empresa" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cuil">CUIL (Opcional)</label>
+                            <input type="text" id="cuil" name="cuil" placeholder="Ingrese el CUIL">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Dirección</label>
+                            <input type="text" id="address" name="address" placeholder="Ingrese la dirección" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="locality">Localidad</label>
+                            <input type="text" id="locality" name="locality" placeholder="Ingrese la localidad" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="province">Provincia</label>
+                            <input type="text" id="province" name="province" placeholder="Ingrese la provincia" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">País</label>
+                            <input type="text" id="country" name="country" placeholder="Ingrese el país" required>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Usuario -->
+                    <h2>Datos del Usuario</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico</label>
+                            <input type="email" id="email" name="email" placeholder="Ingrese su correo electrónico" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Número de Celular</label>
+                            <input type="tel" id="phone" name="phone" placeholder="Ingrese su número de celular" pattern="[0-9]+" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="username">Nombre de Usuario</label>
+                            <input type="text" id="username" name="username" placeholder="Ingrese su nombre de usuario" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña</label>
+                            <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirmar Contraseña</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirme su contraseña" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
     <script>
+        // JavaScript para manejar el envío del formulario
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('initialRegistrationForm');
             form.addEventListener('submit', function (event) {
                 event.preventDefault(); // Evita el envío por defecto del formulario
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    alert('Las contraseñas no coinciden. Por favor, inténtelo de nuevo.');
+                    return;
+                }
+
                 window.location.href = 'index.html'; // Redirige a la página index.html
             });
         });
     </script>
-</head>
-<body>
-    <div class="form-container">
-        <div class="form-card">
-            <h1>Registro Inicial</h1>
-            <form id="initialRegistrationForm" class="form">
-                <!-- Datos de la Empresa -->
-                <h2>Datos de la Empresa</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="companyName">Nombre de la Empresa</label>
-                        <input type="text" id="companyName" name="companyName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cuil">CUIL (Opcional)</label>
-                        <input type="text" id="cuil" name="cuil">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="address">Dirección</label>
-                        <input type="text" id="address" name="address" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="locality">Localidad</label>
-                        <input type="text" id="locality" name="locality" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="province">Provincia</label>
-                        <input type="text" id="province" name="province" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="country">País</label>
-                        <input type="text" id="country" name="country" required>
-                    </div>
-                </div>
-
-                <!-- Datos del Usuario -->
-                <h2>Datos del Usuario</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="email">Correo Electrónico</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Número de Celular</label>
-                        <input type="tel" id="phone" name="phone" pattern="[0-9]+" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="username">Nombre de Usuario</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Contraseña</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                </div>
-
-                <!-- Botón de Envío -->
-                <div class="form-button">
-                    <button type="submit" class="btn-primary">Registrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
 </body>
 </html>
