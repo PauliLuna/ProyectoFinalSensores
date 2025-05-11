@@ -179,7 +179,13 @@ button:hover {
     }
 }
 
-
+/* Sensor ID Display */
+.sensor-id {
+    font-size: 1.2rem;
+    color: #1D3557; /* Accent color: Midnight Blue */
+    margin-bottom: 20px;
+    font-weight: bold;
+}
 
 /* Form Container */
 .form-container {
@@ -189,17 +195,19 @@ button:hover {
     min-height: calc(100vh - 60px); /* Full height minus the top banner */
     background-color: #F1FAFB; /* Background color: White Smoke */
     padding: 20px;
-    margin-left: 250px; /* Account for the fixed sidebar */
+    margin-left: 80px; /* Sidebar width + extra space for centering */
+   
 }
 
 /* Form Card */
 .form-card {
-    background-color: #FFFFFF; /* White for contrast */
+    background-color: #FFFFFF; /* White background for contrast */
+    border: 1px solid #A8DADC; /* Primary color: Ice Blue */
     border-radius: 10px;
     padding: 30px;
-    width: 600px; /* Increased width to fit all inputs */
+    width: 100%;
+    max-width: 500px; /* Limit the form width */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
 }
 
 .form-card h1 {
@@ -220,27 +228,29 @@ button:hover {
     gap: 20px; /* Increased gap between columns */
 }
 
-.form-group {
+.form-row .form-group {
     flex: 1;
-    display: flex;
-    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 20px;
 }
 
 .form-group label {
-    font-size: 0.9rem;
-    font-weight: 500;
+    display: block;
+    font-size: 1rem;
     color: #1D3557; /* Accent color: Midnight Blue */
     margin-bottom: 5px;
 }
 
 .form-group input,
 .form-group select {
+    width: 100%;
     padding: 10px;
     font-size: 1rem;
-    border: 1px solid #A8DADC; /* Primary color: Ice Blue */
+    border: 1px solid #A8DADC;
     border-radius: 5px;
-    outline: none;
-    transition: border-color 0.3s ease;
+    box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -283,6 +293,21 @@ button:hover {
     text-decoration: underline;
 }
 
+/* Submit Button */
+.btn-primary {
+    background-color: #457B9D; /* Steel Blue */
+    color: #FFFFFF;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1D3557; /* Darker Blue */
+}
 
 /* Top Banner */
 .top-banner {
