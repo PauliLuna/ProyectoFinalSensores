@@ -509,3 +509,24 @@ canvas {
     width: 100%; /* Ensure the canvas takes up the full width of the card */
     height: 150px; /* Fixed height for consistent proportions */
 }
+
+/* Secondary Button */
+.btn-secondary {
+    background-color: #A8DADC; /* Light Blue */
+    color: #1D3557; /* Dark Blue */
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+    display: block;
+    width: 100%; /* Full width for consistency */
+    text-align: center;
+}
+
+.btn-secondary:hover {
+    background-color: #457B9D; /* Steel Blue */
+    color: #FFFFFF; /* White for contrast */
+}
