@@ -154,7 +154,7 @@ body {
 /* Main Content */
 .main-content {
     margin-left: 250px; /* Default sidebar width */
-    padding: 20px;
+    padding: 80px 20px 20px; /* Add padding at the top to account for the top banner */
     max-width: 1200px; /* Set a maximum width for the content */
     transition: margin-left 0.3s ease, left 0.3s ease;
 }
@@ -168,6 +168,7 @@ body {
 .sidebar.collapsed ~ .main-content {
     margin-left: 80px; /* Collapsed sidebar width */
     left: calc(80px + (100% - 80px - 1200px) / 2); /* Center the content */
+    padding: 80px 20px 20px; /* Ensure top padding remains consistent */
 }
 
 /* Card Component */
