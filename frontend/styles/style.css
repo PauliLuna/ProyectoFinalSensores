@@ -81,12 +81,14 @@ body {
     color: #FFFFFF;
     font-size: 1rem;
     transition: background-color 0.3s ease;
+    margin: 10px;
 }
 
 .menu-items li a img {
     width: 20px;
     height: 20px;
     margin-right: 10px;
+    
 }
 
 .menu-items li a span {
@@ -120,6 +122,7 @@ body {
     color: #FFFFFF;
     font-size: 1rem;
     transition: background-color 0.3s ease;
+    margin: 10px;
 }
 
 .sidebar-footer li a img {
