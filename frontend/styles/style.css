@@ -171,13 +171,21 @@ body {
     padding: 80px 20px 20px; /* Ensure top padding remains consistent */
 }
 
-/* Card Component */
+/* Statistics Cards */
+.stats-cards {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
 .card {
-    background-color: #FFFFFF; /* White for contrast */
-    border: 1px solid #A8DADC; /* Primary color: Ice Blue */
+    background-color: #FFFFFF;
+    border: 1px solid #A8DADC;
     border-radius: 10px;
     padding: 20px;
-    width: calc(33% - 20px); /* Three cards per row */
+    text-align: center;
+    flex: 1;
+    margin: 0 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -187,10 +195,14 @@ body {
 }
 
 .card h3 {
-    font-size: 1rem;
-    color: #1D3557; /* Accent color: Midnight Blue */
+    font-size: 1.5rem;
+    color: #1D3557;
     margin-bottom: 10px;
-    text-align: center;
+}
+
+.card p {
+    font-size: 1rem;
+    color: #457B9D;
 }
 
 /* Status Section */
@@ -597,6 +609,72 @@ button:hover {
 
 .kpi-card.success {
     background-color: #2A9D8F; /* Green */
+}
+
+/* Charts Section */
+.charts-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.chart-container {
+    flex: 1;
+    margin: 0 10px;
+    background-color: #FFFFFF;
+    border: 1px solid #A8DADC;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* Set a maximum width for the chart container */
+    height: 450px; /* Increase the height of the chart container to fit the charts */
+    display: flex;
+    flex-direction: column; /* Stack title and chart vertically */
+    justify-content: flex-start; /* Align title at the top */
+    align-items: center; /* Center the chart horizontally */
+}
+
+.chart-container h3 {
+    margin-bottom: 10px; /* Add spacing between the title and the chart */
+    font-size: 1.2rem;
+    color: #1D3557; /* Accent color: Midnight Blue */
+    text-align: center;
+}
+
+.chart-container canvas {
+    width: 90%; /* Ensure the canvas fits within the container's width */
+    height: calc(100% - 50px); /* Adjust height to fit within the container, accounting for the title */
+    max-width: 90%; /* Prevent the canvas from exceeding the container's width */
+    max-height: calc(100% - 50px); /* Prevent the canvas from exceeding the container's height */
+}
+
+/* Recent User Activity Table */
+.recent-activity {
+    background-color: #FFFFFF;
+    border: 1px solid #A8DADC;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.recent-activity table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.recent-activity th, .recent-activity td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #A8DADC;
+}
+
+.recent-activity th {
+    background-color: #F1FAFB;
+    color: #1D3557;
+}
+
+.recent-activity td {
+    color: #457B9D;
 }
 
 /* Canvas for Charts */
