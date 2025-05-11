@@ -18,61 +18,153 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 250px;
-    height: 100vh;
-    background-color: #1D3557; /* Accent color: Midnight Blue */
-    position: fixed; /* Fixed position to avoid affecting the main content */
+    position: fixed;
     top: 0;
     left: 0;
-    padding: 20px 0;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    width: 250px;
+    height: 100vh;
+    background-color: #1D3557; /* Dark Blue */
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: width 0.3s ease;
+    overflow: hidden;
 }
 
-.sidebar h2 {
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar.collapsed .menu-items li a span,
+.sidebar.collapsed .sidebar-footer li a span {
+    display: none; /* Hide text when collapsed */
+}
+
+.sidebar.collapsed .menu-items li a img,
+.sidebar.collapsed .sidebar-footer li a img {
+    margin-right: 0; /* Remove extra space for icons */
+}
+
+.sidebar.collapsed + .top-banner {
+    left: 80px; /* Collapsed sidebar width */
+    width: calc(100% - 80px); /* Adjust width when sidebar is collapsed */
+}
+
+.sidebar-title {
     text-align: center;
-    margin-bottom: 20px;
-    color: #A8DADC; /* Primary color: Ice Blue */
     font-size: 1.5rem;
-    font-weight: 600;
+    margin: 20px 0;
+    transition: opacity 0.3s ease;
 }
 
-.sidebar ul {
+.sidebar.collapsed .sidebar-title {
+    opacity: 0; /* Hide the "Menú" text */
+    pointer-events: none; /* Prevent interaction */
+}
+
+.menu-items {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
-.sidebar ul li {
-    padding: 15px 20px;
-    text-align: left;
+.menu-items li {
+    margin: 10px 0;
 }
 
-.sidebar ul li a {
-    color: #F1FAFB; /* Background color: White Smoke */
+.menu-items li a {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
     text-decoration: none;
-    display: block;
+    color: #FFFFFF;
     font-size: 1rem;
-    font-weight: 500;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s ease;
 }
 
-.sidebar ul li a:hover {
-    background-color: #457B9D; /* Secondary color: Steel Blue */
+.menu-items li a img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.menu-items li a span {
+    display: inline-block; /* Ensure text is inline with icons */
+}
+
+.menu-items li a:hover {
+    background-color: #457B9D; /* Steel Blue */
     border-radius: 5px;
-    color: #FFFFFF; /* White for contrast */
+}
+
+.sidebar-footer {
+    margin-bottom: 20px;
+}
+
+.sidebar-footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-footer li {
+    margin: 10px 0;
+}
+
+.sidebar-footer li a {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #FFFFFF;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-footer li a img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.sidebar-footer li a span {
+    display: inline-block; /* Ensure text is inline with icons */
+}
+
+.sidebar-footer li a:hover {
+    background-color: #457B9D; /* Steel Blue */
+    border-radius: 5px;
+}
+
+/* Toggle Sidebar Button */
+.toggle-sidebar {
+    background-color: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin: 10px;
+    align-self: flex-start;
 }
 
 /* Main Content */
 .main-content {
-    margin-top: 60px; /* Height of the fixed banner */
-    margin-left: 250px; /* Account for the sidebar width */
+    margin-left: 250px; /* Default sidebar width */
     padding: 20px;
+    max-width: 1200px; /* Set a maximum width for the content */
+    transition: margin-left 0.3s ease, left 0.3s ease;
 }
 
 .main-content h1 {
     font-size: 2rem;
     color: #1D3557; /* Accent color: Midnight Blue */
     margin-bottom: 20px;
+}
+
+.sidebar.collapsed ~ .main-content {
+    margin-left: 80px; /* Collapsed sidebar width */
+    left: calc(80px + (100% - 80px - 1200px) / 2); /* Center the content */
 }
 
 /* Card Component */
@@ -313,34 +405,33 @@ button:hover {
 .top-banner {
     position: fixed;
     top: 0;
-    left: 250px; /* Account for sidebar width */
-    width: calc(100% - 250px);
-    background-color: #A8DADC; /* Primary color: Ice Blue */
-    color: #1D3557; /* Accent color: Midnight Blue */
-    padding: 10px 20px;
+    left: 250px; /* Default sidebar width */
+    width: calc(100% - 250px); /* Adjust width based on sidebar */
+    height: 60px;
+    background-color: #F1FAFB; /* Light background */
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    z-index: 1000;
+    padding: 0 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease, width 0.3s ease;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 10px;
 }
 
 .user-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    object-fit: cover;
+    margin-right: 10px;
 }
 
 .user-details p {
     margin: 0;
     font-size: 0.9rem;
+    color: #1D3557; /* Dark Blue */
 }
 
 .notifications {

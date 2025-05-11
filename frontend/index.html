@@ -9,18 +9,23 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Menú</h2>
-        <ul>
-            <li><a href="index.html">Panel General</a></li>
-            <li><a href="#">Mapa</a></li>
-            <li><a href="#">Sensores</a></li>
-            <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="alarmas.html">Alarmas</a></li>
-            <li><a href="register_sensor.html">Registrar Sensor</a></li>
-            <li><a href="register_user.html">Registrar Usuario</a></li>
-           <!-- <li><a href="register_camera.html">Registrar Cámara Frigorífica</a></li> -->
-            <li><a href="#">Cerrar Sesión</a></li>
+        <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
+        <h2 class="sidebar-title">Menú</h2>
+        <ul class="menu-items">
+            <li><a href="index.html"><img src="assets/home-icon.jpg" alt="Home Icon"><span>Panel General</span></a></li>
+            <li><a href="#"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
+            <li><a href="#"><img src="assets/sensor-icon.png" alt="Sensor Icon"><span>Sensores</span></a></li>
+            <li><a href="dashboard.html"><img src="assets/dashboard-icon.png" alt="Dashboard Icon"><span>Dashboard</span></a></li>
+            <li><a href="alarmas.html"><img src="assets/alarms-icon.png" alt="Alarms Icon"><span>Alarmas</span></a></li>
+            <li><a href="register_sensor.html"><img src="assets/register-sensor-icon.png" alt="Register Sensor Icon"><span>Registrar Sensor</span></a></li>
+            <li><a href="register_user.html"><img src="assets/register-user-icon.png" alt="Register User Icon"><span>Registrar Usuario</span></a></li>
         </ul>
+        <div class="sidebar-footer">
+            <ul>
+                <li><a href="#"><img src="assets/profile-icon.jpg" alt="Profile Icon"><span>Mi perfil</span></a></li>
+                <li><a href="#"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
+            </ul>
+        </div>
     </div>
     <div class="top-banner">
         <div class="user-info">
@@ -69,36 +74,12 @@
             </tbody>
         </table>
     </div>
-    <!-- Assistant Chat Button -->
-    <div class="assistant-container">
-        <button id="assistant-button" class="btn-primary">Preguntar al Asistente</button>
-        <div id="chat-box" class="chat-box hidden">
-            <div class="chat-header">
-                <span>Asistente Virtual</span>
-                <button id="close-chat" class="close-chat">X</button>
-            </div>
-            <div class="chat-body">
-                <p>¡Hola! ¿En qué puedo ayudarte?</p>
-            </div>
-            <div class="chat-footer">
-                <input type="text" placeholder="Escribe tu mensaje..." />
-                <button class="btn-primary">Enviar</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // JavaScript to toggle the chat box
-        const assistantButton = document.getElementById('assistant-button');
-        const chatBox = document.getElementById('chat-box');
-        const closeChat = document.getElementById('close-chat');
-
-        assistantButton.addEventListener('click', () => {
-            chatBox.classList.toggle('hidden');
-        });
-
-        closeChat.addEventListener('click', () => {
-            chatBox.classList.add('hidden');
+        // JavaScript to toggle the sidebar
+        const toggleSidebarButton = document.getElementById('toggle-sidebar');
+        const sidebar = document.querySelector('.sidebar');
+        toggleSidebarButton.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
         });
     </script>
 </body>
