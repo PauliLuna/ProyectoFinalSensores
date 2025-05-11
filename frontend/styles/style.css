@@ -155,7 +155,7 @@ body {
 .main-content {
     margin-left: 250px; /* Default sidebar width */
     padding: 80px 20px 20px; /* Add padding at the top to account for the top banner */
-    max-width: 1200px; /* Set a maximum width for the content */
+    max-width: calc(100% - 250px); /* Dynamically adjust width based on sidebar */
     transition: margin-left 0.3s ease, left 0.3s ease;
 }
 
@@ -167,7 +167,7 @@ body {
 
 .sidebar.collapsed ~ .main-content {
     margin-left: 80px; /* Collapsed sidebar width */
-    left: calc(80px + (100% - 80px - 1200px) / 2); /* Center the content */
+    max-width: calc(100% - 80px); /* Dynamically adjust width when sidebar is collapsed */
     padding: 80px 20px 20px; /* Ensure top padding remains consistent */
 }
 
@@ -426,28 +426,86 @@ button:hover {
     height: 60px;
     background-color: #F1FAFB; /* Light background */
     display: flex;
+    justify-content: flex-end; /* Changed from space-between to flex-end to make the user-info be on the right side. */
     align-items: center;
     padding: 0 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: left 0.3s ease, width 0.3s ease;
+    box-sizing: border-box; /* Changed from content-box to include padding and border in the element's total width and height. */
+    z-index: 1000; /* Ensure the top banner is above all other elements */
+    overflow: hidden; /* Prevent content from overflowing */
+    transition: left 0.3s ease, width 0.3s ease; /* Smooth transition for left and width */
+}
+
+.client-info {
+    font-size: 1rem;
+    color: #1D3557; /* Dark Blue */
+    position: absolute; /* Position it relative to the top banner */
+    left: 20px; /* Move it close to the sidebar */
+    top: 50%; /* Center it vertically */
+    transform: translateY(-50%); /* Adjust for vertical centering */
 }
 
 .user-info {
     display: flex;
     align-items: center;
+    gap: 10px; /* Add spacing between avatar and text */
+   
+    padding: 5px 10px; /* Add padding for better spacing */
+    background-color: #FFFFFF; /* White background for contrast */
+    border-radius: 10px; /* Rounded corners for the container */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for better visibility */
+    box-sizing: border-box; /* Changed from content-box to include padding and border in the element's total width and height. */
+    max-width: 200px; /* Constrain the width of the user-info section */
+    overflow: hidden; /* Prevent content overflow */
+    white-space: nowrap; /* Prevent text wrapping */
+    text-overflow: ellipsis; /* Add ellipsis if text overflows */
+    position: relative; /* Position the user-info container */
+    flex-direction: row-reverse; /* Changed to make the avatar be on the right side and the details on the left side. */
+    right: 10px; /* Move it slightly to the left */
+    top: 50%; /* Center it vertically */
+    transform: translateY(-52%); /* Adjust for vertical centering */
 }
 
 .user-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin-right: 10px;
+    object-fit: cover; /* Ensure the avatar scales properly */
+    flex-shrink: 0; /* Prevent the avatar from shrinking */
+}
+
+/* User Details */
+.user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align text to the left */
+    overflow: hidden; /* Prevent text overflow */
+    box-sizing: border-box; /* Changed from content-box to include padding and border in the element's total width and height. */
+    width: fit-content; /* Added to make it fit the content inside. */
 }
 
 .user-details p {
     margin: 0;
     font-size: 0.9rem;
     color: #1D3557; /* Dark Blue */
+    box-sizing: border-box; /* Changed from content-box to include padding and border in the element's total width and height. */
+   white-space: nowrap; /* Added to prevent the name from wrapping to multiple lines. */
+}
+
+.user-details p:first-child {
+    font-weight: bold; /* Make the user name bold */
+    font-size: 1rem; /* Slightly larger font for the name */
+    overflow: hidden; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Add ellipsis if text overflows */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.user-details p:last-child {
+    font-size: 0.8rem; /* Smaller font for the role */
+    color: #A0A0B0; /* Neutral gray for the role */
+    overflow: hidden; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Add ellipsis if text overflows */
+    white-space: nowrap; /* Prevent text wrapping */
 }
 
 .notifications {
@@ -632,6 +690,9 @@ button:hover {
     flex-direction: column; /* Stack title and chart vertically */
     justify-content: flex-start; /* Align title at the top */
     align-items: center; /* Center the chart horizontally */
+    position: relative; /* Ensure charts are positioned relative to their container */
+    z-index: 1; /* Ensure charts stay below the top banner */
+    overflow: hidden; /* Prevent charts from overflowing their container */
 }
 
 .chart-container h3 {
