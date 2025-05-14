@@ -8,16 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
 </head>
-<body>
+<body id="top"> <!-- Added id="top" to the body for scrolling to the top -->
     <!-- Navbar -->
     <nav class="navbar">
-        <img src="assets/logo1.png" alt="SensIA Logo">
+        <a href="#top"> <!-- Wrap the logo in an anchor tag -->
+            <img src="assets/logo1.png" alt="SensIA Logo">
+        </a>
         <ul>
             <li><a href="#features">Features</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#about-us">About Us</a></li> <!-- Updated link -->
+            <li><a href="#contact-form">Contact Us</a></li> <!-- Updated link -->
         </ul>
-        <a href="register_user.html" class="btn-primary">Get Started</a>
+        <a href="login_cliente.html" class="btn-primary">Get Started</a>
     </nav>
 
     <!-- Hero Section -->
@@ -25,7 +27,7 @@
         <img src="assets/logo2.png" alt="SensIA Logo">
         <h1>Welcome to SensIA</h1>
         <p>Monitor and manage your sensors with ease using our advanced platform.</p>
-        <a href="register_user.html" class="btn-primary">Start Now</a>
+        <a href="login_cliente.html" class="btn-primary">Start Now</a>
     </section>
 
     <!-- Features Section -->
@@ -48,6 +50,50 @@
                 <p>Receive instant notifications for critical events.</p>
             </div>
         </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="about-us" id="about-us">
+        <h2>Who Are We?</h2>
+        <p>We are a group of students who identified a need and applied our knowledge to create a solution. Meet our team:</p>
+        <div class="team-cards">
+            <div class="team-card">
+                <img src="assets/marlene.jpg" alt="Marlene">
+                <h3>Marlene</h3>
+                <p>Project Tester</p>
+            </div>
+            <div class="team-card">
+                <img src="assets/paulina.jpg" alt="Paulina">
+                <h3>Paulina</h3>
+                <p>Software Developer</p>
+            </div>
+            <div class="team-card">
+                <img src="assets/loriana.jpg" alt="Loriana">
+                <h3>Loriana</h3>
+                <p>UI/UX Designer</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact-form"> <!-- Added id for anchor link -->
+        <h2>Contact Us</h2>
+        <p>If you have any questions or need assistance, feel free to reach out to us using the form below.</p>
+        <form action="/submit" method="POST">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Your Name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Your Email" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Send Message</button>
+        </form>
     </section>
 
     <!-- Footer -->
