@@ -1,104 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SensIA - Landing Page</title>
+    <title>SensIA - Página Principal</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
 </head>
-<body id="top"> <!-- Added id="top" to the body for scrolling to the top -->
-    <!-- Navbar -->
+<body id="top">
+    <!-- Barra de Navegación -->
     <nav class="navbar">
-        <a href="#top"> <!-- Wrap the logo in an anchor tag -->
-            <img src="assets/logo1.png" alt="SensIA Logo">
+        <a href="#top">
+            <img src="assets/logo1.png" alt="Logo de SensIA">
         </a>
         <ul>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#about-us">About Us</a></li> <!-- Updated link -->
-            <li><a href="#contact-form">Contact Us</a></li> <!-- Updated link -->
+            <li><a href="#features">Características</a></li>
+            <li><a href="#about-us">Sobre Nosotros</a></li>
+            <li><a href="#contact-form">Contáctanos</a></li>
         </ul>
-        <a href="login_cliente.html" class="btn-primary">Get Started</a>
+        <a href="login_cliente.html" class="btn-primary">Comenzar</a>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Sección Hero -->
     <section class="hero">
-        <img src="assets/logo2.png" alt="SensIA Logo">
-        <h1>Welcome to SensIA</h1>
-        <p>Monitor and manage your sensors with ease using our advanced platform.</p>
-        <a href="login_cliente.html" class="btn-primary">Start Now</a>
+        <img src="assets/logo2.png" alt="Logo de SensIA">
+        <h1>Bienvenido a SensIA</h1>
+        <p>Monitorea y gestiona tus sensores fácilmente con nuestra plataforma avanzada.</p>
+        <a href="login_cliente.html" class="btn-primary">Empezar Ahora</a>
     </section>
 
-    <!-- Features Section -->
+    <!-- Sección de Características -->
     <section class="features" id="features">
-        <h2>Our Features</h2>
+        <h2>Nuestras Características</h2>
         <div class="feature-cards">
             <div class="feature-card">
-                <img src="assets/sensor-icon2.png" alt="Sensor Icon">
-                <h3>Real-Time Monitoring</h3>
-                <p>Track your sensors in real-time with our intuitive dashboard.</p>
+                <img src="assets/sensor-icon2.png" alt="Icono de Sensor">
+                <h3>Monitoreo en Tiempo Real</h3>
+                <p>Supervisa tus sensores en tiempo real con nuestro intuitivo panel de control.</p>
             </div>
             <div class="feature-card">
-                <img src="assets/dashboard-icon2.png" alt="Dashboard Icon">
-                <h3>Custom Dashboards</h3>
-                <p>Create personalized dashboards to suit your needs.</p>
+                <img src="assets/dashboard-icon2.png" alt="Icono de Panel">
+                <h3>Paneles Personalizados</h3>
+                <p>Crea paneles personalizados que se adapten a tus necesidades.</p>
             </div>
             <div class="feature-card">
-                <img src="assets/alarms-icon2.png" alt="Alarms Icon">
-                <h3>Smart Alerts</h3>
-                <p>Receive instant notifications for critical events.</p>
+                <img src="assets/alarms-icon2.png" alt="Icono de Alarmas">
+                <h3>Alertas Inteligentes</h3>
+                <p>Recibe notificaciones instantáneas para eventos críticos.</p>
             </div>
         </div>
     </section>
 
-    <!-- About Us Section -->
+    <!-- Sección Sobre Nosotros -->
     <section class="about-us" id="about-us">
-        <h2>Who Are We?</h2>
-        <p>We are a group of students who identified a need and applied our knowledge to create a solution. Meet our team:</p>
+        <h2>¿Quiénes Somos?</h2>
+        <p>Somos un grupo de estudiantes que identificamos una necesidad y aplicamos nuestro conocimiento para crear una solución. Conoce a nuestro equipo:</p>
         <div class="team-cards">
             <div class="team-card">
                 <img src="assets/marlene.jpg" alt="Marlene">
                 <h3>Marlene</h3>
-                <p>Project Tester</p>
+                <p>Tester del Proyecto</p>
             </div>
             <div class="team-card">
                 <img src="assets/paulina.jpg" alt="Paulina">
                 <h3>Paulina</h3>
-                <p>Software Developer</p>
+                <p>Desarrolladora de Software</p>
             </div>
             <div class="team-card">
                 <img src="assets/loriana.jpg" alt="Loriana">
                 <h3>Loriana</h3>
-                <p>UI/UX Designer</p>
+                <p>Diseñadora UI/UX</p>
             </div>
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section class="contact" id="contact-form"> <!-- Added id for anchor link -->
-        <h2>Contact Us</h2>
-        <p>If you have any questions or need assistance, feel free to reach out to us using the form below.</p>
+    <!-- Sección de Contacto -->
+    <section class="contact" id="contact-form">
+        <h2>Contáctanos</h2>
+        <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en escribirnos utilizando el formulario a continuación.</p>
         <form action="/submit" method="POST">
             <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="Your Name" required>
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="name" placeholder="Tu Nombre" required>
             </div>
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Your Email" required>
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email" placeholder="Tu Correo Electrónico" required>
             </div>
             <div class="form-group">
-                <label for="message">Message</label>
-                <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+                <label for="message">Mensaje</label>
+                <textarea id="message" name="message" placeholder="Tu Mensaje" rows="5" required></textarea>
             </div>
-            <button type="submit" class="btn-primary">Send Message</button>
+            <button type="submit" class="btn-primary">Enviar Mensaje</button>
         </form>
     </section>
 
-    <!-- Footer -->
+    <!-- Pie de Página -->
     <footer class="footer">
-        <p>&copy; 2025 SensIA. All rights reserved.</p>
+        <p>&copy; 2025 SensIA. Todos los derechos reservados.</p>
     </footer>
 </body>
 </html>
