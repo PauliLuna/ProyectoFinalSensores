@@ -706,6 +706,18 @@ button:hover {
     transform: translateY(-50%); /* Adjust for vertical centering */
 }
 
+.logo-container {
+    flex: 1; /* Center the logo */
+    position: absolute; /* Position the logo absolutely within the top-banner */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for perfect centering */
+    text-align: center;
+}
+
+.top-logo {
+    height: 50px; /* Adjust logo size */
+}
+
 .user-info {
     display: flex;
     align-items: center;
