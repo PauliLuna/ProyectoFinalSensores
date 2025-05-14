@@ -8,6 +8,138 @@ body {
     line-height: 1.6;
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar img {
+    height: 50px;
+}
+
+.navbar ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.navbar ul li {
+    font-weight: 500;
+}
+
+.navbar ul li a {
+    color: #1D3557;
+    font-size: 1rem;
+}
+
+.navbar ul li a:hover {
+    color: #457B9D;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    background-color: #F1FAFB;
+}
+
+.hero img {
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    color: #1D3557;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: #457B9D;
+    margin-bottom: 30px;
+}
+
+.hero .btn-primary {
+    font-size: 1rem;
+}
+
+/* Features Section */
+.features {
+    padding: 50px 20px;
+    background-color: #FFFFFF;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: 2rem;
+    color: #1D3557;
+    margin-bottom: 40px;
+}
+
+.features .feature-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.feature-card {
+    background-color: #F1FAFB;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card img {
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    color: #1D3557;
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    font-size: 1rem;
+    color: #457B9D;
+}
+
+/* Footer */
+.footer {
+    background-color: #1D3557;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 20px;
+}
+
+.footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+
 /* Centered Title */
 .centered-title {
     text-align: center;
