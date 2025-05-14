@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Sensor</title>
+    <title>Sensores</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
 </head>
 <body>
     <div class="sidebar">
@@ -45,54 +46,63 @@
         </div>
     </div>
     <div class="main-content">
-        <div class="form-container">
-            <div class="form-card">
-                <h1>Registrar Sensor</h1>
-                <!-- Display ID -->
-                <p class="sensor-id">ID: 456</p>
-                <form action="/register_sensor" method="POST" class="form">
-                    <!-- Alias Field -->
-                    <div class="form-group">
-                        <label for="alias">Alias</label>
-                        <input type="text" id="alias" name="alias" placeholder="Ingrese un alias para el sensor" required>
-                    </div>
-                    <!-- Valor Min and Max Fields -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="valorMin">Valor Mínimo</label>
-                            <input type="number" id="valorMin" name="valorMin" placeholder="Ingrese el valor mínimo" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="valorMax">Valor Máximo</label>
-                            <input type="number" id="valorMax" name="valorMax" placeholder="Ingrese el valor máximo" required>
-                        </div>
-                    </div>
-                    <!-- Dirección Field -->
-                    <div class="form-group">
-                        <label for="direccion">Dirección</label>
-                        <input type="text" id="direccion" name="direccion" placeholder="Ingrese la dirección" required>
-                    </div>
-                    <!-- Estado Field -->
-                    <div class="form-group">
-                        <label for="estado">Estado</label>
-                        <select id="estado" name="estado" required>
-                            <option value="active">Activo</option>
-                            <option value="inactive">Inactivo</option>
-                        </select>
-                    </div>
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn-primary">Registrar Sensor</button>
-                </form>
+        <div class="sensor-search">
+            <input type="text" id="sensorInput" placeholder="Buscar sensores..." onkeyup="filterSensors()">
+        </div>
+
+        <div class="sensor-grid" id="sensorGrid">
+            <div class="sensor-card" onclick="redirectToDashboard('camara-frio')">
+                <div class="sensor-status status-online">● ONLINE</div>
+                <div class="sensor-info">
+                <strong>Cámara de Frío</strong><br>
+                Temperatura: 22.19 °C<br>
+                En rango
+            </div>
+        </div>
+
+        <div class="sensor-card" onclick="redirectToDashboard('emergencia')">
+            <div class="sensor-status status-online">● ONLINE</div>
+            <div class="sensor-info">
+            <strong>Parada de Emergencia</strong><br>
+            Estado: ON
+            </div>
+        </div>
+
+        <div class="sensor-card" onclick="redirectToDashboard('medidor-industrial')">
+            <div class="sensor-status status-online">● ONLINE</div>
+            <div class="sensor-info">
+            <strong>Medidor Industrial</strong><br>
+            Humedad: 73.7%<br>
+            Temperatura: 20.3 °C<br>
+            <span style="color: red;">Fuera de rango</span>
+            </div>
+        </div>
+
+        <div class="sensor-card" onclick="redirectToDashboard('analizador')">
+            <div class="sensor-status status-offline">● OFFLINE</div>
+            <div class="sensor-info">
+                <strong>Analizador</strong><br>
+                Tensión: 217.7 V<br>
+                Frecuencia: 50.02 Hz<br>
+                Cos Phi: 1.00<br>
+                <span style="color: red;">Sin conexión</span>
             </div>
         </div>
     </div>
+    </div>
     <script>
-        // JavaScript to toggle the sidebar
-        const toggleSidebarButton = document.getElementById('toggle-sidebar');
-        const sidebar = document.querySelector('.sidebar');
-        toggleSidebarButton.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
+        function filterSensors() {
+            const input = document.getElementById("sensorInput").value.toLowerCase();
+            const cards = document.querySelectorAll(".sensor-card");
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(input) ? "block" : "none";
+            });
+        }
+
+        function redirectToDashboard(sensorId) {
+            window.location.href = `dashboard_sensor.html`;//?sensor=${sensorId}`;
+        }
     </script>
 </body>
 </html>
