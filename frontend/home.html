@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel General</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
+</head>
+<body>
+    <div class="sidebar">
+        <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
+        <h2 class="sidebar-title">Menú</h2>
+        <ul class="menu-items">
+            <li><a href="home.html"><img src="assets/home-icon.jpg" alt="Home Icon"><span>Panel General</span></a></li>
+            <li><a href="#"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
+            <li><a href="sensores.html"><img src="assets/sensor-icon.png" alt="Sensor Icon"><span>Sensores</span></a></li>
+            <li><a href="dashboard.html"><img src="assets/dashboard-icon.png" alt="Dashboard Icon"><span>Dashboard</span></a></li>
+            <li><a href="alarmas.html"><img src="assets/alarms-icon.png" alt="Alarms Icon"><span>Alarmas</span></a></li>
+            <li><a href="register_sensor.html"><img src="assets/register-sensor-icon.png" alt="Register Sensor Icon"><span>Registrar Sensor</span></a></li>
+            <li><a href="register_user.html"><img src="assets/register-user-icon.png" alt="Register User Icon"><span>Registrar Usuario</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <ul>
+                <li><a href="#"><img src="assets/profile-icon.jpg" alt="Profile Icon"><span>Mi perfil</span></a></li>
+                <li><a href="#"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="top-banner">
+        <div class="client-info">
+            <p><strong>Cliente:</strong> <span id="client-name">Absternet LLC</span></p>
+        </div>
+        <div class="logo-container">
+        <a href="#top"> <!-- Make the logo clickable and redirect to the top -->
+            <img src="assets/logo1.png" alt="SensIA Logo" class="top-logo">
+        </a>
+        </div>
+        <div class="user-info">
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <!-- Statistics Cards -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>17.6k</h3>
+                <p>Usuarios</p>
+            </div>
+            <div class="card">
+                <h3>149</h3>
+                <p>Sensores</p>
+            </div>
+            <div class="card">
+                <h3>54.3k</h3>
+                <p>Alarmas</p>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3>Sensores por provincia</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Alarmas</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent User Activity Table -->
+        <div class="recent-activity">
+            <h3>Recent User Activity</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Último Inicio de Sesión</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Absternet LLC</td>
+                        <td>08/05/2025</td>
+                        <td>Activo</td>
+                    </tr>
+                    <tr>
+                        <td>Raitech Soft</td>
+                        <td>07/05/2025</td>
+                        <td>Inactivo</td>
+                    </tr>
+                    <tr>
+                        <td>William PVT</td>
+                        <td>06/05/2025</td>
+                        <td>Activo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        // JavaScript to toggle the sidebar
+        const toggleSidebarButton = document.getElementById('toggle-sidebar');
+        const sidebar = document.querySelector('.sidebar');
+        toggleSidebarButton.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+                // Bar Chart for Sensores por provincia
+                const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['India', 'United States', 'China', 'Indonesia', 'Russia'],
+                datasets: [{
+                    label: 'Sensores',
+                    data: [1010, 1640, 490, 1255, 1050],
+                    backgroundColor: '#457B9D',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        // Pie Chart for Alarmas
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Críticas', 'Informativas', 'Seguridad'],
+                datasets: [{
+                    data: [40, 30, 30],
+                    backgroundColor: ['#E63946', '#A8DADC', '#F4A261'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+    </script>
+</body>
+</html>
