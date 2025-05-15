@@ -1066,12 +1066,23 @@ canvas {
 }
 
 .sensor-card {
+    position: relative;
     background-color: #ffffff;
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: transform 0.2s;
+}
+
+.corner-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 70px;
+    height: 70px;
+    z-index: 2;
+    opacity: 1;
 }
 
 .sensor-card:hover {
@@ -1094,4 +1105,72 @@ canvas {
 .sensor-info {
     font-size: 14px;
     color: #333;
+}
+
+
+/* Dashboard sensores */
+.filterContainer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem; /* TODO: NO CAMBIA NADA */
+}
+
+.filterContainer label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color:var(--text-color);
+}
+
+.datepicker {
+    appearance: none;
+    -webkit-appearance: none; /* Safari */
+    -moz-appearance: none;    /* Firefox */
+    padding: 0.5rem 1rem;
+    color: black;
+    border: 1px solid #444;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    background-image: url('https://cdn-icons-png.flaticon.com/512/2693/2693710.png');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 20px 20px;
+}
+
+.datepicker::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+}
+
+.datepicker:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(115, 226, 167, 0.2);
+}
+
+.datepicker:hover {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(115, 226, 167, 0.2);
+}
+
+.boton-graficar {
+    background-color: #73e2a7;
+    color: #1e1e1e;
+    padding: 0.5rem 1.2rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease;
+}
+
+.boton-graficar:hover {
+    background-color: #59cc94;
+}
+
+.boton-graficar:active {
+    background-color: #3caf7a;
 }

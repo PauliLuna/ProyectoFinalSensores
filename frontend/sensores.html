@@ -52,43 +52,36 @@
 
         <div class="sensor-grid" id="sensorGrid">
             <div class="sensor-card" onclick="redirectToDashboard('camara-frio')">
+                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">
                 <div class="sensor-status status-online">● ONLINE</div>
                 <div class="sensor-info">
-                <strong>Cámara de Frío</strong><br>
-                Temperatura: 22.19 °C<br>
-                En rango
+                    <strong>Cámara de Frío - Sector Bebidas</strong>
+                    <br>Temperatura Interna: 22.19 °C<br>
+                    Temperatura Externa: 30.0 °C<br><br>
+                    <span style="color:#10b981;">En rango</span>
+                </div>
+            </div>
+            <div class="sensor-card" onclick="redirectToDashboard('camara-frio')">
+                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">
+                <div class="sensor-status status-online">● ONLINE</div>
+                <div class="sensor-info">
+                    <strong>Cámara de Frío - Sector Carnes</strong>
+                    <br>Temperatura Interna: 20.00 °C<br>
+                    Temperatura Externa: 25.05 °C<br><br>
+                    <span style="color:#FF6F5E">Fuera de rango</span>
+                </div>
+            </div>
+            <div class="sensor-card" onclick="redirectToDashboard('camara-frio')">
+                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">
+                <div class="sensor-status status-offline">● OFFLINE</div>
+                <div class="sensor-info">
+                    <strong>Cámara de Frío - Sector Helados</strong>
+                    <br>Temperatura Interna: 25.19 °C<br>
+                    Temperatura Externa: 28.82 °C<br><br>
+                    <span style="color:#10b981;">En rango</span>
+                </div>
             </div>
         </div>
-
-        <div class="sensor-card" onclick="redirectToDashboard('emergencia')">
-            <div class="sensor-status status-online">● ONLINE</div>
-            <div class="sensor-info">
-            <strong>Parada de Emergencia</strong><br>
-            Estado: ON
-            </div>
-        </div>
-
-        <div class="sensor-card" onclick="redirectToDashboard('medidor-industrial')">
-            <div class="sensor-status status-online">● ONLINE</div>
-            <div class="sensor-info">
-            <strong>Medidor Industrial</strong><br>
-            Humedad: 73.7%<br>
-            Temperatura: 20.3 °C<br>
-            <span style="color: red;">Fuera de rango</span>
-            </div>
-        </div>
-
-        <div class="sensor-card" onclick="redirectToDashboard('analizador')">
-            <div class="sensor-status status-offline">● OFFLINE</div>
-            <div class="sensor-info">
-                <strong>Analizador</strong><br>
-                Tensión: 217.7 V<br>
-                Frecuencia: 50.02 Hz<br>
-                Cos Phi: 1.00<br>
-                <span style="color: red;">Sin conexión</span>
-            </div>
-        </div>
-    </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

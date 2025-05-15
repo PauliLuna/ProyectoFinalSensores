@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
 </head>
 <body>
+    <canvas id="myChart" style="width:100%;padding: 80px;"></canvas>
     <div class="sidebar">
         <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
         <h2 class="sidebar-title">Menú</h2>
@@ -46,7 +47,40 @@
         </div>
     </div>
     <div class="main-content">
-        
+        <div id="filterDate" class="filterContainer">
+            <label for="desde">Desde</label>
+            <input type="date" id="desde" class="datepicker">
+            <label for="hasta">Hasta</label>
+            <input type="date" id="hasta" class="datepicker">
+            <button id="btnGraficar" class="button-default" style="min-width: 130px; width: auto;">
+                <span id="btnTest">Graficar</span>
+                <i id="btnSpinner" class="bx bx-loader-circle bx-spin" style="display: None; margin-left: 5px;"></i>
+            </button>
+        </div>
+        <!-- <script>
+            const xValues = [50,60,70,80,90,100,110,120,130,140,150];
+            const yValues = [7,8,8,9,9,9,10,11,14,14,15];
+
+            new Chart("myChart", {
+                type: "line",
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        fill: false,
+                        lineTension: 0,
+                        backgroundColor: "rgba(0,0,255,1.0)",
+                        borderColor: "rgba(0,0,255,0.1)",
+                        data: yValues
+                    }]
+                },
+                options: {
+                    legend: {display: false},
+                    scales: {
+                        yAxes: [{ticks: {min: 6, max:16}}],
+                    }
+                }
+            });
+        </script> -->
     </div>
 </body>
 </html>
