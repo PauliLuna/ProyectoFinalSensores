@@ -1038,24 +1038,25 @@ canvas {
     color: #FFFFFF; /* White for contrast */
 }
 
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #eef7f9;
-    padding: 10px 20px;
-    border-bottom: 1px solid #ccc;
-}
-
+/*Sensores*/
+/* Sensor Search Bar */
 .sensor-search {
-    margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px; /* Optional: limit max width */
+    margin: 30px auto 20px auto; /* Center and add space above/below */
+    padding: 0 20px; /* Add horizontal padding */
+    box-sizing: border-box;
+    
 }
 
 .sensor-search input {
     width: 100%;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 12px 16px;
+    font-size: 1rem;
     border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background: #fff;
 }
 
 .sensor-grid {

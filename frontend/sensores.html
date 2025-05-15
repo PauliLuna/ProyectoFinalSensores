@@ -91,6 +91,20 @@
     </div>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleSidebarButton = document.getElementById('toggle-sidebar');
+            const sidebar = document.querySelector('.sidebar');
+            const topBanner = document.querySelector('.top-banner');
+            toggleSidebarButton.addEventListener('click', function () {
+                sidebar.classList.toggle('collapsed');
+                // If you want the top-banner to adjust as well, toggle a class or adjust its style here
+                if (topBanner) {
+                    topBanner.classList.toggle('sidebar-collapsed');
+                }
+            });
+        });
+    </script>
+    <script>
         function filterSensors() {
             const input = document.getElementById("sensorInput").value.toLowerCase();
             const cards = document.querySelectorAll(".sensor-card");
