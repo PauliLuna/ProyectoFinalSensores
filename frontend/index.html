@@ -18,8 +18,28 @@
             <li><a href="#about-us">Sobre Nosotros</a></li>
             <li><a href="#contact-form">Contáctanos</a></li>
         </ul>
-        <a href="login_cliente.html" class="btn-primary">Comenzar</a>
+        <div class="navbar-auth">
+            <a href="signin.html" class="btn-link">Iniciar sesión</a>
+            <a href="#" id="registerBtn" class="btn-primary">Registrarse</a>
+        </div>
     </nav>
+
+        <!-- Accordion for registration options -->
+    <div id="registerAccordion" class="accordion" style="display:none; max-width:300px; position:absolute; right:60px; top:70px; z-index:2000;">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingRegister">
+                <button class="accordion-button" type="button" aria-expanded="true" aria-controls="collapseRegister">
+                    Elige tipo de registro
+                </button>
+            </h2>
+            <div id="collapseRegister" class="accordion-collapse collapse show" aria-labelledby="headingRegister">
+                <div class="accordion-body ff-secondary">
+                    <a href="auth-signup-basic.html" class="btn btn-primary w-100 mb-2">Usuario</a>
+                    <a href="login_cliente.html" class="btn btn-outline-primary w-100">Empresa</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Sección Hero -->
     <section class="hero">
@@ -99,5 +119,22 @@
     <footer class="footer">
         <p>&copy; 2025 SensIA. Todos los derechos reservados.</p>
     </footer>
+
+    <script>
+    document.getElementById('registerBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const acc = document.getElementById('registerAccordion');
+        acc.style.display = acc.style.display === 'none' || acc.style.display === '' ? 'block' : 'none';
+        // Optional: close accordion if clicked outside
+        document.addEventListener('click', function handler(event) {
+            if (!acc.contains(event.target) && event.target.id !== 'registerBtn') {
+                acc.style.display = 'none';
+                document.removeEventListener('click', handler);
+            }
+        });
+    });
+    </script>
+
+
 </body>
 </html>

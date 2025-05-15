@@ -57,6 +57,136 @@ html {
     color: #457B9D;
 }
 
+.navbar-auth {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #457B9D;
+    font-weight: 500;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.btn-link:hover {
+    color: #1D3557;
+}
+
+
+.accordion {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid #A8DADC;
+    margin-top: 10px;
+}
+.accordion-button {
+    background: #FFF;
+    border: none;
+    font-weight: 600;
+    color: #1D3557;
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0;
+    cursor: default; /* No pointer */
+    width: 100%;
+    text-align: left;
+    transition: none;
+}
+.accordion-body.ff-secondary {
+    padding: 16px;
+    background: #fff;
+}
+.btn-outline-primary {
+    background: none;
+    border: 1px solid #457B9D;
+    color: #457B9D;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-outline-primary:hover {
+    background: #457B9D;
+    color: #fff;
+}
+
+.accordion-button:hover,
+.accordion-button:focus {
+    background: #FFF;
+    color: #1D3557;
+    box-shadow: none;
+}
+
+/* Auth page styles */
+.auth-bg {
+    background-color: #F1FAFB;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 40px auto;
+}
+
+.card-auth {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.card-auth-body.p-4 {
+    padding: 2rem;
+}
+
+/* Para el wrapper del campo de contraseña */
+.password-wrapper {
+    position: relative;
+}
+
+/* Botón del ojito */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 70%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #457B9D;
+    padding: 0;
+}
+.toggle-password:focus {
+    outline: none;
+}
+
+/* Enlace "¿Olvidaste tu contraseña?" */
+.forgot-link {
+    display: block;
+    text-align: right;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+.forgot-link a {
+    color: #457B9D;
+    text-decoration: none;
+}
+.forgot-link a:hover {
+    text-decoration: underline;
+}
+
 /* Hero Section */
 .hero {
     text-align: center;
