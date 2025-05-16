@@ -1241,10 +1241,13 @@ canvas {
 /* Dashboard sensores */
 .filterContainer {
     display: flex;
-    gap: 1rem;
     align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 2rem; /* TODO: NO CAMBIA NADA */
+    gap: 12px;
+    padding: 16px 24px;
+    background-color: #f1fafa;
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .filterContainer label {
