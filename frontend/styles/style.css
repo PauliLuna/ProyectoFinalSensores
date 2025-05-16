@@ -1304,3 +1304,26 @@ canvas {
 .boton-graficar:active {
     background-color: #3caf7a;
 }
+
+/* Centrar contenido en el medio de la pantalla */
+.centered-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f5f9fc; /* Fondo claro para toda la página */
+}
+
+/* Centrar contenido con espacio adicional arriba y abajo */
+.centered-content-with-spacing {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Asegura que ocupe toda la altura de la pantalla */
+    padding: 50px 0; /* Espacio de 50px arriba y abajo */
+    box-sizing: border-box;
+    background-color: #f5f9fc; /* Fondo claro */
+}
