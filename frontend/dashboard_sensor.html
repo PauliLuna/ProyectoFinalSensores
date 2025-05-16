@@ -56,31 +56,133 @@
                 <i id="btnSpinner" class="bx bx-loader-circle bx-spin" style="display: None; margin-left: 5px;"></i>
             </button>
         </div>
-        <!-- <canvas id="myChart" style="width:100%;padding: 80px;"></canvas>
+        <div style="width: 100%; max-width: 900px; margin: 30px auto;">
+            <canvas id="temperatureChart"></canvas>
+            <div id="averageTemperatures" style="margin-top: 20px; text-align: center; font-family: 'Poppins', sans-serif;">
+                <!-- Aquí se mostrarán los promedios -->
+            </div>
+        </div>
         <script>
-            const xValues = [50,60,70,80,90,100,110,120,130,140,150];
-            const yValues = [7,8,8,9,9,9,10,11,14,14,15];
+            let tempChart = null;
 
-            new Chart("myChart", {
-                type: "line",
-                data: {
-                    labels: xValues,
-                    datasets: [{
-                        fill: false,
-                        lineTension: 0,
-                        backgroundColor: "rgba(0,0,255,1.0)",
-                        borderColor: "rgba(0,0,255,0.1)",
-                        data: yValues
-                    }]
-                },
-                options: {
-                    legend: {display: false},
-                    scales: {
-                        yAxes: [{ticks: {min: 6, max:16}}],
-                    }
+            document.getElementById('btnGraficar').addEventListener('click', () => {
+                const fromDateInput = document.getElementById('desde');
+                const toDateInput = document.getElementById('hasta');
+                const fromDate = new Date(fromDateInput.value);
+                const toDate = new Date(toDateInput.value);
+
+                if (!fromDateInput.value || !toDateInput.value || fromDate > toDate) {
+                    alert('Por favor seleccioná un rango de fechas válido.');
+                    return;
                 }
+
+                const labels = [];
+                const internalTemps = [];
+                const externalTemps = [];
+                let sumInternal = 0;
+                let sumExternal = 0;
+                let count = 0;
+
+                const current = new Date(fromDate);
+
+                while (current <= toDate) {
+                    for (let hour = 0; hour < 24; hour++) {
+                        const timestamp = new Date(current);
+                        timestamp.setHours(hour, 0, 0, 0);
+
+                        const internalTemp = parseFloat((Math.random() * 1 + 3.5).toFixed(2)); // 3.5–4.5 °C
+                        const externalTemp = parseFloat((Math.random() * 10 + 15).toFixed(2)); // 15–25 °C
+
+                        labels.push(timestamp.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }));
+                        internalTemps.push(internalTemp);
+                        externalTemps.push(externalTemp);
+
+                        sumInternal += internalTemp;
+                        sumExternal += externalTemp;
+                        count++;
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+
+                const avgInternal = (sumInternal / count).toFixed(2);
+                const avgExternal = (sumExternal / count).toFixed(2);
+
+                // Mostrar promedios debajo del gráfico
+                document.getElementById('averageTemperatures').innerHTML = `
+                    <p><strong>Promedio temperatura interna:</strong> ${avgInternal} °C</p>
+                    <p><strong>Promedio temperatura externa:</strong> ${avgExternal} °C</p>
+                `;
+
+                const ctx = document.getElementById('temperatureChart').getContext('2d');
+
+                if (tempChart) tempChart.destroy();
+
+                tempChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Temperatura interna (°C)',
+                                data: internalTemps,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.3,
+                                pointRadius: 1.5
+                            },
+                            {
+                                label: 'Temperatura externa (°C)',
+                                data: externalTemps,
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.3,
+                                pointRadius: 1.5
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    maxRotation: 60,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Temperatura (°C)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Serie de tiempo de temperaturas simuladas',
+                                font: {
+                                    size: 20,
+                                    weight: 'bold',
+                                    family: 'Poppins'
+                                },
+                                padding: {
+                                    top: 10,
+                                    bottom: 30
+                                }
+                            }
+                        }
+                    }
+                });
             });
-        </script> -->
+        </script>
     </div>
 </body>
 </html>

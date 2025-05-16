@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Usuario</title>
+    <title>Sensores</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
-    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
     <div class="sidebar">
         <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
         <h2 class="sidebar-title">Menú</h2>
@@ -46,28 +47,25 @@
         </div>
     </div>
     <div class="main-content">
-        <div class="form-container">
-            <div class="form-card">
-                <h1>Invitar Usuario</h1>
-                <form action="/register" method="POST" class="form">
-                    <div class="form-group">
-                        <label for="mail">Correo Electrónico</label>
-                        <input type="email" id="mail" name="mail" placeholder="Ingrese su correo electrónico" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Invitar</button>
-                </form>
-                <!-- Add "Crear otro usuario" button -->
-                <button onclick="window.location.reload()" class="btn-secondary">Invitar otro usuario</button>
-            </div>
-        </div>
+        <div><h1>Aún estamos trabajando en esta página... ⚙</h1></div>
+        <div id="map"></div>
+        <script>
+            const map = L.map('map').setView([-32.9442, -60.6505], 12); // Ejemplo: Rosario
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            const marker = L.marker([-32.9442, -60.6505]).addTo(map);
+            marker.bindPopup("Sucursal Central - Cámara 1\nTemp: 23.13°C").openPopup();
+
+            map.on('click', function(e) {
+            const popup = L.popup()
+                .setLatLng(e.latlng)
+                .setContent("Ubicación: " + e.latlng.toString())
+                .openOn(map);
+            });
+        </script>
     </div>
-    <script>
-        // JavaScript to toggle the sidebar
-        const toggleSidebarButton = document.getElementById('toggle-sidebar');
-        const sidebar = document.querySelector('.sidebar');
-        toggleSidebarButton.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-    </script>
 </body>
 </html>

@@ -1330,3 +1330,12 @@ canvas {
     box-sizing: border-box;
     background-color: #f5f9fc; /* Fondo claro */
 }
+
+/* MAPA */
+
+#map {
+    margin-top: 20px;
+    width: 100%;
+    height: 500px;
+    border-radius: 10px;
+}
