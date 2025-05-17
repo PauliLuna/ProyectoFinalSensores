@@ -808,6 +808,13 @@ button:hover {
     background-color: #1D3557; /* Darker Blue */
 }
 
+.form-card .btn-primary,
+.form-container .btn-primary {
+    width: 50%;      /* O el valor que prefieras */
+    min-width: 120px;
+    margin: 0 auto;
+    display: block;
+}
 /* Top Banner */
 .top-banner {
     position: fixed;
@@ -851,22 +858,12 @@ button:hover {
 .user-info {
     display: flex;
     align-items: center;
-    gap: 10px; /* Add spacing between avatar and text */
-   
-    padding: 5px 10px; /* Add padding for better spacing */
-    background-color: #FFFFFF; /* White background for contrast */
-    border-radius: 10px; /* Rounded corners for the container */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for better visibility */
-    box-sizing: border-box; /* Changed from content-box to include padding and border in the element's total width and height. */
-    max-width: 200px; /* Constrain the width of the user-info section */
-    overflow: hidden; /* Prevent content overflow */
-    white-space: nowrap; /* Prevent text wrapping */
-    text-overflow: ellipsis; /* Add ellipsis if text overflows */
-    position: relative; /* Position the user-info container */
-    flex-direction: row-reverse; /* Changed to make the avatar be on the right side and the details on the left side. */
-    right: 10px; /* Move it slightly to the left */
-    top: 50%; /* Center it vertically */
-    transform: translateY(-52%); /* Adjust for vertical centering */
+    justify-content: flex-end;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    margin-right: 30px; /* ajustá si lo querés más centrado o más al borde */
+    z-index: 1100;
 }
 
 .user-avatar {
@@ -1158,9 +1155,11 @@ canvas {
     cursor: pointer;
     margin-top: 20px;
     transition: background-color 0.3s ease;
-    display: block;
-    width: 100%; /* Full width for consistency */
+    width: 50%; /* Full width for consistency */
     text-align: center;
+    min-width: 120px;
+    margin: 16px auto 0 auto; /* Espacio arriba y centrado */
+    display: block;
 }
 
 .btn-secondary:hover {

@@ -39,11 +39,12 @@
         </a>
         </div>
         <div class="user-info">
-            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            
             <div class="user-details">
                 <p><strong>John Doe</strong></p>
                 <p>Admin</p>
             </div>
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
         </div>
     </div>
     <div class="main-content">
@@ -64,6 +65,13 @@
                 .setLatLng(e.latlng)
                 .setContent("Ubicación: " + e.latlng.toString())
                 .openOn(map);
+            });
+
+             // JavaScript to toggle the sidebar
+            const toggleSidebarButton = document.getElementById('toggle-sidebar');
+            const sidebar = document.querySelector('.sidebar');
+            toggleSidebarButton.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
             });
         </script>
     </div>
