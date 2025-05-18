@@ -1390,27 +1390,25 @@ canvas {
     height: 100%;
     background: rgba(0,0,0,0.3);
     z-index: 3000;
-   
-    justify-content: center;
-    align-items: center;
     
-    min-height: calc(100vh - 60px); /* Full height minus the top banner */
-    margin-left: 80px; /* Sidebar width + extra space for centering */
+  
 }
 
 .modal-content {
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 50%; /* Sidebar width */
+    margin-left: 80px; /* Sidebar width + extra space for centering */
+    
     transform: translate(-50%, -50%);
     background: #fff;
     padding: 30px 20px 20px 20px;
     border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
+    width: 100%;
+    max-width: 500px;
     text-align: center;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    z-index: 3100;
+    z-index: 3101;
 }
 
 .close {
