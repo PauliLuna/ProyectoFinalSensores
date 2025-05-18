@@ -50,18 +50,25 @@
         <div class="form-container">
             <div class="form-card">
                 <h1>Invitar Usuario</h1>
-                <form action="/register" method="POST" class="form">
-                    <div class="form-group">
-                        <label for="mail">Correo Electrónico</label>
-                        <input type="email" id="mail" name="mail" placeholder="Ingrese su correo electrónico" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Invitar</button>
-                </form>
-                <!-- Add "Crear otro usuario" button -->
-                <button onclick="window.location.reload()" class="btn-secondary">Invitar otro usuario</button>
+                <form id="inviteForm" action="/register" method="POST" class="form">
+                <div class="form-group">
+                    <label for="mail">Correo Electrónico</label>
+                    <input type="email" id="mail" name="mail" placeholder="Ingrese su correo electrónico" required>
+                </div>
+                <button type="submit" class="btn-primary">Invitar</button>
+            </form>
+            </div>
+            <!-- Modal de éxito -->
+            <div id="successModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeModal" class="close">&times;</span>
+                    <img src="assets/green_check.png" alt="Éxito" class="modal-success-icon">
+                    <p id="successMessage"></p>
+                </div>
             </div>
         </div>
     </div>
+    
     <script>
         // JavaScript to toggle the sidebar
         const toggleSidebarButton = document.getElementById('toggle-sidebar');
@@ -69,6 +76,28 @@
         toggleSidebarButton.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
+
+        // JavaScript to handle form submission and show success modal
+        document.getElementById('inviteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('mail').value;
+            document.getElementById('successMessage').textContent =
+                `Se mandó un correo de invitación a ${email}`;
+            document.getElementById('successModal').style.display = 'block';
+        });
+
+        document.getElementById('closeModal').onclick = function() {
+            document.getElementById('successModal').style.display = 'none';
+            location.reload();
+        };
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('successModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+                location.reload();
+            }
+        };
     </script>
 </body>
 </html>
