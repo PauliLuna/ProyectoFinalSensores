@@ -757,6 +757,46 @@ button:hover {
     border-color: #457B9D; /* Secondary color: Steel Blue */
 }
 
+.form-group select,
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #A8DADC;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #fff;
+    color: #1D3557;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espacio entre label y select */
+    margin-bottom: 16px;
+}
+
+.form-group-inline label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.estado-select {
+    width: 140px; /* O el ancho que prefieras */
+    min-width: 100px;
+    max-width: 200px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #A8DADC;
+    border-radius: 6px;
+    background: #fff;
+    color: #1D3557;
+}
+
 /* Button Styles */
 .btn-primary {
     background-color: #457B9D; /* Secondary color: Steel Blue */

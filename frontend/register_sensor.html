@@ -70,14 +70,34 @@
                         </div>
                     </div>
                     <!-- Dirección Field -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pais">País</label>
+                            <select id="pais" name="pais" class="crs-country" data-region-id="provincia" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="provincia">Provincia</label>
+                            <select id="provincia" name="provincia" class="crs-region" required></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ciudad">Ciudad</label>
+                            <input type="text" id="ciudad" name="ciudad" placeholder="Ingrese la ciudad" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cp">Código Postal</label>
+                            <input type="text" id="cp" name="cp" placeholder="Ingrese el código postal" required>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="direccion">Dirección</label>
                         <input type="text" id="direccion" name="direccion" placeholder="Ingrese la dirección" required>
                     </div>
                     <!-- Estado Field -->
-                    <div class="form-group">
+                    <div class="form-group form-group-inline">
                         <label for="estado">Estado</label>
-                        <select id="estado" name="estado" required>
+                        <select id="estado" name="estado" class="estado-select" required>
                             <option value="active">Activo</option>
                             <option value="inactive">Inactivo</option>
                         </select>
@@ -88,13 +108,16 @@
             </div>
         </div>
     </div>
-    <script>
+    <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js">
+        
         // JavaScript to toggle the sidebar
         const toggleSidebarButton = document.getElementById('toggle-sidebar');
         const sidebar = document.querySelector('.sidebar');
         toggleSidebarButton.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
+
+        
     </script>
 </body>
 </html>
