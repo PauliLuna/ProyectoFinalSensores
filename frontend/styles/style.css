@@ -1436,3 +1436,22 @@ canvas {
     display: block;
 }
 
+/* Botón "Volver" */
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #1D3557;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #457B9D;
+}

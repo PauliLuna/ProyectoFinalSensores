@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,48 +7,50 @@
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="centered-content">
-        <div class="form-card">
-            <h1>Registro de Usuario</h1>
-            <form id="userRegistrationForm" class="form">
-                <!-- Código de Identificación -->
-                <div class="form-row">
-                    <div class="form-group">
+<body class="auth-bg">
+    <a href="index.html" class="back-button">← Volver</a>
+    <div class="auth-container">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <img src="assets/logo1.png" alt="Logo SensIA" style="height:60px;">
+                    <h2 class="mb-2" style="color:#1D3557;">Registro de Usuario</h2>
+                    <p class="text-muted">Crea tu cuenta en SensIA</p>
+                </div>
+                <form id="userRegistrationForm" class="form">
+                    <!-- Código de Identificación -->
+                    <div class="form-group mb-3">
                         <label for="idCode">Código de Identificación</label>
-                        <input type="text" id="idCode" name="idCode" placeholder="Ingrese el código de identificación" required>
+                        <input type="text" id="idCode" class="form-control" name="idCode" placeholder="Ingrese el código de identificación" required>
                     </div>
-                </div>
 
-                <!-- Datos del Usuario -->
-                <div class="form-row">
-                    <div class="form-group">
+                    <!-- Datos del Usuario -->
+                    <div class="form-group mb-3">
                         <label for="email">Correo Electrónico</label>
-                        <input type="email" id="email" name="email" placeholder="Ingrese su correo electrónico" required>
+                        <input type="email" id="email" class="form-control" name="email" placeholder="Ingrese su correo electrónico" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="phone">Número de Celular</label>
-                        <input type="tel" id="phone" name="phone" placeholder="Ingrese su número de celular" pattern="[0-9]+" required>
+                        <input type="tel" id="phone" class="form-control" name="phone" placeholder="Ingrese su número de celular" pattern="[0-9]+" required>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="username">Nombre de Usuario</label>
-                        <input type="text" id="username" name="username" placeholder="Ingrese su nombre de usuario" required>
+                        <input type="text" id="username" class="form-control" name="username" placeholder="Ingrese su nombre de usuario" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="password">Contraseña</label>
-                        <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                        <input type="password" id="password" class="form-control" name="password" placeholder="Ingrese su contraseña" required>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="confirmPassword">Confirmar Contraseña</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirme su contraseña" required>
+                        <input type="password" id="confirmPassword" class="form-control" name="confirmPassword" placeholder="Confirme su contraseña" required>
                     </div>
+                    <button type="submit" class="btn-primary w-100">Registrar</button>
+                </form>
+                <div class="form-footer mt-3 text-center">
+                    <span>¿Ya tienes cuenta? <a href="signin.html">Inicia sesión</a></span>
                 </div>
-                <button type="submit" class="btn-primary">Registrar</button>
-            </form>
+            </div>
         </div>
     </div>
     <script>
