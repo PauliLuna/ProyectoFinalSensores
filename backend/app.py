@@ -40,7 +40,7 @@ def submit_form():
             subject=f"Nuevo mensaje de {name}",
             sender="no-reply@sensia.com",  # Emisor general
             recipients=[app.config['MAIL_USERNAME']],  # Tu correo personal como destinatario
-            body=f"Nombre: {name}\nCorreo: {email}\nMensaje: {message}"
+            body=f"¡Hay un nuevo contacto interesado! \n\nNombre: {name}\nCorreo: {email}\nMensaje: {message}"
         )
         mail.send(msg)
         return jsonify({'success': 'Correo enviado correctamente'}), 200
