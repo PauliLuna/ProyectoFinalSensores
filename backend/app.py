@@ -6,6 +6,8 @@ import os
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 
+
+# Configuración de la carpeta estática
 @app.route('/')
 def serve_index():
     return send_from_directory(app.static_folder, 'index.html')
@@ -20,6 +22,8 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')  # Correo personal
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 
+
+# Ruta para enviar el formulario de contacto
 @app.route('/submit', methods=['POST'])
 def submit_form():
     data = request.get_json()
