@@ -95,10 +95,10 @@
     </section>
 
     <!-- Sección de Contacto -->
-    <section class="contact" id="contact-form">
+    <section class="contact">
         <h2>Contáctanos</h2>
         <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en escribirnos utilizando el formulario a continuación.</p>
-        <form action="/submit" method="POST">
+        <form id="contact-form">
             <div class="form-group">
                 <label for="name">Nombre</label>
                 <input type="text" id="name" name="name" placeholder="Tu Nombre" required>
@@ -121,20 +121,40 @@
     </footer>
 
     <script>
-    document.getElementById('registerBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const acc = document.getElementById('registerAccordion');
-        acc.style.display = acc.style.display === 'none' || acc.style.display === '' ? 'block' : 'none';
-        // Optional: close accordion if clicked outside
-        document.addEventListener('click', function handler(event) {
-            if (!acc.contains(event.target) && event.target.id !== 'registerBtn') {
-                acc.style.display = 'none';
-                document.removeEventListener('click', handler);
+        // Email Sending Logic
+        document.getElementById('contact-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+
+            const response = await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, message }),
+            });
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('contact-form').reset();
+                alert(result.success);
+            } else {
+                alert(result.error);
             }
         });
-    });
+
+        // JavaScript to toggle the sidebar
+        document.getElementById('registerBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const acc = document.getElementById('registerAccordion');
+            acc.style.display = acc.style.display === 'none' || acc.style.display === '' ? 'block' : 'none';
+            // Optional: close accordion if clicked outside
+            document.addEventListener('click', function handler(event) {
+                if (!acc.contains(event.target) && event.target.id !== 'registerBtn') {
+                    acc.style.display = 'none';
+                    document.removeEventListener('click', handler);
+                }
+            });
+        });
     </script>
-
-
 </body>
 </html>
