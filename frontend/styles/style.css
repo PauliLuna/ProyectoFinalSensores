@@ -699,6 +699,10 @@ button:hover {
    
 }
 
+.user-assignment-table td:last-child {
+    text-align: center;
+}
+
 /* Form Card */
 .form-card {
     background-color: #FFFFFF; /* White background for contrast */
@@ -717,15 +721,22 @@ button:hover {
 }
 
 /* Form Styles */
+input[disabled] {
+    background-color: #f1f1f1 !important;
+    color: #a0a0a0 !important;
+    cursor: not-allowed;
+    opacity: 1; /* Para que no se vea demasiado transparente */
+}
+
 .form {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Increased gap for better spacing */
+    gap: 10px; /* Increased gap for better spacing */
 }
 
 .form-row {
     display: flex;
-    gap: 20px; /* Increased gap between columns */
+    gap: 10px; /* Increased gap between columns */
 }
 
 .form-row .form-group {
@@ -733,7 +744,7 @@ button:hover {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 2px;
 }
 
 .form-group label {

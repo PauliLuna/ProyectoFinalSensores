@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Sensor</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
+        <h2 class="sidebar-title">Menú</h2>
+        <ul class="menu-items">
+            <li><a href="home.html"><img src="assets/home-icon.jpg" alt="Home Icon"><span>Panel General</span></a></li>
+            <li><a href="mapa.html"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
+            <li><a href="sensores.html"><img src="assets/sensor-icon.png" alt="Sensor Icon"><span>Sensores</span></a></li>
+            <li><a href="dashboard.html"><img src="assets/dashboard-icon.png" alt="Dashboard Icon"><span>Dashboard</span></a></li>
+            <li><a href="alarmas.html"><img src="assets/alarms-icon.png" alt="Alarms Icon"><span>Alarmas</span></a></li>
+            <li><a href="register_sensor.html"><img src="assets/register-sensor-icon.png" alt="Register Sensor Icon"><span>Registrar Sensor</span></a></li>
+            <li><a href="register_user.html"><img src="assets/register-user-icon.png" alt="Register User Icon"><span>Invitar Usuario</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <ul>
+                <li><a href="#"><img src="assets/profile-icon.jpg" alt="Profile Icon"><span>Mi perfil</span></a></li>
+                <li><a href="#"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="top-banner">
+        <div class="client-info">
+            <p><strong>Cliente:</strong> <span id="client-name">Absternet LLC</span></p>
+        </div>
+        <div class="logo-container">
+        <a href="#top"> <!-- Make the logo clickable and redirect to the top -->
+            <img src="assets/logo1.png" alt="SensIA Logo" class="top-logo">
+        </a>
+        </div>
+        <div class="user-info">
+            
+            <div class="user-details">
+                <p><strong>John Doe</strong></p>
+                <p>Admin</p>
+            </div>
+            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="edit-sensor-container" style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+            <!-- Formulario de edición de sensor -->
+            <div class="form-container" style="flex: 1 1 350px; min-width: 320px;">
+                <div class="form-card">
+                    <h1>Editar Sensor</h1>
+                    <form id="editSensorForm" class="form">
+                        <div class="form-group">
+                            <label>ID del sensor</label>
+                            <input type="text" value="12345" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de serie</label>
+                            <input type="text" value="SN-987654321" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="alias">Alias</label>
+                            <input type="text" id="alias" name="alias" value="Sensor Patio" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="min">Valor mínimo</label>
+                                <input type="number" id="min" name="min" value="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="max">Valor máximo</label>
+                                <input type="number" id="max" name="max" value="100" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pais">País</label>
+                                <input type="text" id="pais" name="pais" value="Argentina" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="provincia">Provincia</label>
+                                <input type="text" id="provincia" name="provincia" value="Santa Fe" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ciudad">Ciudad</label>
+                                <input type="text" id="ciudad" name="ciudad" value="Rosario" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cp">Código Postal</label>
+                                <input type="text" id="cp" name="cp" value="2000" required>
+                            </div>
+                        </div>
+                        <div class="form-group form-group-inline">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado" class="estado-select" required>
+                                <option value="activo" selected>Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Asignación de usuario -->
+            <div class="form-container" style="flex: 1 1 350px; min-width: 320px; display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+                <div class="form-card">
+                    <h2>Asignación de usuario</h2>
+                    <table class="user-assignment-table" style="width:100%; margin-bottom: 18px;">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Estado</th>
+                                <th>Editar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>usuario1@email.com</td>
+                                <td>
+                                    <span class="assignment-status">Activo</span>
+                                </td>
+                                <td>
+                                    <button class="edit-assignment-btn"  title="Editar estado" onclick="editAssignment(this)">
+                                        <span>✏️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>usuario2@email.com</td>
+                                <td>
+                                    <span class="assignment-status">Inactivo</span>
+                                </td>
+                                <td>
+                                    <button class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
+                                        <span>✏️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 24px;">
+                        <label style="font-weight: 500; cursor: pointer;" onclick="toggleAddUserDropdown()">Añadir asignación de usuario</label>
+                        <div id="addUserDropdown" style="display:none; margin-top: 10px;">
+                            <select id="userSelect" multiple style="width: 100%; padding: 8px; border-radius: 6px;">
+                                <option value="nuevo1@email.com">nuevo1@email.com</option>
+                                <option value="nuevo2@email.com">nuevo2@email.com</option>
+                                <option value="nuevo3@email.com">nuevo3@email.com</option>
+                            </select>
+                            <button class="btn-primary" style="margin-top: 10px;" onclick="addUserAssignments()">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // JavaScript to toggle the sidebar
+    const toggleSidebarButton = document.getElementById('toggle-sidebar');
+    const sidebar = document.querySelector('.sidebar');
+    toggleSidebarButton.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+
+    // Mostrar/ocultar el dropdown de añadir usuario
+    function toggleAddUserDropdown() {
+        const dropdown = document.getElementById('addUserDropdown');
+        dropdown.style.display = dropdown.style.display === 'none' || dropdown.style.display === '' ? 'block' : 'none';
+    }
+
+    // Simulación de añadir usuarios (debería hacerse con fetch al backend)
+    function addUserAssignments() {
+        const select = document.getElementById('userSelect');
+        const selected = Array.from(select.selectedOptions).map(opt => opt.value);
+        if (selected.length === 0) return;
+        const tbody = document.querySelector('.user-assignment-table tbody');
+        selected.forEach(email => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${email}</td>
+                <td><span class="assignment-status">Activo</span></td>
+                <td>
+                    <button class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
+                        <span>✏️</span>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('addUserDropdown').style.display = 'none';
+        select.selectedIndex = -1;
+        // Aquí deberías enviar los datos al backend
+    }
+
+    // Permitir editar el estado de asignación
+    function editAssignment(btn) {
+        const td = btn.parentElement.previousElementSibling;
+        const current = td.querySelector('.assignment-status').textContent;
+        const newState = current === 'Activo' ? 'Inactivo' : 'Activo';
+        td.querySelector('.assignment-status').textContent = newState;
+        // Aquí deberías enviar el cambio de estado al backend
+    }
+    </script>
+</body>
+</html>
