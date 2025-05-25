@@ -38,17 +38,28 @@
                         <label for="address">Dirección</label>
                         <input type="text" id="address" class="form-control" name="address" placeholder="Ingrese la dirección" required>
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="locality">Localidad</label>
-                        <input type="text" id="locality" class="form-control" name="locality" placeholder="Ingrese la localidad" required>
+
+                    <!-- País y Provincia Fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pais">País</label>
+                            <select id="pais" name="pais" class="crs-country" data-region-id="provincia" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="provincia">Provincia</label>
+                            <select id="provincia" name="provincia" class="crs-region" required></select>
+                        </div>
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="province">Provincia</label>
-                        <input type="text" id="province" class="form-control" name="province" placeholder="Ingrese la provincia" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="country">País</label>
-                        <input type="text" id="country" class="form-control" name="country" placeholder="Ingrese el país" required>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ciudad">Ciudad</label>
+                            <input type="text" id="ciudad" name="ciudad" placeholder="Ingrese la ciudad" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cp">Código Postal</label>
+                            <input type="text" id="cp" name="cp" placeholder="Ingrese el código postal" required>
+                        </div>
                     </div>
 
                     <!-- Datos del Usuario -->
@@ -78,7 +89,9 @@
             </div>
         </div>
     </div>
-    <script>
+            
+    <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js">
+
         // JavaScript para manejar el envío del formulario
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('initialRegistrationForm');
