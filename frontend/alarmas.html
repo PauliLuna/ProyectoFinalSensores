@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for graphs -->
+    <style>
+        select {
+            font-family: sans-serif;
+            font-size: 16px;
+            color: #333;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
     <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
@@ -50,7 +62,17 @@
     <!-- Main Content -->
     <div class="main-content">
         <h1 class="centered-title">Alarmas</h1>
-
+        <div style="margin-top: 24px;">
+            <div id="showPeriodDropdown" style="margin-top: 10px;">
+                <select id="periodSelect" >
+                    <option value="24hs">Últimas 24 hs</option>
+                    <option value="7days">Últimos 7 días</option>
+                    <option value="1month">1 mes</option>
+                    <option value="6months">6 meses</option>
+                </select>
+                <button class="btn-primary" style="margin-top: 10px; margin-bottom: 10px;" onclick="showAlarmsOnPeriod()">Aplicar</button>
+            </div>
+        </div>
         <!-- KPI Cards -->
         <div class="kpi-cards">
             <div class="kpi-card primary">
@@ -84,40 +106,94 @@
     </div>
 
     <script>
-        // Chart.js Example for Alerts by Type
-        const alertsByTypeCtx = document.getElementById('alertsByTypeChart').getContext('2d');
-        new Chart(alertsByTypeCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Críticas', 'Informativas', 'Seguridad'],
-                datasets: [{
-                    data: [5, 12, 3], // Example data
-                    backgroundColor: ['#E76F51', '#E9C46A', '#2A9D8F']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true
-            }
-        });
 
-        // Chart.js Example for Alerts by Branch
-        const alertsByBranchCtx = document.getElementById('alertsByBranchChart').getContext('2d');
-        new Chart(alertsByBranchCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Sucursal 1', 'Sucursal 2', 'Sucursal 3'], // Example branches
-                datasets: [{
-                    label: 'Cantidad de Alertas',
-                    data: [10, 7, 5], // Example data
-                    backgroundColor: '#457B9D'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true
+        let alertsByTypeChart;
+        let alertsByBranchChart;
+
+        function getChartDataForPeriod(period) {
+            // Simulación de datos por período
+            switch (period) {
+                case '24hs':
+                    return {
+                        typeData: [5, 12, 3],
+                        branchData: [10, 7, 5]
+                    };
+                case '7days':
+                    return {
+                        typeData: [15, 25, 12],
+                        branchData: [20, 18, 14]
+                    };
+                case '1month':
+                    return {
+                        typeData: [50, 80, 40],
+                        branchData: [60, 55, 48]
+                    };
+                case '6months':
+                    return {
+                        typeData: [200, 300, 150],
+                        branchData: [220, 190, 160]
+                    };
+                default:
+                    return {
+                        typeData: [0, 0, 0],
+                        branchData: [0, 0, 0]
+                    };
             }
-        });
+        }
+
+        function updateCharts(period) {
+            const { typeData, branchData } = getChartDataForPeriod(period);
+
+            // Actualiza datos del gráfico de tipo de alerta
+            alertsByTypeChart.data.datasets[0].data = typeData;
+            alertsByTypeChart.update();
+
+            // Actualiza datos del gráfico por sucursal
+            alertsByBranchChart.data.datasets[0].data = branchData;
+            alertsByBranchChart.update();
+        }
+
+        function showAlarmsOnPeriod() {
+            const select = document.getElementById('periodSelect');
+            const selectedPeriod = select.value;
+            updateCharts(selectedPeriod);
+        }
+
+        // Crear los gráficos al cargar
+        window.onload = function () {
+            const alertsByTypeCtx = document.getElementById('alertsByTypeChart').getContext('2d');
+            alertsByTypeChart = new Chart(alertsByTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Críticas', 'Informativas', 'Seguridad'],
+                    datasets: [{
+                        data: [5, 12, 3],
+                        backgroundColor: ['#E76F51', '#E9C46A', '#2A9D8F']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+
+            const alertsByBranchCtx = document.getElementById('alertsByBranchChart').getContext('2d');
+            alertsByBranchChart = new Chart(alertsByBranchCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sucursal 1', 'Sucursal 2', 'Sucursal 3'],
+                    datasets: [{
+                        label: 'Cantidad de Alertas',
+                        data: [10, 7, 5],
+                        backgroundColor: '#457B9D'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        };
 
         // JavaScript to toggle the sidebar
         const toggleSidebarButton = document.getElementById('toggle-sidebar');
@@ -125,6 +201,7 @@
         toggleSidebarButton.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
+
     </script>
 </body>
 </html>
