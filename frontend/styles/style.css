@@ -1106,6 +1106,8 @@ input[disabled] {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
+    width: 100%;
+    margin: 30px auto;
 }
 
 .kpi-card {
@@ -1365,26 +1367,6 @@ canvas {
     outline: none;
     border-color: var(--accent-color);
     box-shadow: 0 0 0 2px rgba(115, 226, 167, 0.2);
-}
-
-.boton-graficar {
-    background-color: #73e2a7;
-    color: #1e1e1e;
-    padding: 0.5rem 1.2rem;
-    border-radius: 0.5rem;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: background-color 0.2s ease;
-}
-
-.boton-graficar:hover {
-    background-color: #59cc94;
-}
-
-.boton-graficar:active {
-    background-color: #3caf7a;
 }
 
 /* Centrar contenido en el medio de la pantalla */

@@ -61,17 +61,15 @@
     </div>
     <!-- Main Content -->
     <div class="main-content">
-        <h1 class="centered-title">Alarmas</h1>
-        <div style="margin-top: 24px;">
-            <div id="showPeriodDropdown" style="margin-top: 10px;">
-                <select id="periodSelect" >
-                    <option value="24hs">Últimas 24 hs</option>
-                    <option value="7days">Últimos 7 días</option>
-                    <option value="1month">1 mes</option>
-                    <option value="6months">6 meses</option>
-                </select>
-                <button class="btn-primary" style="margin-top: 10px; margin-bottom: 10px;" onclick="showAlarmsOnPeriod()">Aplicar</button>
-            </div>
+        <div class="filterContainer">
+            <h1 class="centered-title" style="margin-bottom: auto;">Alarmas</h1>
+            <select id="periodSelect">
+                <option value="24hs">Últimas 24 hs</option>
+                <option value="7days">Últimos 7 días</option>
+                <option value="1month">1 mes</option>
+                <option value="6months">6 meses</option>
+            </select>
+            <button class="btnAplicar" style="min-width: 130px; width: auto;" onclick="showAlarmsOnPeriod()">Aplicar</button>
         </div>
         <!-- KPI Cards -->
         <div class="kpi-cards">
