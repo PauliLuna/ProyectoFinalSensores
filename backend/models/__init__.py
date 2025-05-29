@@ -1,1 +1,3 @@
-# This file is intentionally left blank.
+# This file is intention# El archivo __init__.py le indica a Python que esa carpeta es un paquete.
+# Sin __init__.py, podrías tener problemas al importar módulos entre carpetas (por ejemplo, from models.contacto import save_contacto podría fallar).
+# Aunque en Python 3.3+ no siempre es obligatorio, es una buena práctica mantenerlos para asegurar compatibilidad y evitar errores de importación, especialmente en proyectos organizados en varios módulos.ally left blank.
