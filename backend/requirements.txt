@@ -5,4 +5,5 @@ Flask-Mail
 Flask-Cors
 python-dotenv
 Werkzeug==2.0.3
-Flask-PyMongo
+Flask-PyMongo>=2.3.0
+pymongo>=3.12
