@@ -18,6 +18,7 @@ def serve_index():
 # Configuración de MongoDB
 print("Configurando MongoDB...")
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+print("MONGO_URI:", os.getenv("MONGO_URI"))
 mongo = PyMongo(app)
 app.mongo = mongo
 
@@ -34,6 +35,10 @@ app.mail = mail
 # Importar y registrar Blueprints
 from routes.contacto_routes import contacto_bp
 app.register_blueprint(contacto_bp)
+
+# Registrar sensor blueprint
+from routes.sensor_routes import sensor_bp
+app.register_blueprint(sensor_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
