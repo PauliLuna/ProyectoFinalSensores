@@ -17,7 +17,7 @@
                     <h2 class="mb-2" style="color:#1D3557;">Registro de Usuario</h2>
                     <p class="text-muted">Crea tu cuenta en SensIA</p>
                 </div>
-                <form id="userRegistrationForm" class="form">
+                <form id="userRegistrationForm" class="form" action="/usuario" method="POST">
                     <!-- Código de Identificación -->
                     <div class="form-group mb-3">
                         <label for="idCode">Código de Identificación</label>
@@ -57,8 +57,9 @@
         // JavaScript para manejar la validación del formulario
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('userRegistrationForm');
-            form.addEventListener('submit', function (event) {
-                event.preventDefault(); // Evita el envío por defecto del formulario
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();  // ⬅️ Este debe estar al principio
+
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -67,10 +68,26 @@
                     return;
                 }
 
-                // Redirige a la página home.html si las contraseñas coinciden
-                window.location.href = 'home.html';
+                const formData = new FormData(this);
+                try {
+                    const response = await fetch(form.action, {
+                        method: form.method,
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert(result.message + "\nMail de usuario: " + result.user_email);
+                        this.reset();
+                    } else {
+                        alert('Error al registrar el usuario: ' + (result.error || 'Inténtelo nuevamente.'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión con el servidor.');
+                }
             });
         });
+
     </script>
 </body>
 </html>

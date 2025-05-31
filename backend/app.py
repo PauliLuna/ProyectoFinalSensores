@@ -40,5 +40,9 @@ app.register_blueprint(contacto_bp)
 from routes.sensor_routes import sensor_bp
 app.register_blueprint(sensor_bp)
 
+# Registrar usuario blueprint
+from routes.usuario_routes import usuario_bp
+app.register_blueprint(usuario_bp)
+
 if __name__ == '__main__':
     app.run(debug=True)
