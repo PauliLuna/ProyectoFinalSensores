@@ -173,13 +173,42 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js">
+    <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js"> </script>
+    <script> 
 
        // JavaScript to toggle the sidebar
         const toggleSidebarButton = document.getElementById('toggle-sidebar');
         const sidebar = document.querySelector('.sidebar');
         toggleSidebarButton.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
+        });
+
+
+        // pop-up tipo "alerta de éxito o error" cuando se registra un sensor
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registerSensorForm');
+
+            if (form) {
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault(); // Esto evita que se envíe "a la antigua"
+
+                    const formData = new FormData(this);
+
+                    const response = await fetch('/sensor', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert(result.message); // pop-up
+                        this.reset();
+                    } else {
+                        alert('Error al registrar el sensor');
+                    }
+                });
+            }
         });
 
         // Mostrar/ocultar el dropdown de añadir usuario
