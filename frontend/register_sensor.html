@@ -48,76 +48,77 @@
     </div>
     <div class="main-content">
         <div class="register-sensor-container" style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
-            <form class="form-container" style="flex: 1 1 350px; min-width: 320px;" action="/sensor" method="POST">
+            <div class="form-container" style="flex: 1 1 350px; min-width: 320px;" >
                 <div class="form-card">
                     <h1>Registrar Sensor</h1>
                     <!-- Display ID -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <p class="sensor-id">ID: 456</p>
-                        </div>
-                        <div class="form-group">
-                            <div class="sensor-input-group">
-                                <label for="nroSensor">Número del sensor</label>
-                                <input type="text" id="nroSensor" name="nroSensor" placeholder="Ingrese número" required>
+                    <form id="registerSensorForm" class="form" action="/sensor" method="POST">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <p class="sensor-id">ID: 456</p>
+                            </div>
+                            <div class="form-group">
+                                <div class="sensor-input-group">
+                                    <label for="nroSensor">Número del sensor</label>
+                                    <input type="text" id="nroSensor" name="nroSensor" placeholder="Ingrese número" required>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Alias Field -->
-                    <div class="form-group">
-                        <label for="alias">Alias</label>
-                        <input type="text" id="alias" name="alias" placeholder="Ingrese un alias para el sensor" required>
-                    </div>
-                    <!-- Valor Min and Max Fields -->
-                    <div class="form-row">
+                        <!-- Alias Field -->
                         <div class="form-group">
-                            <label for="valorMin">Valor Mínimo</label>
-                            <input type="number" id="valorMin" name="valorMin" placeholder="Ingrese el valor mínimo" required>
+                            <label for="alias">Alias</label>
+                            <input type="text" id="alias" name="alias" placeholder="Ingrese un alias para el sensor" required>
                         </div>
+                        <!-- Valor Min and Max Fields -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="valorMin">Valor Mínimo</label>
+                                <input type="number" id="valorMin" name="valorMin" placeholder="Ingrese el valor mínimo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="valorMax">Valor Máximo</label>
+                                <input type="number" id="valorMax" name="valorMax" placeholder="Ingrese el valor máximo" required>
+                            </div>
+                        </div>
+                        <!-- Dirección Field -->
                         <div class="form-group">
-                            <label for="valorMax">Valor Máximo</label>
-                            <input type="number" id="valorMax" name="valorMax" placeholder="Ingrese el valor máximo" required>
+                            <label for="direccion">Dirección</label>
+                            <input type="text" id="direccion" name="direccion" placeholder="Ingrese la dirección" required>
                         </div>
-                    </div>
-                    <!-- Dirección Field -->
-                    <div class="form-group">
-                        <label for="direccion">Dirección</label>
-                        <input type="text" id="direccion" name="direccion" placeholder="Ingrese la dirección" required>
-                    </div>
-                    <!-- País y Provincia Fields -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="pais">País</label>
-                            <select id="pais" name="pais" class="crs-country" data-region-id="provincia" required></select>
+                        <!-- País y Provincia Fields -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pais">País</label>
+                                <select id="pais" name="pais" class="crs-country" data-region-id="provincia" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="provincia">Provincia</label>
+                                <select id="provincia" name="provincia" class="crs-region" required></select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="provincia">Provincia</label>
-                            <select id="provincia" name="provincia" class="crs-region" required></select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ciudad">Ciudad</label>
+                                <input type="text" id="ciudad" name="ciudad" placeholder="Ingrese la ciudad" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cp">Código Postal</label>
+                                <input type="text" id="cp" name="cp" placeholder="Ingrese el código postal" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ciudad">Ciudad</label>
-                            <input type="text" id="ciudad" name="ciudad" placeholder="Ingrese la ciudad" required>
+                        <!-- Estado Field -->
+                        <div class="form-group form-group-inline">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado" class="estado-select" required>
+                                <option value="active">Activo</option>
+                                <option value="inactive">Inactivo</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label for="cp">Código Postal</label>
-                            <input type="text" id="cp" name="cp" placeholder="Ingrese el código postal" required>
-                        </div>
-                    </div>
-                    <!-- Estado Field -->
-                    <div class="form-group form-group-inline">
-                        <label for="estado">Estado</label>
-                        <select id="estado" name="estado" class="estado-select" required>
-                            <option value="active">Activo</option>
-                            <option value="inactive">Inactivo</option>
-                        </select>
-                    </div>
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn-primary">Registrar Sensor</button>
-                
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-primary">Registrar Sensor</button>
+                    </form>
                 </div>
-            </form>
+            </div>
 
             <!-- Asignación de usuario -->
             <div class="form-container" style="flex: 1 1 350px; margin-left:5px ;margin-right: 30px; min-width: 320px; display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
@@ -174,7 +175,7 @@
 
     <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js">
 
-        // JavaScript to toggle the sidebar
+       // JavaScript to toggle the sidebar
         const toggleSidebarButton = document.getElementById('toggle-sidebar');
         const sidebar = document.querySelector('.sidebar');
         toggleSidebarButton.addEventListener('click', () => {
