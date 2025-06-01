@@ -14,7 +14,7 @@
         <h2 class="sidebar-title">Menú</h2>
         <ul class="menu-items">
             <li><a href="home.html"><img src="assets/home-icon.jpg" alt="Home Icon"><span>Panel General</span></a></li>
-            <li><a href="#"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
+            <li><a href="mapa.html"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
             <li><a href="sensores.html"><img src="assets/sensor-icon.png" alt="Sensor Icon"><span>Sensores</span></a></li>
             <li><a href="dashboard.html"><img src="assets/dashboard-icon.png" alt="Dashboard Icon"><span>Dashboard</span></a></li>
             <li><a href="alarmas.html"><img src="assets/alarms-icon.png" alt="Alarms Icon"><span>Alarmas</span></a></li>
@@ -53,6 +53,11 @@
             <label for="hasta">Hasta</label>
             <input type="date" id="hasta" class="datepicker">
             <button id="btnGraficar" class="button-default" style="min-width: 130px; width: auto;">Graficar</button>
+            <div class="sensor-data" style="text-align: right; margin-left: auto;">
+                <h2 id="sensor-alias"></h2>
+                <p><strong>Estado: </strong><span id="sensor-estado"></span></p>
+                <p><strong>Condición: </strong><span id="sensor-alarma"></span></p>
+            </div>
         </div>
         <div style="width: 100%; max-width: 900px; margin: 30px auto;">
             <canvas id="temperatureChart"></canvas>
@@ -61,6 +66,21 @@
             </div>
         </div>
         <script>
+            // Sensor details
+                document.addEventListener('DOMContentLoaded', () => {
+                    const alias = sessionStorage.getItem('sensor_alias');
+                    const estado = sessionStorage.getItem('sensor_estado');
+                    const alarma = sessionStorage.getItem('sensor_alarma');
+
+                    if (alias && estado && alarma) {
+                        document.getElementById('sensor-alias').textContent = alias;
+                        document.getElementById('sensor-estado').textContent = estado;
+                        document.getElementById('sensor-alarma').textContent = alarma;
+                }
+                });
+
+            // Chart
+
             let tempChart = null;
 
             document.getElementById('btnGraficar').addEventListener('click', () => {
