@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="scripts/sidebartopbaner.js"></script>
+    <script src="scripts/utils.js"></script>
 </head>
 <body>
     <div id="sidebar-container"></div>
@@ -32,14 +32,6 @@
                 .setContent("Ubicación: " + e.latlng.toString())
                 .openOn(map);
             });
-
-             // JavaScript to toggle the sidebar
-            const toggleSidebarButton = document.getElementById('toggle-sidebar');
-            const sidebar = document.querySelector('.sidebar');
-            toggleSidebarButton.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-            });
-
         </script>
     </div>
 </body>
