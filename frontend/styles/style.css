@@ -743,15 +743,6 @@ input[disabled] {
     gap: 10px; /* Increased gap for better spacing */
 }
 
-.form-row {
-    display: flex;
-    gap: 10px; /* Increased gap between columns */
-}
-
-.form-row .form-group {
-    flex: 1;
-}
-
 .form-group {
     margin-bottom: 2px;
 }
