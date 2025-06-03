@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel General</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
+</head>
+<body>
+    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
+    <div class="sidebar">
+        <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
+        <h2 class="sidebar-title">Menú</h2>
+        <ul class="menu-items">
+            <li><a href="home.html"><img src="assets/home-icon.jpg" alt="Home Icon"><span>Panel General</span></a></li>
+            <li><a href="mapa.html"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
+            <li><a href="sensores.html"><img src="assets/sensor-icon.png" alt="Sensor Icon"><span>Sensores</span></a></li>
+            <li><a href="dashboard.html"><img src="assets/dashboard-icon.png" alt="Dashboard Icon"><span>Dashboard</span></a></li>
+            <li><a href="alarmas.html"><img src="assets/alarms-icon.png" alt="Alarms Icon"><span>Alarmas</span></a></li>
+            <li><a href="register_sensor.html"><img src="assets/register-sensor-icon.png" alt="Register Sensor Icon"><span>Registrar Sensor</span></a></li>
+            <li><a href="register_user.html"><img src="assets/register-user-icon.png" alt="Register User Icon"><span>Invitar Usuario</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <ul>
+                <li><a href="myprofile.html"><img src="assets/profile-icon.jpg" alt="Profile Icon"><span>Mi perfil</span></a></li>
+                <li><a href="signin.html"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="top-banner">
+        <div class="client-info">
+            <p><strong>Cliente:</strong> <span id="client-name">Absternet LLC</span></p>
+        </div>
+        <div class="logo-container">
+        <a href="#top"> <!-- Make the logo clickable and redirect to the top -->
+            <img src="assets/logo1.png" alt="SensIA Logo" class="top-logo">
+        </a>
+        </div>
+        <a href="myprofile.html">
+            <div class="user-info">
+                <div class="user-details">
+                    <p><strong>John Doe</strong></p>
+                    <p>Admin</p>
+                </div>
+                <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
+            </div>
+        </a>
+    </div>
+    <div class="main-content">
+        <!-- Modal de éxito -->
+        <div id="successModal" class="modal">
+            <div class="modal-content">
+                <span id="closeModal" class="close">&times;</span>
+                <img src="assets/green_check.png" alt="Éxito" class="modal-success-icon">
+                <p id="successMessage"></p>
+            </div>
+        </div>
+        <div class="form-container" style="flex: 1 1 350px; min-width: 320px;" >
+            <div class="form-card">
+                <h1>Editar Usuario</h1>
+                <!-- User name -->
+                <form id="editUserForm" class="form" action="/client" method="POST">
+                    <div class="form-group">
+                        <label>Nombre usuario</label>
+                        <input type="text" id="userName" value="John Doe" required>
+                    </div>
+                    <!-- Mail -->
+                    <div class="form-group">
+                        <label for="mail">Mail</label>
+                        <input type="text" id="mail" name="mail" value="john.doe@absternet.com" required>
+                    </div>
+                    <!-- Numero Celular -->
+                    <div class="form-group">
+                        <label for="numCel">Número del celular</label>
+                        <input type="text" id="numCel" name="numCel" value="+543464200145" required>
+                    </div>
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        // JavaScript to toggle the sidebar
+        const toggleSidebarButton = document.getElementById('toggle-sidebar');
+        const sidebar = document.querySelector('.sidebar');
+        toggleSidebarButton.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // JavaScript to handle form submission and show success modal
+        document.getElementById('editUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('successMessage').textContent =
+                `Se ha guardado correctamente los cambios`;
+            document.getElementById('successModal').style.display = 'block';
+        });
+
+        document.getElementById('closeModal').onclick = function() {
+            document.getElementById('successModal').style.display = 'none';
+        };
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('successModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+    </script>
+</body>
+</html>
