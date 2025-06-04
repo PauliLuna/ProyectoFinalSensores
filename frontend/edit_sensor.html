@@ -8,43 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="sidebar">
-        <button id="toggle-sidebar" class="toggle-sidebar">☰</button>
-        <h2 class="sidebar-title">Menú</h2>
-        <ul class="menu-items">
-            <li><a href="home.html"><img src="assets/home-icon.jpg" alt="Home Icon"><span>Panel General</span></a></li>
-            <li><a href="mapa.html"><img src="assets/map-icon.png" alt="Map Icon"><span>Mapa</span></a></li>
-            <li><a href="sensores.html"><img src="assets/sensor-icon.png" alt="Sensor Icon"><span>Sensores</span></a></li>
-            <li><a href="dashboard.html"><img src="assets/dashboard-icon.png" alt="Dashboard Icon"><span>Dashboard</span></a></li>
-            <li><a href="alarmas.html"><img src="assets/alarms-icon.png" alt="Alarms Icon"><span>Alarmas</span></a></li>
-            <li><a href="register_sensor.html"><img src="assets/register-sensor-icon.png" alt="Register Sensor Icon"><span>Registrar Sensor</span></a></li>
-            <li><a href="register_user.html"><img src="assets/register-user-icon.png" alt="Register User Icon"><span>Invitar Usuario</span></a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <ul>
-                <li><a href="#"><img src="assets/profile-icon.jpg" alt="Profile Icon"><span>Mi perfil</span></a></li>
-                <li><a href="#"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="top-banner">
-        <div class="client-info">
-            <p><strong>Cliente:</strong> <span id="client-name">Absternet LLC</span></p>
-        </div>
-        <div class="logo-container">
-        <a href="#top"> <!-- Make the logo clickable and redirect to the top -->
-            <img src="assets/logo1.png" alt="SensIA Logo" class="top-logo">
-        </a>
-        </div>
-        <div class="user-info">
-            
-            <div class="user-details">
-                <p><strong>John Doe</strong></p>
-                <p>Admin</p>
-            </div>
-            <img src="assets/user-avatar.png" alt="User Avatar" class="user-avatar">
-        </div>
-    </div>
+    <!-- Left and Top menu -->
+    <div id="sidebar-container"></div>
+    <div id="top-banner-container"></div>
+
+    <!-- Main Content -->
     <div class="main-content">
         <div class="edit-sensor-container" style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
             <!-- Formulario de edición de sensor -->
@@ -170,13 +138,6 @@
 
     <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js"></script>
     <script>
-    // JavaScript to toggle the sidebar
-    const toggleSidebarButton = document.getElementById('toggle-sidebar');
-    const sidebar = document.querySelector('.sidebar');
-    toggleSidebarButton.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-    });
-
     // Mostrar/ocultar el dropdown de añadir usuario
     function toggleAddUserDropdown() {
         const dropdown = document.getElementById('addUserDropdown');
@@ -216,5 +177,6 @@
         // Aquí deberías enviar el cambio de estado al backend
     }
     </script>
+    <script src="scripts/utils.js"></script>
 </body>
 </html>
