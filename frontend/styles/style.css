@@ -928,6 +928,7 @@ input[disabled] {
     transition: left 0.3s ease, width 0.3s ease; /* Smooth transition for left and width */
 }
 
+.sidebar.collapsed ~ .top-banner,
 .top-banner.sidebar-collapsed {
     left: 80px;
     width: calc(100% - 80px);
