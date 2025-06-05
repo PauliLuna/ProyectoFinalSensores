@@ -147,6 +147,10 @@ html {
     padding: 10px 20px;
 }
 
+.auth-container .card {
+      margin: 0 auto;
+    }
+
 .card-auth {
     background: #fff;
     border-radius: 12px;
@@ -712,6 +716,19 @@ button:hover {
     text-align: center;
 }
 
+/* Estilos para la tabla de asignación de usuario */
+.table-wrapper table {
+    width: 80%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    margin: 0 auto;
+}
+.table-wrapper th,
+.table-wrapper td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
 /* Form Card */
 .form-card {
     background-color: #FFFFFF; /* White background for contrast */
@@ -743,8 +760,28 @@ input[disabled] {
     gap: 10px; /* Increased gap for better spacing */
 }
 
+.form-section {
+      margin-bottom: 20px;
+}
+
+.form-title {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      font-weight: 500;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
 .form-group {
     margin-bottom: 2px;
+    flex: 1;
+    min-width: 150px
 }
 
 .form-group label {
@@ -868,6 +905,16 @@ input[disabled] {
     margin: 0 auto;
     display: block;
 }
+
+    /* Ajusta el ancho del botón de envío para que no sea tan ancho */
+.btn-primary.submit-btn {
+    max-width: 190px;  /* o el valor que desees */
+    min-width: 120px;
+    width: 100%;
+    margin: 20px auto 0;  /* lo centra horizontalmente */
+    display: block;
+}
+
 /* Top Banner */
 .top-banner {
     position: fixed;

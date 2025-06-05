@@ -15,122 +15,137 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="register-sensor-container" style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
-            <div class="form-container" style="flex: 1 1 350px; min-width: 320px;" >
-                <div class="form-card">
-                    <h1>Registrar Sensor</h1>
-                    <!-- Display ID -->
-                    <form id="registerSensorForm" class="form" action="/sensor" method="POST">
-                        <div class="form-group">
-                            <p class="sensor-id">ID: 456</p>
-                        </div>
-                        <div class="form-group">
-                            <label>Número de sensor</label>
-                            <input type="text" id="nroSensor" name="nroSensor" placeholder="Ingrese número" required>
-                        </div>
-                        <!-- Alias Field -->
-                        <div class="form-group">
-                            <label for="alias">Alias</label>
-                            <input type="text" id="alias" name="alias" placeholder="Ingrese un alias para el sensor" required>
-                        </div>
-                        <!-- Valor Min and Max Fields -->
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="valorMin">Valor Mínimo</label>
-                                <input type="number" id="valorMin" name="valorMin" placeholder="Ingrese el valor mínimo" required>
+        <div class="form-container"style="max-width: 900px; margin: 0 auto;">
+            <div class="auth-container"  style="max-width: 900px; margin: 0 auto;">
+                <div class="card"  style="max-width: 900px; margin: 0 auto;">
+                    <div class="card-body p-4">
+                        <!-- Título principal -->
+                        <h1 >Registrar Sensor</h1>
+                        <!-- Inicio del form único -->
+                        <form id="registerSensorForm" class="form" action="/sensor" method="POST">
+                            <!-- Row 1: ID | Número de sensor | Alias  -->
+                            <div class="form-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        
+                                        <p class="sensor-id" style=" font-size: 1.8rem;">ID: 456</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="nroSensor">Número de sensor</label>
+                                        <input type="text" id="nroSensor" name="nroSensor" placeholder="Ingrese número" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="alias">Alias</label>
+                                        <input type="text" id="alias" name="alias" placeholder="Ingrese alias" required>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="valorMax">Valor Máximo</label>
-                                <input type="number" id="valorMax" name="valorMax" placeholder="Ingrese el valor máximo" required>
+                            <!-- Row 2: Dirección | Ciudad -->
+                            <div class="form-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="direccion">Dirección</label>
+                                        <input type="text" id="direccion" name="direccion" placeholder="Ingrese dirección" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ciudad">Ciudad</label>
+                                        <input type="text" id="ciudad" name="ciudad" placeholder="Ciudad" required>
+                                    </div>
+                                    
+                                </div>
                             </div>
-                        </div>
-                        <!-- Dirección Field -->
-                        <div class="form-group">
-                            <label for="direccion">Dirección</label>
-                            <input type="text" id="direccion" name="direccion" placeholder="Ingrese la dirección" required>
-                        </div>
-                        <!-- País y Provincia Fields -->
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="pais">País</label>
-                                <select id="pais" name="pais" class="crs-country" data-region-id="provincia" required></select>
+                            <!-- Row 3:  País | Provincia | Código Postal -->
+                            <div class="form-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pais">País</label>
+                                        <select id="pais" name="pais" class="crs-country" data-region-id="provincia" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="provincia">Provincia</label>
+                                        <select id="provincia" name="provincia" class="crs-region" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cp">Código Postal</label>
+                                        <input type="text" id="cp" name="cp" placeholder="Código Postal" required>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="provincia">Provincia</label>
-                                <select id="provincia" name="provincia" class="crs-region" required></select>
+                            <!-- Row 4: Valor Mínimo | Valor Máximo | Estado -->
+                            <div class="form-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="valorMin">Valor Mínimo</label>
+                                        <input type="number" id="valorMin" name="valorMin" placeholder="Valor mínimo" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="valorMax">Valor Máximo</label>
+                                        <input type="number" id="valorMax" name="valorMax" placeholder="Valor máximo" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="estado">Estado</label>
+                                        <select id="estado" name="estado" class="estado-select" required>
+                                            <option value="active">Activo</option>
+                                            <option value="inactive">Inactivo</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="ciudad">Ciudad</label>
-                                <input type="text" id="ciudad" name="ciudad" placeholder="Ingrese la ciudad" required>
+                            <!-- Row 5: Título "Asignación de usuario" -->
+                            <div class="form-section">
+                                <h2 class="form-title" style="font-size: 1.2rem; margin-bottom: 10px;">Asignación de usuario</h2>
                             </div>
-                            <div class="form-group">
-                                <label for="cp">Código Postal</label>
-                                <input type="text" id="cp" name="cp" placeholder="Ingrese el código postal" required>
+                            <!-- Row 6: Tabla de asignación de usuario -->
+                            <div class="form-section table-wrapper">
+                                <table class="user-assignment-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Estado</th>
+                                            <th>Editar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>usuario1@email.com</td>
+                                            <td><span class="assignment-status">Activo</span></td>
+                                            <td>
+                                            <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
+                                                <span>✏️</span>
+                                            </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>usuario2@email.com</td>
+                                            <td><span class="assignment-status">Inactivo</span></td>
+                                            <td>
+                                                <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
+                                                    <span>✏️</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                        <!-- Estado Field -->
-                        <div class="form-group form-group-inline">
-                            <label for="estado">Estado</label>
-                            <select id="estado" name="estado" class="estado-select" required>
-                                <option value="active">Activo</option>
-                                <option value="inactive">Inactivo</option>
-                            </select>
-                        </div>
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn-primary">Registrar Sensor</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Asignación de usuario -->
-            <div class="form-container" style="flex: 1 1 350px; margin-left:5px ;margin-right: 30px; min-width: 320px; display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
-                <div class="form-card">
-                    <h2>Asignación de usuario</h2>
-                    <table class="user-assignment-table" style="width:100%; margin-bottom: 18px;">
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Estado</th>
-                                <th>Editar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>usuario1@email.com</td>
-                                <td>
-                                    <span class="assignment-status">Activo</span>
-                                </td>
-                                <td>
-                                    <button class="edit-assignment-btn"  title="Editar estado" onclick="editAssignment(this)">
-                                        <span>✏️</span>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>usuario2@email.com</td>
-                                <td>
-                                    <span class="assignment-status">Inactivo</span>
-                                </td>
-                                <td>
-                                    <button class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
-                                        <span>✏️</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div style="margin-top: 24px;">
-                        <label style="font-weight: 500; cursor: pointer;" onclick="toggleAddUserDropdown()">Añadir asignación de usuario</label>
-                        <div id="addUserDropdown" style="display:none; margin-top: 10px;">
-                            <select id="userSelect" multiple style="width: 100%; padding: 8px; border-radius: 6px;">
-                                <option value="nuevo1@email.com">nuevo1@email.com</option>
-                                <option value="nuevo2@email.com">nuevo2@email.com</option>
-                                <option value="nuevo3@email.com">nuevo3@email.com</option>
-                            </select>
-                            <button class="btn-primary" style="margin-top: 10px;" onclick="addUserAssignments()">Confirmar</button>
-                        </div>
+                            <!-- Row 7: Opción de añadir usuario -->
+                            <div class="form-section">
+                                <label style="font-weight: 500; cursor: pointer;" onclick="toggleAddUserDropdown()">Añadir asignación de usuario</label>
+                                <div id="addUserDropdown" style="display: none; margin-top: 10px;">
+                                    <select id="userSelect" multiple style="width: 100%; padding: 8px; border-radius: 6px;">
+                                        <option value="nuevo1@email.com">nuevo1@email.com</option>
+                                        <option value="nuevo2@email.com">nuevo2@email.com</option>
+                                        <option value="nuevo3@email.com">nuevo3@email.com</option>
+                                    </select>
+                                    <button type="button" class="btn-primary" style="margin-top: 10px;" onclick="addUserAssignments()">Confirmar</button>
+                                </div>
+                            </div>
+                            <!-- Row 7: Botón "Registrar Sensor" -->
+                            
+                            <button type="submit" class="btn-primary submit-btn">Registrar Sensor</button>
+                            
+                        </form>
+                    <!-- Fin del formulario -->
                     </div>
                 </div>
             </div>
@@ -148,10 +163,10 @@
                     e.preventDefault(); // Esto evita que se envíe "a la antigua"
 
                     const formData = new FormData(this);
-
+                    
                     const response = await fetch('/sensor', {
-                        method: 'POST',
-                        body: formData
+                    method: 'POST',
+                    body: formData
                     });
 
                     const result = await response.json();
@@ -161,7 +176,9 @@
                         this.reset();
                     } else {
                         alert('Error al registrar el sensor');
-                    }
+                    } 
+                   
+                    
                 });
             }
         });
