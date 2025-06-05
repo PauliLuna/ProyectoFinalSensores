@@ -446,11 +446,6 @@ html {
     margin-right: 0; /* Remove extra space for icons */
 }
 
-.sidebar.collapsed + .top-banner {
-    left: 80px; /* Collapsed sidebar width */
-    width: calc(100% - 80px); /* Adjust width when sidebar is collapsed */
-}
-
 .sidebar-title {
     text-align: center;
     font-size: 1.5rem;
@@ -565,10 +560,9 @@ html {
     margin-bottom: 20px;
 }
 
-.sidebar.collapsed ~ .main-content {
+.main-content.sidebar-collapsed {
     margin-left: 80px; /* Collapsed sidebar width */
     max-width: calc(100% - 80px); /* Dynamically adjust width when sidebar is collapsed */
-    padding: 80px 20px 20px; /* Ensure top padding remains consistent */
 }
 
 /* Statistics Cards */
@@ -885,6 +879,11 @@ input[disabled] {
     z-index: 1000; /* Ensure the top banner is above all other elements */
     overflow: hidden; /* Prevent content from overflowing */
     transition: left 0.3s ease, width 0.3s ease; /* Smooth transition for left and width */
+}
+
+.top-banner.sidebar-collapsed {
+    left: 80px;
+    width: calc(100% - 80px);
 }
 
 .client-info {
