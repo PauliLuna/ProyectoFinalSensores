@@ -114,6 +114,9 @@
                                             <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
                                                 <span>✏️</span>
                                             </button>
+                                            <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
+                                                <span>✖️</span>
+                                            </button>
                                             </td>
                                         </tr>
                                         <tr>
@@ -123,6 +126,9 @@
                                                 <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
                                                     <span>✏️</span>
                                                 </button>
+                                            <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
+                                                <span>✖️</span>
+                                            </button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -201,8 +207,11 @@
                     <td>${email}</td>
                     <td><span class="assignment-status">Activo</span></td>
                     <td>
-                        <button class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
+                        <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
                             <span>✏️</span>
+                        </button>
+                        <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
+                            <span>✖️</span>
                         </button>
                     </td>
                 `;
@@ -210,7 +219,15 @@
             });
             document.getElementById('addUserDropdown').style.display = 'none';
             select.selectedIndex = -1;
-            // Aquí deberías enviar los datos al backend
+            // Aquí deberías enviar los datos al backend si es necesario
+        }
+
+        function deleteAssignment(btn) {
+            // Elimina la fila correspondiente
+            const row = btn.closest('tr');
+            if (row) {
+                row.remove();
+            }
         }
 
         // Permitir editar el estado de asignación
