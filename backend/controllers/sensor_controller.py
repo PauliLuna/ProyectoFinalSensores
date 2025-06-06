@@ -2,6 +2,9 @@ from flask import request, jsonify
 from models.sensor import insert_sensor
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
+from controllers.asignaciones_controller import register_assignment
+import json
+
 
 def get_coordinates_from_address(address):
     """
@@ -44,4 +47,19 @@ def register_sensor(mongo):
     }
     # Puedes agregar validaciones aquí según lo necesario
     sensor_id = insert_sensor(mongo, sensor_data)
+
+    # Procesar el campo oculto 'assignments', se espera un JSON con un array de emails.
+    assignments_field = request.form.get('assignments')
+    if assignments_field:
+        try:
+            assignments = json.loads(assignments_field)  # Espera un array de objetos { idUsuario, permiso }
+        except Exception as e:
+            # Si no es JSON, fallback (no recomendado)
+            assignments = []
+        for assignment in assignments:
+            user_id = assignment.get("idUsuario")
+            permiso = assignment.get("permiso", "Read")
+            # Registrar la asignación usando el id y el permiso
+            register_assignment(mongo, sensor_id, user_id, permiso=permiso)
+
     return jsonify({"message": "Sensor registrado correctamente", "sensor_id": sensor_id}), 201

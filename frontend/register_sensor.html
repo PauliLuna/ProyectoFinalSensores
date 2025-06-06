@@ -102,35 +102,33 @@
                                     <thead>
                                         <tr>
                                             <th>Email</th>
+                                            <th>Permiso</th>
                                             <th>Estado</th>
                                             <th>Editar</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>usuario1@email.com</td>
-                                            <td><span class="assignment-status">Activo</span></td>
+                                        <!-- Las filas se llenan dinámicamente.Como ejemplo dejamos la siguiente fila -->
+                                        <tr data-user-id="607a1e45f3a2c123456789ab">
+                                            <td>usuario1@mail.com</td>
                                             <td>
-                                            <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
-                                                <span>✏️</span>
-                                            </button>
-                                            <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
-                                                <span>✖️</span>
-                                            </button>
+                                                <select class="assignment-permission">
+                                                    <option value="Read" selected>Read</option>
+                                                    <option value="Edit">Edit</option>
+                                                </select>
                                             </td>
-                                        </tr>
-                                        <tr>
-                                            <td>usuario2@email.com</td>
-                                            <td><span class="assignment-status">Inactivo</span></td>
+                                            <td><span class="assignment-status">Activo</span></td>
                                             <td>
                                                 <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
                                                     <span>✏️</span>
                                                 </button>
-                                            <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
-                                                <span>✖️</span>
-                                            </button>
+                                                <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
+                                                    <span>✖️</span>
+                                                </button>
                                             </td>
                                         </tr>
+                                        <!-- Otras filas se agregarán dinámicamente -->
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -139,9 +137,7 @@
                                 <label style="font-weight: 500; cursor: pointer;" onclick="toggleAddUserDropdown()">Añadir asignación de usuario</label>
                                 <div id="addUserDropdown" style="display: none; margin-top: 10px;">
                                     <select id="userSelect" multiple style="width: 100%; padding: 8px; border-radius: 6px;">
-                                        <option value="nuevo1@email.com">nuevo1@email.com</option>
-                                        <option value="nuevo2@email.com">nuevo2@email.com</option>
-                                        <option value="nuevo3@email.com">nuevo3@email.com</option>
+                                        <!-- Las opciones se llenan dinámicamente mediante fetch -->
                                     </select>
                                     <button type="button" class="btn-primary" style="margin-top: 10px;" onclick="addUserAssignments()">Confirmar</button>
                                 </div>
@@ -149,7 +145,7 @@
                             <!-- Row 7: Botón "Registrar Sensor" -->
                             
                             <button type="submit" class="btn-primary submit-btn">Registrar Sensor</button>
-                            
+                            <input type="hidden" id="assignments" name="assignments">
                         </form>
                     <!-- Fin del formulario -->
                     </div>
@@ -168,6 +164,17 @@
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault(); // Esto evita que se envíe "a la antigua"
 
+                     // Recopilar asignaciones: leer el id (desde el atributo data-user-id) y el permiso de cada fila
+                    const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => {
+                        const idUsuario = row.getAttribute("data-user-id");
+                        const permiso = row.querySelector('.assignment-permission').value;
+                        return { idUsuario, permiso };
+                    });
+                    // Asignar al input oculto en formato JSON:
+                    document.getElementById('assignments').value = JSON.stringify(assignments);
+
+                    // Enviar el formulario usando fetch
+                    // Crear un objeto FormData para enviar los datos del formulario
                     const formData = new FormData(this);
                     
                     const response = await fetch('/sensor', {
@@ -198,13 +205,24 @@
         // Simulación de añadir usuarios (debería hacerse con fetch al backend)
         function addUserAssignments() {
             const select = document.getElementById('userSelect');
-            const selected = Array.from(select.selectedOptions).map(opt => opt.value);
+            const selected = Array.from(select.selectedOptions).map(opt => {
+                // opt.value es ahora el id del usuario y textContent es el email
+                return { id: opt.value, email: opt.textContent };
+            });
             if (selected.length === 0) return;
             const tbody = document.querySelector('.user-assignment-table tbody');
-            selected.forEach(email => {
+            selected.forEach(user => {
                 const tr = document.createElement('tr');
+                // Usamos un atributo data-user-id para almacenar el id del usuario
+                tr.setAttribute("data-user-id", user.id);
                 tr.innerHTML = `
-                    <td>${email}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <select class="assignment-permission">
+                            <option value="Read" selected>Read</option>
+                            <option value="Edit">Edit</option>
+                        </select>
+                    </td>
                     <td><span class="assignment-status">Activo</span></td>
                     <td>
                         <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
@@ -238,6 +256,30 @@
             td.querySelector('.assignment-status').textContent = newState;
             // Aquí deberías enviar el cambio de estado al backend
         }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/usuarios');
+                if(response.ok){
+                    const usuarios = await response.json();
+                    const select = document.getElementById('userSelect');
+                    // Vaciar el select por si tiene datos preexistentes
+                    select.innerHTML = "";
+                    // Por cada usuario, creamos una opción con value = id y texto = email
+                    usuarios.forEach(usuario => {
+                        const option = document.createElement('option');
+                        option.value = usuario._id;
+                        option.textContent = usuario.email;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('Error al obtener usuarios.');
+                }
+            } catch (error) {
+                console.error('Error en fetch /usuarios:', error);
+            }
+        });
     </script>
     <script src="scripts/utils.js"></script>
 </body>
