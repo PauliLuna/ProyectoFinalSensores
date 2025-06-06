@@ -1,8 +1,9 @@
+from bson import ObjectId
 from flask import request, jsonify
 from models.sensor import insert_sensor
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
-from controllers.asignaciones_controller import register_assignment
+from controllers.asignaciones_controller import register_assignment, update_assignment
 import json
 
 
@@ -63,3 +64,52 @@ def register_sensor(mongo):
             register_assignment(mongo, sensor_id, user_id, permiso=permiso)
 
     return jsonify({"message": "Sensor registrado correctamente", "sensor_id": sensor_id}), 201
+
+def update_sensor(mongo, sensor_id):
+    """
+    Actualiza los datos de un sensor existente y sus asignaciones.
+    Se asume que sensor_id se obtiene del formulario.
+    """
+    # Construimos la dirección completa
+    full_address = f"{request.form.get('direccion')}, {request.form.get('ciudad')}, {request.form.get('provincia')}, {request.form.get('pais')}"
+    lat, lon = get_coordinates_from_address(full_address)
+
+    sensor_data = {
+         "alias": request.form.get('alias'),
+         "valorMin": request.form.get('valorMin'),
+         "valorMax": request.form.get('valorMax'),
+         "direccion": request.form.get('direccion'),
+         "pais": request.form.get('pais'),
+         "provincia": request.form.get('provincia'),
+         "ciudad": request.form.get('ciudad'),
+         "cp": request.form.get('cp'),
+         "estado": request.form.get('estado'), 
+         "latitud": lat,
+         "longitud": lon
+    }
+    # Actualizamos el sensor existente:
+    result = mongo.db.sensors.update_one(
+        {"_id": ObjectId(sensor_id)},
+        {"$set": sensor_data}
+    )
+    
+    # Procesar asignaciones (similar a lo que hiciste en register_sensor)
+    assignments_field = request.form.get('assignments')
+    if assignments_field:
+        try:
+            assignments = json.loads(assignments_field)  # Espera array de objetos { idUsuario, permiso }
+        except Exception as e:
+            assignments = []
+        for assignment in assignments:
+            user_id = assignment.get("idUsuario")
+            permiso = assignment.get("permiso", "Read")
+            # Aquí tendrías que decidir si actualizar la asignación existente o crear una nueva.
+            # Por ejemplo, puedes buscar una asignación para ese sensor y usuario y, si existe, actualizarla,
+            # de lo contrario, crearla.
+            existing = mongo.db.asignaciones.find_one({"idSensor": sensor_id, "idUsuario": user_id})
+            if existing:
+                update_assignment(mongo, existing["_id"], permiso=permiso)
+            else:
+                register_assignment(mongo, sensor_id, user_id, permiso=permiso)
+
+    return jsonify({"message": "Sensor actualizado correctamente", "sensor_id": sensor_id}), 200
