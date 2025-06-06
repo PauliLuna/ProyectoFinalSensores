@@ -723,6 +723,26 @@ button:hover {
     padding: 10px;
 }
 
+/* Estilos para el select de asignación de permiso */
+.assignment-permission {
+    width: 100%;
+    padding: 10px 10px;
+    border: 1px solid #A8DADC; 
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #fff;
+    color: #1D3557;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.assignment-permission:focus {
+    border-color: #457B9D;
+    outline: none;
+}
+
 /* Form Card */
 .form-card {
     background-color: #FFFFFF; /* White background for contrast */
