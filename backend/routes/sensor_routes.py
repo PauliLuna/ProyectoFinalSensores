@@ -30,5 +30,5 @@ def get_sensor(sensor_id):
 
 @sensor_bp.route('/sensor/<sensor_id>', methods=['PUT'])
 def update_sensor_route(sensor_id):
-    mongo = current_app.mongo
-    return update_sensor(mongo, sensor_id)
+   mongo = current_app.mongo
+   return update_sensor(mongo, sensor_id)
