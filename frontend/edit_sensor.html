@@ -222,7 +222,13 @@
             document.getElementById('direccion').value = sensor.direccion || "";
             document.getElementById('ciudad').value = sensor.ciudad || "";
             document.getElementById('pais').value = sensor.pais || "";
-            document.getElementById('provincia').value = sensor.provincia || "";
+            // Dispara el evento de cambio para que CRS cargue las provincias
+            document.getElementById('pais').dispatchEvent(new Event('change'));
+
+            // Espera a que el dropdown de provincia se llene (puede requerir un pequeño delay)
+            setTimeout(() => {
+                document.getElementById('provincia').value = sensor.provincia || "";
+            }, 200);
             document.getElementById('cp').value = sensor.cp || "";
             document.getElementById('valorMin').value = sensor.valorMin || "";
             document.getElementById('valorMax').value = sensor.valorMax || "";
