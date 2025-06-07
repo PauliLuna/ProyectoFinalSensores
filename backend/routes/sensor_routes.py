@@ -25,8 +25,15 @@ def get_sensor(sensor_id):
         sensor = mongo.db.sensors.find_one({"nroSensor": int(sensor_id)})
         if not sensor:
             return jsonify({"error": "Sensor no encontrado"}), 404
+        # Serializar ObjectId en el sensor
+        if '_id' in sensor:
+            sensor['_id'] = str(sensor['_id'])
         # También recuperar las asignaciones de este sensor
         assignments = list(mongo.db.asignaciones.find({"idSensor": sensor["nroSensor"]}))
+        # Serializar ObjectId en cada asignación
+        for assignment in assignments:
+            if '_id' in assignment:
+                assignment['_id'] = str(assignment['_id'])
         sensor["assignments"] = assignments
         return jsonify(sensor), 200
     except Exception as e:
