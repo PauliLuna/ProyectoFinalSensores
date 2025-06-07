@@ -136,3 +136,34 @@ def update_sensor(mongo, sensor_id):
                 register_assignment(mongo, sensor_id, user_id, permiso=permiso)
 
     return jsonify({"message": "Sensor actualizado correctamente", "sensor_id": sensor_id}), 200
+
+def get_all_sensors(mongo):
+    sensores = list(mongo.db.sensors.find())
+    result = []
+    for sensor in sensores:
+        nro_sensor = sensor.get('nroSensor')
+        nro_sensor_incremental = sensor.get('nroSensorIncremental')
+        # Usar el incremental para el join si corresponde
+        last_med = mongo.db.mediciones.find_one(
+            {"idSensor": nro_sensor},
+            sort=[("fechaHoraMed", -1)]
+        )
+        alias = sensor.get('alias', '')
+        estado = "ONLINE" if sensor.get('estado') == "active" else "OFFLINE"
+        temp_interna = last_med.get('valorTempInt') if last_med else None
+        temp_externa = last_med.get('valorTempExt') if last_med else None
+        valor_min = sensor.get('valorMin')
+        valor_max = sensor.get('valorMax')
+        en_rango = (
+            temp_interna is not None and valor_min is not None and valor_max is not None
+            and valor_min <= temp_interna <= valor_max
+        )
+        result.append({
+            "id": str(nro_sensor_incremental),
+            "alias": alias,
+            "estado": estado,
+            "temperaturaInterna": temp_interna,
+            "temperaturaExterna": temp_externa,
+            "enRango": en_rango
+        })
+    return result
