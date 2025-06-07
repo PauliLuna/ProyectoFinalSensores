@@ -1,4 +1,3 @@
-#from bson import ObjectId
 from flask import Blueprint, current_app, jsonify
 from controllers.sensor_controller import register_sensor, update_sensor, get_all_sensors
 
