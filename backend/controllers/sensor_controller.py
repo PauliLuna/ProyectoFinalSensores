@@ -33,6 +33,11 @@ def register_sensor(mongo):
     lat, lon = get_coordinates_from_address(full_address)
 
     try:
+        nro_sensor = int(request.form.get('nroSensor')) if request.form.get('nroSensor') else None
+    except ValueError:
+        nro_sensor = None
+
+    try:
         valor_min = int(request.form.get('valorMin')) if request.form.get('valorMin') else None
     except ValueError:
         valor_min = None
@@ -42,7 +47,7 @@ def register_sensor(mongo):
         valor_max = None
 
     sensor_data = {
-         "nroSensor": request.form.get('nroSensor'),
+         "nroSensor": nro_sensor,
          "alias": request.form.get('alias'),
          "valorMin": valor_min,
          "valorMax": valor_max,

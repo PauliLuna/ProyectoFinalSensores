@@ -19,56 +19,8 @@
             <input type="text" id="sensorInput" placeholder="Buscar sensores..." onkeyup="filterSensors()">
         </div>
 
-        <div class="sensor-grid" id="sensorGrid">
-            <div class="sensor-card" onclick="redirectToDashboard(this)"
-            data-alias="Cámara de Frío - Sector Bebidas" data-estado="ONLINE"
-            data-alarma="En rango">
-                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">
-                <div class="sensor-status status-online">● ONLINE</div>
-                <div class="sensor-info">
-                    <strong>Cámara de Frío - Sector Bebidas</strong>
-                    <br>Temperatura Interna: 22.19 °C<br>
-                    Temperatura Externa: 30.0 °C<br><br>
-                    <span style="color:#10b981; font-weight: bold">En rango</span>
-                </div>
-                <button class="edit-sensor-btn" title="Editar sensor"
-                    onclick="event.stopPropagation(); window.location.href='edit_sensor.html';">
-                    <img src="assets/edit-pencil.png" alt="Editar" style="width:30px; height:30px;">
-                </button>
-            </div>
-            <div class="sensor-card" onclick="redirectToDashboard(this)"
-            data-alias="Cámara de Frío - Sector Carnes" data-estado="ONLINE"
-            data-alarma="Fuera de rango">
-                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">
-                <div class="sensor-status status-online">● ONLINE</div>
-                <div class="sensor-info">
-                    <strong>Cámara de Frío - Sector Carnes</strong>
-                    <br>Temperatura Interna: 20.00 °C<br>
-                    Temperatura Externa: 25.05 °C<br><br>
-                    <span style="color:#FF6F5E; font-weight: bold">Fuera de rango</span>
-                </div>
-                <button class="edit-sensor-btn" title="Editar sensor"
-                    onclick="event.stopPropagation(); window.location.href='edit_sensor.html';">
-                    <img src="assets/edit-pencil.png" alt="Editar" style="width:30px; height:30px;">
-                </button>
-            </div>
-            <div class="sensor-card" onclick="redirectToDashboard(this)"
-            data-alias="Cámara de Frío - Sector Helados" data-estado="ONLINE"
-            data-alarma="En rango">
-                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">
-                <div class="sensor-status status-offline">● OFFLINE</div>
-                <div class="sensor-info">
-                    <strong>Cámara de Frío - Sector Helados</strong>
-                    <br>Temperatura Interna: 25.19 °C<br>
-                    Temperatura Externa: 28.82 °C<br><br>
-                    <span style="color:#10b981; font-weight: bold">En rango</span>
-                </div>
-                <button class="edit-sensor-btn" title="Editar sensor"
-                    onclick="event.stopPropagation(); window.location.href='edit_sensor.html';">
-                    <img src="assets/edit-pencil.png" alt="Editar" style="width:30px; height:30px;">
-                </button>
-            </div>
-        </div>
+        <div class="sensor-grid" id="sensorGrid"></div>
+
     </div>
     <script>
         function filterSensors() {
@@ -89,5 +41,42 @@
         }
     </script>
     <script src="scripts/utils.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const grid = document.getElementById('sensorGrid');
+        grid.innerHTML = '<p>Cargando sensores...</p>';
+        try {
+            const response = await fetch('/sensores');
+            const sensores = await response.json();
+            grid.innerHTML = '';
+            sensores.forEach(sensor => {
+                const card = document.createElement('div');
+                card.className = 'sensor-card';
+                card.setAttribute('onclick', 'redirectToDashboard(this)');
+                card.setAttribute('data-alias', sensor.alias);
+                card.setAttribute('data-estado', sensor.estado);
+                card.setAttribute('data-alarma', sensor.enRango ? 'En rango' : 'Fuera de rango');
+                card.innerHTML = `
+                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">    
+                    <div class="sensor-status ${sensor.estado === 'ONLINE' ? 'status-online' : 'status-offline'}">● ${sensor.estado}</div>
+                    <div class="sensor-info">
+                        <strong>${sensor.alias}</strong><br>
+                        Temperatura Interna: ${sensor.temperaturaInterna !== null ? sensor.temperaturaInterna + ' °C' : 'Sin datos'}<br>
+                        Temperatura Externa: ${sensor.temperaturaExterna !== null ? sensor.temperaturaExterna + ' °C' : 'Sin datos'}<br><br>
+                        <span style="color:${sensor.enRango ? '#10b981' : '#FF6F5E'}; font-weight: bold">${sensor.enRango ? 'En rango' : 'Fuera de rango'}</span>
+                    </div>
+                    <button class="edit-sensor-btn" title="Editar sensor"
+                        onclick="event.stopPropagation(); window.location.href='edit_sensor.html?id=${sensor.id}';">
+                        <img src="assets/edit-pencil.png" alt="Editar" style="width:30px; height:30px;">
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        } catch (error) {
+            grid.innerHTML = '<p>Error al cargar sensores.</p>';
+            console.error(error);
+        }
+    });
+    </script>
 </body>
 </html>
