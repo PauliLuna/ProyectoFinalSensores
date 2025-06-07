@@ -44,5 +44,9 @@ app.register_blueprint(sensor_bp)
 from routes.usuario_routes import usuario_bp
 app.register_blueprint(usuario_bp)
 
+# Registrar empresa blueprint
+from backend.routes.empresa_routes import empresa_bp
+app.register_blueprint(empresa_bp)
+
 if __name__ == '__main__':
     app.run(debug=True)

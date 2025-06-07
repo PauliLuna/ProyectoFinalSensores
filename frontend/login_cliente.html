@@ -97,23 +97,66 @@
     </div>
             
     <script src="https://unpkg.com/country-region-selector@latest/dist/crs.min.js"></script>
+    
     <script>
-
         // JavaScript para manejar el envío del formulario
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('initialRegistrationForm');
-            form.addEventListener('submit', function (event) {
-                event.preventDefault(); // Evita el envío por defecto del formulario
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                // Validar contraseñas
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
-
                 if (password !== confirmPassword) {
                     alert('Las contraseñas no coinciden. Por favor, inténtelo de nuevo.');
                     return;
                 }
 
-                // Redirige a la página home.html si las contraseñas coinciden
-                window.location.href = 'home.html';
+                // Preparar FormData para empresa y usuario
+                const companyData = new FormData();
+                companyData.append('idCode', form.idCode.value);
+                companyData.append('companyName', form.companyName.value);
+                companyData.append('cuil', form.cuil.value);
+                companyData.append('address', form.address.value);
+                companyData.append('pais', form.pais.value);
+                companyData.append('provincia', form.provincia.value);
+                companyData.append('ciudad', form.ciudad.value);
+                companyData.append('cp', form.cp.value);
+
+                const userData = new FormData();
+                userData.append('idCode', form.idCode.value);
+                userData.append('email', form.email.value);
+                userData.append('phone', form.phone.value);
+                userData.append('username', form.username.value);
+                userData.append('password', form.password.value);
+
+                try {
+                    // Usar URL con barra final para evitar problemas
+                    const responseEmpresa = await fetch('/empresa/', {
+                        method: 'POST',
+                        body: companyData
+                    });
+                    const resultEmpresa = await responseEmpresa.json();
+
+                    const responseUsuario = await fetch('/usuario', {
+                        method: 'POST',
+                        body: userData
+                    });
+                    const resultUsuario = await responseUsuario.json();
+
+                    if (responseEmpresa.ok && responseUsuario.ok) {
+                        alert("Registro completado correctamente");
+                        form.reset();
+                        window.location.href = "home.html";
+                    } else {
+                        alert("Error en el registro. " +
+                            (resultEmpresa.error || resultUsuario.error || ""));
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error de conexión con el servidor.");
+                }
             });
         });
 
