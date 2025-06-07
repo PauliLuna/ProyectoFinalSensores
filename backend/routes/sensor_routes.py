@@ -21,17 +21,17 @@ def register_sensor_route():
 @sensor_bp.route('/sensor/<sensor_id>', methods=['GET'])
 def get_sensor(sensor_id):
     mongo = current_app.mongo
-    sensor = mongo.db.sensors.find_one({"nroSensor": int(sensor_id)})
-    if not sensor:
-        return jsonify({"error": "Sensor no encontrado"}), 404
-    # Convertir _id a string y demás ajustes
-    sensor["nroSensor"] = str(sensor["nroSensor"])
-    # También recuperar las asignaciones de este sensor
-    assignments = list(mongo.db.asignaciones.find({"idSensor": sensor["nroSensor"]}))
-    for a in assignments:
-        a["idSensor"] = str(a["idSensor"])
-    sensor["assignments"] = assignments
-    return jsonify(sensor), 200
+    try:
+        sensor = mongo.db.sensors.find_one({"nroSensor": int(sensor_id)})
+        if not sensor:
+            return jsonify({"error": "Sensor no encontrado"}), 404
+        # También recuperar las asignaciones de este sensor
+        assignments = list(mongo.db.asignaciones.find({"idSensor": sensor["nroSensor"]}))
+        sensor["assignments"] = assignments
+        return jsonify(sensor), 200
+    except Exception as e:
+        print(f"Error en get_sensor: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @sensor_bp.route('/sensor/<sensor_id>', methods=['PUT'])
 def update_sensor_route(sensor_id):
