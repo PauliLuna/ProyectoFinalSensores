@@ -32,11 +32,20 @@ def register_sensor(mongo):
 
     lat, lon = get_coordinates_from_address(full_address)
 
+    try:
+        valor_min = int(request.form.get('valorMin')) if request.form.get('valorMin') else None
+    except ValueError:
+        valor_min = None
+    try:
+        valor_max = int(request.form.get('valorMax')) if request.form.get('valorMax') else None
+    except ValueError:
+        valor_max = None
+
     sensor_data = {
          "nroSensor": request.form.get('nroSensor'),
          "alias": request.form.get('alias'),
-         "valorMin": request.form.get('valorMin'),
-         "valorMax": request.form.get('valorMax'),
+         "valorMin": valor_min,
+         "valorMax": valor_max,
          "direccion": request.form.get('direccion'),
          "pais": request.form.get('pais'),
          "provincia": request.form.get('provincia'),
@@ -74,10 +83,19 @@ def update_sensor(mongo, sensor_id):
     full_address = f"{request.form.get('direccion')}, {request.form.get('ciudad')}, {request.form.get('provincia')}, {request.form.get('pais')}"
     lat, lon = get_coordinates_from_address(full_address)
 
+    try:
+        valor_min = int(request.form.get('valorMin')) if request.form.get('valorMin') else None
+    except ValueError:
+        valor_min = None
+    try:
+        valor_max = int(request.form.get('valorMax')) if request.form.get('valorMax') else None
+    except ValueError:
+        valor_max = None
+
     sensor_data = {
          "alias": request.form.get('alias'),
-         "valorMin": request.form.get('valorMin'),
-         "valorMax": request.form.get('valorMax'),
+         "valorMin": valor_min,
+         "valorMax": valor_max,
          "direccion": request.form.get('direccion'),
          "pais": request.form.get('pais'),
          "provincia": request.form.get('provincia'),
