@@ -89,6 +89,11 @@ def update_sensor(mongo, sensor_id):
     lat, lon = get_coordinates_from_address(full_address)
 
     try:
+        sensor_id = int(sensor_id)  # Solo si en la base es int
+    except ValueError:
+        pass  # Si no se puede convertir, queda como string
+
+    try:
         valor_min = int(request.form.get('valorMin')) if request.form.get('valorMin') else None
     except ValueError:
         valor_min = None
@@ -112,7 +117,7 @@ def update_sensor(mongo, sensor_id):
     }
     # Actualizamos el sensor existente:
     result = mongo.db.sensors.update_one(
-        {"_id": ObjectId(sensor_id)},
+        {"nroSensor": sensor_id},
         {"$set": sensor_data}
     )
     
@@ -142,7 +147,6 @@ def get_all_sensors(mongo):
     result = []
     for sensor in sensores:
         nro_sensor = sensor.get('nroSensor')
-        nro_sensor_incremental = sensor.get('nroSensorIncremental')
         # Usar el incremental para el join si corresponde
         last_med = mongo.db.mediciones.find_one(
             {"idSensor": nro_sensor},
@@ -159,7 +163,7 @@ def get_all_sensors(mongo):
             and valor_min <= temp_interna <= valor_max
         )
         result.append({
-            "id": str(nro_sensor_incremental),
+            "nroSensor": nro_sensor,
             "alias": alias,
             "estado": estado,
             "temperaturaInterna": temp_interna,

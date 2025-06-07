@@ -192,18 +192,19 @@
         }
     }
     </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Obtener el sensor_id de la URL, por ejemplo: ?id=12345
-        //const params = new URLSearchParams(window.location.search);
-        //const sensorId = params.get('id');
 
-        const sensorId = '68423d83ab0b6dee3c6089c4';
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+  
+        // Obtener el sensor_id de la URL, por ejemplo: ?id=12345
+        const params = new URLSearchParams(window.location.search);
+        const sensorId = params.get('id');
+        
         if (!sensorId) {
             console.error("No se encontró sensor ID en la URL");
             return;
         }
-         // Guardar sensorId en el input oculto
+        // Guardar sensorId en el input oculto
         document.getElementById('sensorId').value = sensorId;
         // Actualiza el display si lo usas
         document.getElementById('sensorIdDisplay').textContent = sensorId;
@@ -220,8 +221,6 @@
             document.getElementById('alias').value = sensor.alias || "";
             document.getElementById('direccion').value = sensor.direccion || "";
             document.getElementById('ciudad').value = sensor.ciudad || "";
-            // Para los selects de País y Provincia, asumiendo que CRS (country-region-selector) los carga,
-            // puedes esperar o reestablecer manualmente el valor:
             document.getElementById('pais').value = sensor.pais || "";
             document.getElementById('provincia').value = sensor.provincia || "";
             document.getElementById('cp').value = sensor.cp || "";
@@ -234,10 +233,6 @@
             tbody.innerHTML = ""; // Vaciar tabla
             if(sensor.assignments && sensor.assignments.length){
                 sensor.assignments.forEach(assignment => {
-                    // Opcional: buscar el email del usuario mediante otra consulta o si ya viene incluido en el assignment.
-                    // Suponemos que assignment tiene idUsuario y permiso y estadoAlerta, etc.
-                    // Aquí, para simplificar, solo mostramos el idUsuario, pero lo ideal es mostrar el email.
-                    // Puedes tener un endpoint o cargar la lista completa de usuarios y hacer el match.
                     const tr = document.createElement('tr');
                     tr.setAttribute("data-user-id", assignment.idUsuario);
                     tr.innerHTML = `
@@ -264,10 +259,12 @@
         } catch (error) {
             console.error("Error en la carga de datos del sensor:", error);
         }
-
+    
         // Manejo del envío del formulario para actualizar el sensor (método PUT)
         document.getElementById('editSensorForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            // Copiar el nroSensor (aunque esté disabled) al campo oculto sensorId
+            document.getElementById('sensorId').value = document.getElementById('nroSensor').value;
             const sensorId = document.getElementById('sensorId').value;
             const formData = new FormData(this);
             
@@ -293,11 +290,11 @@
             } catch (error) {
                 console.error("Error en la actualización del sensor:", error);
             }
-        }
-    )
+        });
     });
 
     </script>
+
     <script src="scripts/utils.js"></script>
 </body>
 </html>
