@@ -132,8 +132,7 @@
                 userData.append('password', form.password.value);
 
                 try {
-                    // Usar URL con barra final para evitar problemas
-                    const responseEmpresa = await fetch('/empresa/', {
+                    const responseEmpresa = await fetch('/empresa', {
                         method: 'POST',
                         body: companyData
                     });
