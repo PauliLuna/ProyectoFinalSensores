@@ -20,8 +20,8 @@
                 <form id="initialRegistrationForm" class="form">
                     <!-- Código de Identificación -->
                     <div class="form-group mb-3">
-                        <label for="idCode">Código de Identificación</label>
-                        <input type="text" id="idCode" class="form-control" name="idCode" placeholder="Ingrese el código de identificación" required>
+                        <label for="codeInvitation">Código de Identificación</label>
+                        <input type="text" id="codeInvitation" class="form-control" name="codeInvitation" placeholder="Ingrese el código de identificación" required>
                     </div>
 
                     <!-- Datos de la Empresa -->
@@ -115,7 +115,7 @@
 
                 // Preparar FormData para empresa y usuario
                 const companyData = new FormData();
-                companyData.append('idCode', form.idCode.value);
+                companyData.append('codeInvitation', form.codeInvitation.value);
                 companyData.append('companyName', form.companyName.value);
                 companyData.append('cuil', form.cuil.value);
                 companyData.append('address', form.address.value);
@@ -125,7 +125,7 @@
                 companyData.append('cp', form.cp.value);
 
                 const userData = new FormData();
-                userData.append('idCode', form.idCode.value);
+                userData.append('codeInvitation', form.codeInvitation.value);
                 userData.append('email', form.email.value);
                 userData.append('phone', form.phone.value);
                 userData.append('username', form.username.value);

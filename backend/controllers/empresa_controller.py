@@ -9,7 +9,7 @@ def register_empresa(mongo):
     """
 
     empresa_data = {
-        "idCode": request.form.get('idCode'),
+        "codeInvitation": request.form.get('codeInvitation'),
         "companyName": request.form.get('companyName'),
         "cuil": request.form.get('cuil'),
         "address": request.form.get('address'),
