@@ -18,7 +18,7 @@
         <div class="form-container">
             <div class="form-card">
                 <h1>Invitar Usuario</h1>
-                <form id="inviteForm" action="/register" method="POST" class="form">
+                <form id="inviteForm" action="/invite_user" method="POST" class="form">
                 <div class="form-group">
                     <label for="mail">Correo Electrónico</label>
                     <input type="email" id="mail" name="mail" placeholder="Ingrese su correo electrónico" required>
@@ -38,27 +38,40 @@
     </div>
     
     <script>
-        // JavaScript to handle form submission and show success modal
-        document.getElementById('inviteForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('mail').value;
-            document.getElementById('successMessage').textContent =
-                `Se mandó un correo de invitación a ${email}`;
-            document.getElementById('successModal').style.display = 'block';
-        });
-
-        document.getElementById('closeModal').onclick = function() {
-            document.getElementById('successModal').style.display = 'none';
-            location.reload();
-        };
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('successModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-                location.reload();
+    document.getElementById('inviteForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        try {
+            const response = await fetch('/invite_user', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('successMessage').textContent =
+                    `Se mandó un correo de invitación a ${formData.get('mail')}`;
+                document.getElementById('successModal').style.display = 'block';
+            } else {
+                alert(result.error || "Error al invitar usuario");
             }
-        };
+        } catch (error) {
+            alert("Error de conexión con el servidor.");
+        }
+    });
+
+    // Cerrar el modal de éxito
+    document.getElementById('closeModal').onclick = function() {
+        document.getElementById('successModal').style.display = 'none';
+        location.reload();
+    };
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('successModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            location.reload();
+        }
+    };
     </script>
     <script src="scripts/utils.js"></script>
 </body>
