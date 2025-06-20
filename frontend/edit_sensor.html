@@ -285,19 +285,15 @@
             });
             formData.append('assignments', JSON.stringify(assignments));
             
-            try {
-                const response = await fetch(`/sensor/${sensorId}`, {
-                    method: 'PUT',
-                    body: formData
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    alert("Sensor actualizado correctamente");
-                } else {
-                    alert("Error al actualizar el sensor");
-                }
-            } catch (error) {
-                console.error("Error en la actualización del sensor:", error);
+            const response = await fetch(`/sensor/${sensorId}`, {
+                method: 'PUT',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert("Sensor actualizado correctamente");
+            } else {
+                alert(result.message);
             }
         });
     });
