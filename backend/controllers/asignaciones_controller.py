@@ -2,7 +2,7 @@ import datetime
 from models.asignaciones import insert_assignment
 from bson import ObjectId
 
-def register_assignment(mongo, sensor_id, idUsuario, permiso="Read"):
+def register_assignment(mongo, sensor_id, idUsuario, permiso="Read", estadoAsignacion=None):
     """
     Inserta una asignación para relacionar un sensor y un usuario.
     Los datos incluyen:
@@ -23,7 +23,7 @@ def register_assignment(mongo, sensor_id, idUsuario, permiso="Read"):
          "fechaModificacion": now,
          "modoNotificacion": "mail",
          "estadoAlerta": True,
-         "estadoAsignacion": "Activo",
+         "estadoAsignacion": estadoAsignacion,
          "permiso": permiso
     }
     assignment_id = insert_assignment(mongo, assignment_data)

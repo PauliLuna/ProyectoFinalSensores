@@ -77,8 +77,9 @@ def register_sensor(mongo):
         for assignment in assignments:
             user_id = assignment.get("idUsuario")
             permiso = assignment.get("permiso", "Read")
+            estado = assignment.get("estadoAsignacion")
             # Registrar la asignación usando el id y el permiso
-            register_assignment(mongo, sensor_data["nroSensor"], user_id, permiso=permiso)
+            register_assignment(mongo, sensor_data["nroSensor"], user_id, permiso=permiso, estadoAsignacion=estado)
 
     return jsonify({"message": "Sensor registrado correctamente", "sensor_id": sensor_data["nroSensor"]}), 201
 
@@ -137,14 +138,15 @@ def update_sensor(mongo, sensor_id):
         for assignment in assignments:
             user_id = assignment.get("idUsuario")
             permiso = assignment.get("permiso", "Read")
+            estado = assignment.get("estadoAsignacion")
             # Aquí tendrías que decidir si actualizar la asignación existente o crear una nueva.
             # Por ejemplo, puedes buscar una asignación para ese sensor y usuario y, si existe, actualizarla,
             # de lo contrario, crearla.
             existing = mongo.db.asignaciones.find_one({"idSensor": sensor_id, "idUsuario": user_id})
             if existing:
-                update_assignment(mongo, existing["_id"], permiso=permiso)
+                update_assignment(mongo, existing["_id"], permiso=permiso, estadoAsignacion=estado)
             else:
-                register_assignment(mongo, sensor_id, user_id, permiso=permiso)
+                register_assignment(mongo, sensor_id, user_id, permiso=permiso, estadoAsignacion=estado)
 
     return jsonify({"message": "Sensor actualizado correctamente", "sensor_id": sensor_id}), 200
 

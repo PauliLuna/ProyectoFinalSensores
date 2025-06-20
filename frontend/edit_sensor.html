@@ -254,7 +254,7 @@
                                 <option value="Edit" ${assignment.permiso === "Edit" ? "selected" : ""}>Edit</option>
                             </select>
                         </td>
-                        <td><span class="assignment-status">${assignment.estadoAlerta ? "Activo" : "Inactivo"}</span></td>
+                        <td><span class="assignment-status">${assignment.estadoAsignacion}</span></td>
                         <td>
                             <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
                                 <span>✏️</span>
@@ -270,6 +270,27 @@
         } catch (error) {
             console.error("Error en la carga de datos del sensor:", error);
         }
+
+        // Cargar los usuarios disponibles para asignar
+        try {
+            const response = await fetch('/usuarios');
+            if(response.ok){
+                const usuarios = await response.json();
+                const select = document.getElementById('userSelect');
+                select.innerHTML = "";
+                usuarios.forEach(usuario => {
+                    const option = document.createElement('option');
+                    option.value = usuario._id;
+                    option.textContent = usuario.email;
+                    select.appendChild(option);
+                });
+            } else {
+                console.error('Error al obtener usuarios.');
+            }
+        } catch (error) {
+            console.error('Error en fetch /usuarios:', error);
+        }
+
     
         // Manejo del envío del formulario para actualizar el sensor (método PUT)
         document.getElementById('editSensorForm').addEventListener('submit', async function(e) {
@@ -281,7 +302,8 @@
             const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => {
                 const idUsuario = row.getAttribute("data-user-id") || row.querySelector('td').textContent.trim();
                 const permiso = row.querySelector('.assignment-permission').value;
-                return { idUsuario, permiso };
+                const estadoAsignacion = row.querySelector('.assignment-status').textContent;
+                return { idUsuario, permiso, estadoAsignacion };
             });
             formData.append('assignments', JSON.stringify(assignments));
             
