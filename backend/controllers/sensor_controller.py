@@ -31,6 +31,8 @@ def register_sensor(mongo):
     full_address = f"{request.form.get('direccion')}, {request.form.get('ciudad')}, {request.form.get('provincia')}, {request.form.get('pais')}"
 
     lat, lon = get_coordinates_from_address(full_address)
+    if lat is None or lon is None:
+        return jsonify({"message": "La dirección ingresada no es válida o no se pudo encontrar en el mapa. Por favor, verifica que todos los campos de la dirección sean correctos."}), 400
 
     try:
         nro_sensor = int(request.form.get('nroSensor')) if request.form.get('nroSensor') else None
@@ -88,6 +90,8 @@ def update_sensor(mongo, sensor_id):
     # Construimos la dirección completa
     full_address = f"{request.form.get('direccion')}, {request.form.get('ciudad')}, {request.form.get('provincia')}, {request.form.get('pais')}"
     lat, lon = get_coordinates_from_address(full_address)
+    if lat is None or lon is None:
+        return jsonify({"message": "La dirección ingresada no es válida o no se pudo encontrar en el mapa. Por favor, verifica que todos los campos de la dirección sean correctos."}), 400
 
     try:
         sensor_id = int(sensor_id)  # Solo si en la base es int

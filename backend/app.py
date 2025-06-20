@@ -18,7 +18,6 @@ def serve_index():
 # Configuración de MongoDB
 print("Configurando MongoDB...")
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
-print("MONGO_URI:", os.getenv("MONGO_URI"))
 mongo = PyMongo(app)
 app.mongo = mongo
 
