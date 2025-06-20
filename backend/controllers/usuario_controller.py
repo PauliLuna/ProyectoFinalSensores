@@ -48,13 +48,43 @@ def invite_user(mongo):
     usuario_data = {
         "email": email,
         "idEmpresa": idEmpresa,  # string, no ObjectId
-        "fechaAlta": fechaAlta,
-        "fechaUltimoAcceso": fechaUltimoAcceso,
         "estado": "Invited",
         "roles": "user"
     }
     user_id = insert_usuario(mongo, usuario_data)
     return jsonify({"message": "Usuario invitado correctamente", "user_id": user_id}), 201
+
+def complete_registration(mongo):
+    email = request.form.get('email')
+    username = request.form.get('username')
+    phone = request.form.get('phone')
+    password = request.form.get('password')
+
+    # Buscar el usuario invitado por email
+    usuario = get_usuario_by_email(mongo, email)
+    if not usuario:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+    
+    # Actualizar los datos
+    now = datetime.datetime.now()
+    update_fields = {
+        "username": username,
+        "phone": phone,
+        "password": generate_password_hash(password),
+        "estado": "Active",
+        "fechaAlta": now,
+        "fechaUltimoAcceso": now
+    }
+
+    mongo.db.usuarios.update_one(
+        {"email": email},
+        {"$set": update_fields}
+    )
+
+    return jsonify({
+    "message": "Registro completado correctamente",
+    "user_email": email
+    }), 200
 
 def login_usuario(mongo):
     email = request.form.get('email')
