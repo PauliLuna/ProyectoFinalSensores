@@ -49,6 +49,7 @@ def register_sensor(mongo):
     sensor_data = {
          "nroSensor": nro_sensor,
          "alias": request.form.get('alias'),
+         "notas": request.form.get('notas'),
          "valorMin": valor_min,
          "valorMax": valor_max,
          "direccion": request.form.get('direccion'),
@@ -104,6 +105,7 @@ def update_sensor(mongo, sensor_id):
 
     sensor_data = {
          "alias": request.form.get('alias'),
+         "notas": request.form.get('notas'),
          "valorMin": valor_min,
          "valorMax": valor_max,
          "direccion": request.form.get('direccion'),
