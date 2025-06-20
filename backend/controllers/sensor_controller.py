@@ -62,7 +62,7 @@ def register_sensor(mongo):
          "longitud": lon
     }
     # Puedes agregar validaciones aquí según lo necesario
-    sensor_id = insert_sensor(mongo, sensor_data)
+    insert_sensor(mongo, sensor_data)
 
     # Procesar el campo oculto 'assignments', se espera un JSON con un array de emails.
     assignments_field = request.form.get('assignments')
@@ -76,9 +76,9 @@ def register_sensor(mongo):
             user_id = assignment.get("idUsuario")
             permiso = assignment.get("permiso", "Read")
             # Registrar la asignación usando el id y el permiso
-            register_assignment(mongo, sensor_id, user_id, permiso=permiso)
+            register_assignment(mongo, sensor_data["nroSensor"], user_id, permiso=permiso)
 
-    return jsonify({"message": "Sensor registrado correctamente", "sensor_id": sensor_id}), 201
+    return jsonify({"message": "Sensor registrado correctamente", "sensor_id": sensor_data["nroSensor"]}), 201
 
 def update_sensor(mongo, sensor_id):
     """

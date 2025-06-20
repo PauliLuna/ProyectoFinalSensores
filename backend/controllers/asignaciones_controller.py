@@ -15,7 +15,7 @@ def register_assignment(mongo, sensor_id, idUsuario, permiso="Read"):
        - estadoAlerta: True por defecto
        - permiso: "Edit" o "Read" (por defecto "Read")
     """
-    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    now = datetime.datetime.now()
     assignment_data = {
          "idSensor": sensor_id,
          "idUsuario": idUsuario,
@@ -35,7 +35,7 @@ def update_assignment(mongo, assignment_id, permiso=None, estadoAsignacion=None)
     Solo se modifica "fechaModificacion" (y opcionalmente "permiso" y "estadoAsignacion"),
     dejando intacta "fechaAsignacion", "modoNotificacion" y otros campos que no se actualizan.
     """
-    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    now = datetime.datetime.now()
     update_fields = {"fechaModificacion": now}
     if permiso is not None:
         update_fields["permiso"] = permiso
