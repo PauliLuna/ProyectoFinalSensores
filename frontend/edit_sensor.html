@@ -23,15 +23,11 @@
                         <input type="hidden" id="sensorId" name="sensorId">
                         <!-- Inicio del form único -->
                         <form id="editSensorForm" class="form" action="/sensor" method="POST">
-                            <!-- Row 1: ID | Número de sensor | Alias  -->
+                            <!-- Row 1: Número de sensor | Alias  -->
                             <div class="form-section">
                                 <div class="form-row">
-                                    <div class="form-group">
-                                        <!-- Visualización de ID (no editable) -->
-                                        <p>ID del sensor: <span id="sensorIdDisplay"></span></p>
-                                        <!-- Input oculto para envío -->
-                                        <input type="hidden" id="sensorId" name="sensorId">
-                                    </div>
+                                    <!-- Input oculto para envío -->
+                                    <input type="hidden" id="sensorId" name="sensorId">
                                     <div class="form-group">
                                         <label for="nroSensor">Número de sensor</label>
                                         <input type="text" id="nroSensor" name="nroSensor" disabled>
@@ -42,7 +38,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Row 2: Dirección | Ciudad -->
+                            <!-- Row 2: Notas -->
+                            <div class="form-section">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="notas">Notas (opcional)</label>
+                                        <input type="text" id="notas" name="notas" placeholder="Ingrese notas adicionales" style="height: 80px;;">
+                    
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row 3: Dirección | Ciudad -->
                             <div class="form-section">
                                 <div class="form-row">
                                     <div class="form-group">
@@ -57,7 +63,7 @@
                                     
                                 </div>
                             </div>
-                            <!-- Row 3:  País | Provincia | Código Postal -->
+                            <!-- Row 4:  País | Provincia | Código Postal -->
                             <div class="form-section">
                                 <div class="form-row">
                                     <div class="form-group">
@@ -74,7 +80,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Row 4: Valor Mínimo | Valor Máximo | Estado -->
+                            <!-- Row 5: Valor Mínimo | Valor Máximo | Estado -->
                             <div class="form-section">
                                 <div class="form-row">
                                     <div class="form-group">
@@ -94,7 +100,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Row 5: Título "Asignación de usuario" -->
+                            <!-- Row 6: Título "Asignación de usuario" -->
                             <div class="form-section">
                                 <h2 class="form-title" style="font-size: 1.2rem; margin-bottom: 10px;">Asignación de usuario</h2>
                             </div>
@@ -204,10 +210,7 @@
             console.error("No se encontró sensor ID en la URL");
             return;
         }
-        // Guardar sensorId en el input oculto
-        document.getElementById('sensorId').value = sensorId;
-        // Actualiza el display si lo usas
-        document.getElementById('sensorIdDisplay').textContent = sensorId;
+        // Cargar los datos del sensor desde el backend
         try {
             const response = await fetch(`/sensor/${sensorId}`);
             if (!response.ok) {
@@ -220,6 +223,7 @@
             // Rellenar los campos del formulario con los datos del sensor
             document.getElementById('nroSensor').value = sensor.nroSensor || "";
             document.getElementById('alias').value = sensor.alias || "";
+            document.getElementById('notas').value = sensor.notas || "";
             document.getElementById('direccion').value = sensor.direccion || "";
             document.getElementById('ciudad').value = sensor.ciudad || "";
             document.getElementById('pais').value = sensor.pais || "";
@@ -270,9 +274,7 @@
         // Manejo del envío del formulario para actualizar el sensor (método PUT)
         document.getElementById('editSensorForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            // Copiar el nroSensor (aunque esté disabled) al campo oculto sensorId
-            document.getElementById('sensorId').value = document.getElementById('nroSensor').value;
-            const sensorId = document.getElementById('sensorId').value;
+            const sensorId = document.getElementById('nroSensor').value
             const formData = new FormData(this);
             
             // Recopilar asignaciones de la tabla
@@ -283,19 +285,15 @@
             });
             formData.append('assignments', JSON.stringify(assignments));
             
-            try {
-                const response = await fetch(`/sensor/${sensorId}`, {
-                    method: 'PUT',
-                    body: formData
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    alert("Sensor actualizado correctamente");
-                } else {
-                    alert("Error al actualizar el sensor");
-                }
-            } catch (error) {
-                console.error("Error en la actualización del sensor:", error);
+            const response = await fetch(`/sensor/${sensorId}`, {
+                method: 'PUT',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert("Sensor actualizado correctamente");
+            } else {
+                alert(result.message);
             }
         });
     });
