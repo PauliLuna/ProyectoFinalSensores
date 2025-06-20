@@ -114,27 +114,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Las filas se llenan dinámicamente.Como ejemplo dejamos la siguiente fila -->
-                                        <tr data-user-id="607a1e45f3a2c123456789ab">
-                                            <td>usuario1@mail.com</td>
-                                            <td>
-                                                <select class="assignment-permission">
-                                                    <option value="Read" selected>Read</option>
-                                                    <option value="Edit">Edit</option>
-                                                </select>
-                                            </td>
-                                            <td><span class="assignment-status">Activo</span></td>
-                                            <td>
-                                                <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
-                                                    <span>✏️</span>
-                                                </button>
-                                                <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
-                                                    <span>✖️</span>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <!-- Otras filas se agregarán dinámicamente -->
-                                        
+                                        <!-- Las filas se llenan dinámicamente -->
                                     </tbody>
                                 </table>
                             </div>
@@ -192,6 +172,11 @@
 
                     if (response.ok) {
                         alert(result.message); // pop-up
+                        // Limpiar la tabla de asignaciones
+                        const tbody = document.querySelector('.user-assignment-table tbody');
+                        if (tbody) {
+                            tbody.innerHTML = '';
+                        }
                         this.reset();
                     } else {
                         alert(result.message);
