@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, jsonify
-from controllers.usuario_controller import register_usuario, invite_user
+from controllers.usuario_controller import register_usuario, invite_user, login_usuario
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
@@ -24,3 +24,8 @@ def get_usuarios():
 def invite_user_route():
     mongo = current_app.mongo
     return invite_user(mongo)
+
+@usuario_bp.route('/login', methods=['POST'])
+def login_usuario_route():
+    mongo = current_app.mongo
+    return login_usuario(mongo)

@@ -1,6 +1,6 @@
 from flask import request, jsonify, session
-from models.usuario import insert_usuario
-from werkzeug.security import generate_password_hash
+from models.usuario import insert_usuario, get_usuario_by_email
+from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
 
@@ -23,7 +23,8 @@ def register_usuario(mongo):
         "email": request.form.get('email'),
         "phone": request.form.get('phone'),
         "username": request.form.get('username'),
-        "password": generate_password_hash(request.form.get('password')),  # ← encriptado
+        #"password": generate_password_hash(request.form.get('password')),  # ← encriptado
+        "password": request.form.get('password'),  # ← NO encriptado
         "fechaAlta": fechaAlta,
         "fechaUltimoAcceso": fechaUltimoAcceso,
         "estado": "Active",
@@ -55,3 +56,16 @@ def invite_user(mongo):
     }
     user_id = insert_usuario(mongo, usuario_data)
     return jsonify({"message": "Usuario invitado correctamente", "user_id": user_id}), 201
+
+def login_usuario(mongo):
+    email = request.form.get('email')
+    password = request.form.get('password')
+    usuario = get_usuario_by_email(mongo, email)
+    #if usuario and check_password_hash(usuario['password'], password):
+    if usuario and usuario['password'] == password:  # ← NO encriptado, solo para pruebas
+        session['user_id'] = str(usuario['_id'])
+        session['idEmpresa'] = usuario.get('idEmpresa')  # Guarda el idEmpresa en la sesión
+        # Podés guardar otros datos si querés
+        return jsonify({"message": "Login exitoso"}), 200
+    else:
+        return jsonify({"error": "Credenciales inválidas"}), 401

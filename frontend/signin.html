@@ -17,7 +17,7 @@
                     <h2 class="mb-2" style="color:#1D3557;">Iniciar sesión</h2>
                     <p class="text-muted">Accede a tu cuenta de SensIA</p>
                 </div>
-                <form>
+                <form id="signin-form">
                     <div class="form-group mb-3">
                         <label for="email" style="text-align: center;">Correo electrónico</label>
                         <input type="email" id="email" class="form-control" placeholder="Ingrese su correo" required>
@@ -52,6 +52,32 @@
                 eyeIcon.textContent = '🙈'; // Mostrar mono cuando está oculta
             }
         }
+    </script>
+    <script>
+    document.getElementById('signin-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('password', password);
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok) {
+                // Login exitoso, redirigir o mostrar mensaje
+                window.location.href = "home.html"; // o la página principal de tu app
+            } else {
+                alert(result.error || "Credenciales inválidas");
+            }
+        } catch (error) {
+            alert("Error de conexión con el servidor.");
+        }
+    });
     </script>
 </body>
 </html>
