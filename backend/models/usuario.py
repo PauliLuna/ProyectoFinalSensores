@@ -6,3 +6,6 @@ def insert_usuario(mongo, usuario_data):
     usuarios_coll = mongo.db.usuarios  # se asume que la colección se llama 'usuarios'
     result = usuarios_coll.insert_one(usuario_data)
     return str(result.inserted_id)
+
+def get_usuario_by_email(mongo, email):
+    return mongo.db.usuarios.find_one({"email": email})
