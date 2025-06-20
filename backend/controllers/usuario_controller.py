@@ -15,16 +15,16 @@ def register_usuario(mongo):
     """
 
     now = datetime.datetime.now()
-    fechaAlta = now.strftime("%d/%m/%Y")
-    fechaUltimoAcceso = now.strftime("%d/%m/%Y %H:%M:%S")
+    fechaAlta = now 
+    fechaUltimoAcceso = now
     usuario_data = {
 
         "idCode": request.form.get('idCode'),
         "email": request.form.get('email'),
         "phone": request.form.get('phone'),
         "username": request.form.get('username'),
-        #"password": generate_password_hash(request.form.get('password')),  # ← encriptado
-        "password": request.form.get('password'),  # ← NO encriptado
+        "password": generate_password_hash(request.form.get('password')),  # ← encriptado
+        #"password": request.form.get('password'),  # ← NO encriptado
         "fechaAlta": fechaAlta,
         "fechaUltimoAcceso": fechaUltimoAcceso,
         "estado": "Active",
@@ -43,9 +43,8 @@ def invite_user(mongo):
     idEmpresa = session.get('idEmpresa')  # O como lo tengas en la sesión
 
     now = datetime.datetime.now()
-    fechaAlta = now.strftime("%d/%m/%Y")
-    fechaUltimoAcceso = now.strftime("%d/%m/%Y %H:%M:%S")
-
+    fechaAlta = now 
+    fechaUltimoAcceso = now 
     usuario_data = {
         "email": email,
         "idEmpresa": idEmpresa,  # string, no ObjectId
@@ -61,8 +60,8 @@ def login_usuario(mongo):
     email = request.form.get('email')
     password = request.form.get('password')
     usuario = get_usuario_by_email(mongo, email)
-    #if usuario and check_password_hash(usuario['password'], password):
-    if usuario and usuario['password'] == password:  # ← NO encriptado, solo para pruebas
+    if usuario and check_password_hash(usuario['password'], password):
+    #if usuario and usuario['password'] == password:  # ← NO encriptado, solo para pruebas
         session['user_id'] = str(usuario['_id'])
         session['idEmpresa'] = usuario.get('idEmpresa')  # Guarda el idEmpresa en la sesión
         # Podés guardar otros datos si querés
