@@ -16,100 +16,145 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Statistics Cards -->
-        <div class="stats-cards">
-            <div class="card">
-                <h3>17.6k</h3>
-                <p>Usuarios</p>
+        <!-- Estado General del Sistema -->
+        <h1 class="centered-title">Executive Dashboard</h1>
+        <div class="kpi-cards">
+            <div class="kpi-card primary">
+                <h3 id="total-sensores">120</h3>
+                <p>Total Sensores Instalados</p>
             </div>
-            <div class="card">
-                <h3>149</h3>
-                <p>Sensores</p>
+            <div class="kpi-card success">
+                <h3 id="sensores-en-rango">98</h3>
+                <p>Sensores en Rango</p>
             </div>
-            <div class="card">
-                <h3>54.3k</h3>
-                <p>Alarmas</p>
+            <div class="kpi-card warning">
+                <h3 id="sensores-fuera-rango">15</h3>
+                <p>Sensores Fuera de Rango</p>
+            </div>
+            <div class="kpi-card" style="background:#e76f51;">
+                <h3 id="sensores-fallo">7</h3>
+                <p>Sensores con Fallos/Sin Señal</p>
             </div>
         </div>
 
-        <!-- Charts Section -->
+        <!-- Visión térmica por sucursal -->
         <div class="charts-section">
             <div class="chart-container">
-                <h3>Sensores por provincia</h3>
-                <canvas id="barChart"></canvas>
+                <h3>Temperatura Promedio por Sucursal (24h)</h3>
+                <canvas id="tempSucursalChart"></canvas>
             </div>
             <div class="chart-container">
-                <h3>Alarmas</h3>
-                <canvas id="pieChart"></canvas>
+                <h3>Tendencia Térmica Reciente</h3>
+                <canvas id="tendenciaSucursalChart"></canvas>
             </div>
         </div>
 
-        <!-- Recent User Activity Table -->
+        <!-- Alertas activas (resumen) -->
+        <div class="kpi-cards">
+            <div class="kpi-card" style="background:#e63946;">
+                <h3 id="alertas-criticas">5</h3>
+                <p>Alertas Críticas</p>
+            </div>
+            <div class="kpi-card" style="background:#f4a261;">
+                <h3 id="alertas-preventivas">8</h3>
+                <p>Alertas Preventivas</p>
+            </div>
+            <div class="kpi-card" style="background:#a8dadc;">
+                <h3 id="alertas-informativas">12</h3>
+                <p>Alertas Informativas</p>
+            </div>
+        </div>
+
+        <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
         <div class="recent-activity">
-            <h3>Recent User Activity</h3>
+            <h3>Últimas Conexiones de Usuarios</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Nombre</th>
-                        <th>Último Inicio de Sesión</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Fecha</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="user-activity-table">
                     <tr>
-                        <td>Absternet LLC</td>
-                        <td>08/05/2025</td>
+                        <td>admin</td>
+                        <td>admin@empresa.com</td>
+                        <td>20/06/2025 18:00</td>
                         <td>Activo</td>
                     </tr>
                     <tr>
-                        <td>Raitech Soft</td>
-                        <td>07/05/2025</td>
+                        <td>jdoe</td>
+                        <td>jdoe@empresa.com</td>
+                        <td>20/06/2025 17:45</td>
+                        <td>Activo</td>
+                    </tr>
+                    <tr>
+                        <td>mspitteler</td>
+                        <td>mspitteler@empresa.com</td>
+                        <td>20/06/2025 17:30</td>
                         <td>Inactivo</td>
-                    </tr>
-                    <tr>
-                        <td>William PVT</td>
-                        <td>06/05/2025</td>
-                        <td>Activo</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
+    <!-- Scripts para KPIs y gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Bar Chart for Sensores por provincia
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        new Chart(barCtx, {
+        // Temperatura promedio por sucursal (ejemplo)
+        const tempSucursalCtx = document.getElementById('tempSucursalChart').getContext('2d');
+        new Chart(tempSucursalCtx, {
             type: 'bar',
             data: {
-                labels: ['India', 'United States', 'China', 'Indonesia', 'Russia'],
+                labels: ['Sucursal Centro', 'Sucursal Norte', 'Sucursal Sur'],
                 datasets: [{
-                    label: 'Sensores',
-                    data: [1010, 1640, 490, 1255, 1050],
-                    backgroundColor: '#457B9D',
+                    label: 'Temp. Promedio (°C)',
+                    data: [22.5, 24.1, 21.8],
+                    backgroundColor: ['#457B9D', '#A8DADC', '#F4A261'],
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
             }
         });
 
-        // Pie Chart for Alarmas
-        const pieCtx = document.getElementById('pieChart').getContext('2d');
-        new Chart(pieCtx, {
-            type: 'pie',
+        // Tendencia térmica reciente (ejemplo: 1 estable, 0 inestable)
+        const tendenciaSucursalCtx = document.getElementById('tendenciaSucursalChart').getContext('2d');
+        new Chart(tendenciaSucursalCtx, {
+            type: 'line',
             data: {
-                labels: ['Críticas', 'Informativas', 'Seguridad'],
+                labels: ['Centro', 'Norte', 'Sur'],
                 datasets: [{
-                    data: [40, 30, 30],
-                    backgroundColor: ['#E63946', '#A8DADC', '#F4A261'],
+                    label: 'Estabilidad (1=Estable, 0=Inestable)',
+                    data: [1, 0, 1],
+                    borderColor: '#457B9D',
+                    backgroundColor: 'rgba(69,123,157,0.1)',
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 1,
+                        ticks: {
+                            callback: function(value) {
+                                return value === 1 ? 'Estable' : 'Inestable';
+                            }
+                        }
+                    }
+                }
             }
         });
+
+        // (Opcional) Cuando conectes con backend, reemplazá los valores de ejemplo por datos reales usando fetch/AJAX.
     </script>
     <script src="scripts/utils.js"></script>
 </body>
