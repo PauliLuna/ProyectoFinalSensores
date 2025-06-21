@@ -68,38 +68,22 @@
         <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
         <div class="recent-activity">
             <h3>Últimas Conexiones de Usuarios</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="user-activity-table">
-                    <tr>
-                        <td>admin</td>
-                        <td>admin@empresa.com</td>
-                        <td>20/06/2025 18:00</td>
-                        <td>Activo</td>
-                    </tr>
-                    <tr>
-                        <td>jdoe</td>
-                        <td>jdoe@empresa.com</td>
-                        <td>20/06/2025 17:45</td>
-                        <td>Activo</td>
-                    </tr>
-                    <tr>
-                        <td>mspitteler</td>
-                        <td>mspitteler@empresa.com</td>
-                        <td>20/06/2025 17:30</td>
-                        <td>Inactivo</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-wrapper" style="max-height:350px; overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-activity-table">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
     <!-- Scripts para KPIs y gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -155,6 +139,26 @@
         });
 
         // (Opcional) Cuando conectes con backend, reemplazá los valores de ejemplo por datos reales usando fetch/AJAX.
+    </script>
+    <script>
+    // Cargar últimas conexiones de usuarios desde el backend
+    async function cargarUltimasConexiones() {
+        const res = await fetch('/ultimas_conexiones');
+        const usuarios = await res.json();
+        const tbody = document.getElementById('user-activity-table');
+        tbody.innerHTML = '';
+        usuarios.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${u.username || ''}</td>
+                <td>${u.email || ''}</td>
+                <td>${u.fechaUltimoAcceso || ''}</td>
+                <td>${u.estado || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    cargarUltimasConexiones();
     </script>
     <script src="scripts/utils.js"></script>
 </body>

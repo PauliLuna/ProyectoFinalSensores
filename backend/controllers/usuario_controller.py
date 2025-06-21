@@ -98,3 +98,35 @@ def login_usuario(mongo):
         return jsonify({"message": "Login exitoso"}), 200
     else:
         return jsonify({"error": "Credenciales inválidas"}), 401
+    
+
+def get_ultimas_conexiones(mongo):
+    idEmpresa = session.get('idEmpresa')
+    if not idEmpresa:
+        return jsonify({"error": "No autorizado"}), 401
+
+    usuarios = list(
+        mongo.db.usuarios.find(
+            {"idEmpresa": idEmpresa},
+            {"username": 1, "email": 1, "fechaUltimoAcceso": 1, "estado": 1}
+        ).sort("fechaUltimoAcceso", -1).limit(10)
+    )
+    # Convertir _id y fecha a string para el frontend:
+    #Cuando en la BD queden todas las fechas en formato datetime, la función se va a tener que simplificar
+    for u in usuarios:
+        u["_id"] = str(u["_id"])
+        fecha = u.get("fechaUltimoAcceso")
+        if fecha:
+            # Si es un dict con "$date", lo convertimos a datetime
+            if isinstance(fecha, dict) and "$date" in fecha:
+                try:
+                    # Python 3.7+: fromisoformat, si no usar strptime
+                    fecha_dt = datetime.datetime.fromisoformat(fecha["$date"].replace("Z", "+00:00"))
+                except Exception:
+                    fecha_dt = datetime.datetime.strptime(fecha["$date"][:19], "%Y-%m-%dT%H:%M:%S")
+                u["fechaUltimoAcceso"] = fecha_dt.strftime("%d/%m/%Y %H:%M")
+            elif isinstance(fecha, datetime.datetime):
+                u["fechaUltimoAcceso"] = fecha.strftime("%d/%m/%Y %H:%M")
+            else:
+                u["fechaUltimoAcceso"] = str(fecha)
+    return jsonify(usuarios)

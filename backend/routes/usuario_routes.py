@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, jsonify
-from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration
+from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
@@ -34,3 +34,8 @@ def complete_registration_route():
 def login_usuario_route():
     mongo = current_app.mongo
     return login_usuario(mongo)
+
+@usuario_bp.route('/ultimas_conexiones', methods=['GET'])
+def ultimas_conexiones_route():
+    mongo = current_app.mongo
+    return get_ultimas_conexiones(mongo)
