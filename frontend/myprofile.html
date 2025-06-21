@@ -36,9 +36,12 @@
                         <label for="numCel">Número de celular</label>
                         <input type="text" id="numCel" name="numCel">
                     </div>
-                    <div class="form-group" style="margin-bottom: 20px;">
+                    <div class="form-group password-wrapper" style="margin-bottom: 20px;">
                         <label for="password">Contraseña</label>
                         <input type="password" id="password" name="password" placeholder="Nueva contraseña">
+                        <button type="button" id="togglePassword" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña">
+                            <span id="eyeIcon">🙈</span>
+                        </button>
                     </div>
                     <button type="submit" class="btn-primary">Guardar</button>
                 </form>
@@ -100,6 +103,18 @@
             modal.style.display = 'none';
         }
     };
+    // Mostrar/ocultar contraseña
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            eyeIcon.textContent = "👁️"; // Mostrar ojo cuando se ve la contraseña
+        } else {
+            passwordInput.type = "password";
+            eyeIcon.textContent = "🙈"; // Mostrar mono cuando está oculta
+        }
+    });
     </script>
 </body>
 </html>
