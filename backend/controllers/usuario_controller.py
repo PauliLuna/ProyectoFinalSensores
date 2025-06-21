@@ -22,7 +22,7 @@ def register_usuario(mongo):
     fechaUltimoAcceso = now
     usuario_data = {
 
-        "idCode": request.form.get('idCode'),
+        "codeInvitation": request.form.get('codeInvitation'),
         "email": request.form.get('email'),
         "idEmpresa": idEmpresa,  # string, no ObjectId
         "phone": request.form.get('phone'),
