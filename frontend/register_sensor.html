@@ -154,8 +154,8 @@
                     const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => {
                         const idUsuario = row.getAttribute("data-user-id");
                         const permiso = row.querySelector('.assignment-permission').value;
-                        const estado = row.querySelector('.assignment-status').textContent;
-                        return { idUsuario, permiso, estado };
+                        const estadoAsignacion = row.querySelector('.assignment-status').textContent;
+                        return { idUsuario, permiso, estadoAsignacion };
                     });
                     // Asignar al input oculto en formato JSON:
                     document.getElementById('assignments').value = JSON.stringify(assignments);
