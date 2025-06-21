@@ -3,72 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel General</title>
+    <title>Mi Perfil</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
 </head>
 <body>
-    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
-    <!-- Left and Top menu -->
+    <!-- Menús -->
     <div id="sidebar-container"></div>
     <div id="top-banner-container"></div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Modal de éxito -->
-        <div id="successModal" class="modal">
-            <div class="modal-content">
-                <span id="closeModal" class="close">&times;</span>
-                <img src="assets/green_check.png" alt="Éxito" class="modal-success-icon">
-                <p id="successMessage"></p>
-            </div>
-        </div>
-        <div class="form-container" style="flex: 1 1 350px; min-width: 320px;" >
+        <div class="form-container">
             <div class="form-card">
-                <h1>Editar Usuario</h1>
-                <!-- User name -->
-                <form id="editUserForm" class="form" action="/client" method="POST">
-                    <div class="form-group">
-                        <label>Nombre usuario</label>
-                        <input type="text" id="userName" value="John Doe" required>
+                <h1>Mi Perfil</h1>
+                <form id="profileForm" class="form">
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label for="mail">Mail</label>
+                            <input type="email" id="mail" name="mail" readonly disabled>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="role">Rol</label>
+                            <input type="text" id="role" name="role" readonly disabled style="margin-top: 0px;">
+                        </div>
                     </div>
-                    <!-- Mail -->
                     <div class="form-group">
-                        <label for="mail">Mail</label>
-                        <input type="text" id="mail" name="mail" value="john.doe@absternet.com" required>
+                        <label for="userName">Nombre de usuario</label>
+                        <input type="text" id="userName" name="userName" required>
                     </div>
-                    <!-- Numero Celular -->
                     <div class="form-group">
-                        <label for="numCel">Número del celular</label>
-                        <input type="text" id="numCel" name="numCel" value="+543464200145" required>
+                        <label for="numCel">Número de celular</label>
+                        <input type="text" id="numCel" name="numCel">
                     </div>
-                    <!-- Submit Button -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" placeholder="Nueva contraseña">
+                    </div>
                     <button type="submit" class="btn-primary">Guardar</button>
                 </form>
             </div>
+            <!-- Modal de éxito -->
+            <div id="successModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeModal" class="close">&times;</span>
+                    <img src="assets/green_check.png" alt="Éxito" class="modal-success-icon">
+                    <p id="successMessage"></p>
+                </div>
+            </div>
         </div>
     </div>
-    <script>
-        // JavaScript to handle form submission and show success modal
-        document.getElementById('editUserForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            document.getElementById('successMessage').textContent =
-                `Se ha guardado correctamente los cambios`;
-            document.getElementById('successModal').style.display = 'block';
-        });
-
-        document.getElementById('closeModal').onclick = function() {
-            document.getElementById('successModal').style.display = 'none';
-        };
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('successModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
-    </script>
     <script src="scripts/utils.js"></script>
+    <script>
+    // 1. Poblar el formulario con los datos del usuario logueado
+    async function cargarPerfil() {
+        const res = await fetch('/usuario_actual');
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById('mail').value = data.email || '';
+        document.getElementById('role').value = data.roles || '';
+        document.getElementById('userName').value = data.username || '';
+        document.getElementById('numCel').value = data.phone || '';
+    }
+    cargarPerfil();
+
+    // 2. Guardar cambios en el perfil
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const body = {
+            username: document.getElementById('userName').value,
+            phone: document.getElementById('numCel').value,
+            password: document.getElementById('password').value // puede estar vacío si no se cambia
+        };
+        const res = await fetch('/usuario_actual', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const result = await res.json();
+        if (res.ok) {
+            document.getElementById('successMessage').textContent = "¡Perfil actualizado con éxito!";
+            document.getElementById('successModal').style.display = 'block';
+            document.getElementById('password').value = '';
+        } else {
+            alert(result.error || "Error al actualizar perfil");
+        }
+    });
+
+    // 3. Cerrar el modal de éxito
+    document.getElementById('closeModal').onclick = function() {
+        document.getElementById('successModal').style.display = 'none';
+    };
+    window.onclick = function(event) {
+        const modal = document.getElementById('successModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+    </script>
 </body>
 </html>
