@@ -100,7 +100,11 @@ def login_usuario(mongo):
     #if usuario and usuario['password'] == password:  # ← NO encriptado, solo para pruebas
         session['user_id'] = str(usuario['_id'])
         session['idEmpresa'] = usuario.get('idEmpresa')  # Guarda el idEmpresa en la sesión
-        # Podés guardar otros datos si querés
+         # Actualizar fechaUltimoAcceso
+        mongo.db.usuarios.update_one(
+            {"_id": usuario['_id']},
+            {"$set": {"fechaUltimoAcceso": datetime.datetime.now()}}
+        )
         return jsonify({"message": "Login exitoso"}), 200
     else:
         return jsonify({"error": "Credenciales inválidas"}), 401
