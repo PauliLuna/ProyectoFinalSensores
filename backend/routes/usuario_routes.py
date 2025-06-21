@@ -8,8 +8,16 @@ usuario_bp = Blueprint('usuario_bp', __name__)
 
 @usuario_bp.route('/usuarios', methods=['GET'])
 def get_usuarios():
-    # Se obtienen todos los usuarios, pero se filtran solo el _id y el email
-    usuarios = list(current_app.mongo.db.usuarios.find({}, {"email": 1}))
+    id_empresa = session.get('idEmpresa')
+    if not id_empresa:
+        return jsonify([])
+    
+    # Filtra solo los usuarios con ese idEmpresa
+    usuarios = list(current_app.mongo.db.usuarios.find(
+        {"idEmpresa": id_empresa},  # filtro por idEmpresa
+        {"email": 1}
+    ))
+    
     # Convertir _id a cadena para que JSON los interprete
     for usuario in usuarios:
         usuario["_id"] = str(usuario["_id"])
