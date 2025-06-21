@@ -225,6 +225,10 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
+
+                // Oculta la opción del select
+                const option = select.querySelector(`option[value="${user.id}"]`);
+                if (option) option.style.display = "none";
             });
             document.getElementById('addUserDropdown').style.display = 'none';
             select.selectedIndex = -1;
@@ -235,6 +239,12 @@
             // Elimina la fila correspondiente
             const row = btn.closest('tr');
             if (row) {
+                // Recupera el id del usuario de la fila eliminada
+                const userId = row.getAttribute('data-user-id');
+                // Vuelve a mostrar la opción en el select
+                const select = document.getElementById('userSelect');
+                const option = select.querySelector(`option[value="${userId}"]`);
+                if (option) option.style.display = "";
                 row.remove();
             }
         }
