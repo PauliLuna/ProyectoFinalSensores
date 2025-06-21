@@ -27,7 +27,7 @@ def register_usuario(mongo):
         "idEmpresa": idEmpresa,  # string, no ObjectId
         "phone": request.form.get('phone'),
         "username": request.form.get('username'),
-        "password": generate_password_hash(request.form.get('password')),  # ← encriptado
+        "password": generate_password_hash(request.form.get('password'), method='pbkdf2:sha256'),  # ← encriptado
         #"password": request.form.get('password'),  # ← NO encriptado
         "fechaAlta": fechaAlta,
         "fechaUltimoAcceso": fechaUltimoAcceso,
@@ -76,7 +76,7 @@ def complete_registration(mongo):
     update_fields = {
         "username": username,
         "phone": phone,
-        "password": generate_password_hash(password),
+        "password": generate_password_hash(password, method='pbkdf2:sha256'),
         "estado": "Active",
         "fechaAlta": now,
         "fechaUltimoAcceso": now
