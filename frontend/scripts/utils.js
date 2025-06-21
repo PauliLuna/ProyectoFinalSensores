@@ -18,4 +18,22 @@ Promise.all([
             topBanner.classList.toggle('sidebar-collapsed');
         });
     }
+
+    // Llamar a la función para actualizar el nombre de la empresa
+    actualizarNombreEmpresa();
 });
+
+// Función para actualizar el nombre de la empresa en el top-banner
+async function actualizarNombreEmpresa() {
+    try {
+        const res = await fetch('/empresa_nombre');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.companyName) {
+            const el = document.getElementById('company-name');
+            if (el) el.textContent = data.companyName;
+        }
+    } catch (e) {
+        // Opcional: manejar error
+    }
+}

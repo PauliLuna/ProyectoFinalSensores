@@ -41,6 +41,8 @@ def invite_user(mongo):
     """
     email = request.form.get('mail')
     idEmpresa = session.get('idEmpresa')  # O como lo tengas en la sesión
+    if idEmpresa and not isinstance(idEmpresa, str):
+        idEmpresa = str(idEmpresa)
 
     now = datetime.datetime.now()
     fechaAlta = now 
