@@ -21,6 +21,7 @@ Promise.all([
 
     // Llamar a la función para actualizar el nombre de la empresa
     actualizarNombreEmpresa();
+    actualizarUsuarioActual();
 });
 
 // Función para actualizar el nombre de la empresa en el top-banner
@@ -32,6 +33,24 @@ async function actualizarNombreEmpresa() {
         if (data.companyName) {
             const el = document.getElementById('company-name');
             if (el) el.textContent = data.companyName;
+        }
+    } catch (e) {
+        // Opcional: manejar error
+    }
+}
+
+async function actualizarUsuarioActual() {
+    try {
+        const res = await fetch('/usuario_actual');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.username) {
+            const el = document.getElementById('user-username');
+            if (el) el.textContent = data.username;
+        }
+        if (data.roles) {
+            const el = document.getElementById('user-role');
+            if (el) el.textContent = data.roles; // ← solo string
         }
     } catch (e) {
         // Opcional: manejar error

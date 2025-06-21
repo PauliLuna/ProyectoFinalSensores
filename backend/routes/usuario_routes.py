@@ -1,15 +1,10 @@
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, current_app, jsonify, session
 from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
+from bson import ObjectId
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
-@usuario_bp.route('/usuario', methods=['POST'])
-def register_usuario_route():
-    """
-    Ruta para registrar un usuario.
-    """
-    mongo = current_app.mongo
-    return register_usuario(mongo)
+
 
 @usuario_bp.route('/usuarios', methods=['GET'])
 def get_usuarios():
@@ -19,6 +14,33 @@ def get_usuarios():
     for usuario in usuarios:
         usuario["_id"] = str(usuario["_id"])
     return jsonify(usuarios)
+
+@usuario_bp.route('/usuario_actual', methods=['GET'])
+def usuario_actual_route():
+    mongo = current_app.mongo
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "No autorizado"}), 401
+    usuario = mongo.db.usuarios.find_one({"_id": ObjectId(user_id)})
+    if not usuario:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+    return jsonify({
+        "username": usuario.get("username", ""),
+        "roles": usuario.get("roles", "")
+    })
+
+@usuario_bp.route('/ultimas_conexiones', methods=['GET'])
+def ultimas_conexiones_route():
+    mongo = current_app.mongo
+    return get_ultimas_conexiones(mongo)
+
+@usuario_bp.route('/usuario', methods=['POST'])
+def register_usuario_route():
+    """
+    Ruta para registrar un usuario.
+    """
+    mongo = current_app.mongo
+    return register_usuario(mongo)
 
 @usuario_bp.route('/invite_user', methods=['POST'])
 def invite_user_route():
@@ -35,7 +57,3 @@ def login_usuario_route():
     mongo = current_app.mongo
     return login_usuario(mongo)
 
-@usuario_bp.route('/ultimas_conexiones', methods=['GET'])
-def ultimas_conexiones_route():
-    mongo = current_app.mongo
-    return get_ultimas_conexiones(mongo)
