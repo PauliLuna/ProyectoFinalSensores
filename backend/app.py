@@ -4,12 +4,11 @@ from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import os
 
+print("Cargando variables de entorno...")
+load_dotenv()
 
 print("Cargando Flask...")
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
-
-print("Cargando variables de entorno...")
-load_dotenv()
 
 #Para que la sesion funcione correctamente en Flask, es necesario establecer una clave secreta.
 # Esta clave se utiliza para firmar cookies y proteger la sesión del usuario.
