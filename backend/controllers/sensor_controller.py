@@ -157,7 +157,12 @@ def update_sensor(mongo, sensor_id):
     return jsonify({"message": "Sensor actualizado correctamente", "sensor_id": sensor_id}), 200
 
 def get_all_sensors(mongo):
-    sensores = list(mongo.db.sensors.find())
+    # Obtener idEmpresa de la sesión
+    id_empresa = session.get('idEmpresa')
+    if not id_empresa:
+        return []
+    
+    sensores = list(mongo.db.sensors.find({"idEmpresa": id_empresa}))
     result = []
     for sensor in sensores:
         nro_sensor = sensor.get('nroSensor')
