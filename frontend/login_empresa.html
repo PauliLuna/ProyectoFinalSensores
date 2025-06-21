@@ -138,6 +138,8 @@
                     });
                     const resultEmpresa = await responseEmpresa.json();
 
+                    userData.append('idEmpresa', resultEmpresa.empresa_id); // <-- Agregá esto
+
                     const responseUsuario = await fetch('/usuario', {
                         method: 'POST',
                         body: userData
