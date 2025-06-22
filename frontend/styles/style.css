@@ -509,8 +509,8 @@ html {
 
 .menu-items li a.active,
 .sidebar-footer li a.active {
-    background-color: #A8DADC; /* O el color que prefieras */
-    color: #1D3557 !important;
+    background-color: #457B9D; /* O el color que prefieras */
+    color: #FFFFFF !important;
     border-radius: 5px;
     font-weight: bold;
 }

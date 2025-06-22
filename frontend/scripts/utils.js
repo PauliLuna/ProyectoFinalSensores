@@ -12,11 +12,21 @@ Promise.all([
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
     const topBanner = document.querySelector('.top-banner');
+
+    // --- aplicar estado colapsado guardado ---
+    if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        sidebar.classList.add('collapsed');
+        if (mainContent) mainContent.classList.add('sidebar-collapsed');
+        if (topBanner) topBanner.classList.add('sidebar-collapsed');
+    }
+
     if (toggleSidebarButton && sidebar && mainContent && topBanner) {
         toggleSidebarButton.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('sidebar-collapsed');
             topBanner.classList.toggle('sidebar-collapsed');
+            // --- guardar estado en localStorage ---
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         });
     }
 
