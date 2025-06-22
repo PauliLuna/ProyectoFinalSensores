@@ -21,6 +21,14 @@ html {
     scroll-behavior: smooth;
 }
 
+.body-loading .main-content {
+    visibility: hidden;
+}
+.body-loading #sidebar-container,
+.body-loading #top-banner-container {
+    visibility: hidden;
+}
+
 /* Navbar */
 .navbar {
     display: flex;
@@ -497,6 +505,14 @@ html {
 .menu-items li a:hover {
     background-color: #457B9D; /* Steel Blue */
     border-radius: 5px;
+}
+
+.menu-items li a.active,
+.sidebar-footer li a.active {
+    background-color: #A8DADC; /* O el color que prefieras */
+    color: #1D3557 !important;
+    border-radius: 5px;
+    font-weight: bold;
 }
 
 .sidebar-footer {

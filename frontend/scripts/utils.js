@@ -4,6 +4,7 @@ Promise.all([
     fetch('partials/top-banner.html').then(res => res.text())
 ]).then(([sidebarHtml, topBannerHtml]) => {
     document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+    resaltarSidebarActivo(); 
     document.getElementById('top-banner-container').innerHTML = topBannerHtml;
 
     // Ahora sí existen ambos en el DOM
@@ -22,6 +23,7 @@ Promise.all([
     // Llamar a la función para actualizar el nombre de la empresa
     actualizarNombreEmpresa();
     actualizarUsuarioActual();
+    document.body.classList.remove('body-loading'); // <-- Mostrar todo el contenido una vez cargado el sidebar y top-banner
 });
 
 // Función para actualizar el nombre de la empresa en el top-banner
@@ -55,4 +57,17 @@ async function actualizarUsuarioActual() {
     } catch (e) {
         // Opcional: manejar error
     }
+}
+
+// Resalta la opción activa del sidebar según la página actual
+function resaltarSidebarActivo() {
+    const path = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        // Quita la clase activa de todos
+        link.classList.remove('active');
+        // Si el href termina igual que el path actual, la marca como activa
+        if (link.getAttribute('href') === path) {
+            link.classList.add('active');
+        }
+    });
 }
