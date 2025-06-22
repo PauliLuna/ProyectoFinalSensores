@@ -177,6 +177,8 @@ def get_all_sensors(mongo):
         temp_externa = last_med.get('valorTempExt') if last_med else None
         valor_min = sensor.get('valorMin')
         valor_max = sensor.get('valorMax')
+        latitud = sensor.get('latitud')
+        longitud = sensor.get('longitud')
         en_rango = (
             temp_interna is not None and valor_min is not None and valor_max is not None
             and valor_min <= temp_interna <= valor_max
@@ -187,6 +189,8 @@ def get_all_sensors(mongo):
             "estado": estado,
             "temperaturaInterna": temp_interna,
             "temperaturaExterna": temp_externa,
-            "enRango": en_rango
+            "enRango": en_rango,
+            "latitud": latitud,
+            "longitud": longitud
         })
     return result
