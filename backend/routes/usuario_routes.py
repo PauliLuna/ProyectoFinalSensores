@@ -1,6 +1,8 @@
-from flask import Blueprint, current_app, jsonify, session, request
+from flask import Blueprint, current_app, jsonify, session, request, url_for
+import secrets, datetime
 from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
 from bson import ObjectId
+from werkzeug.security import generate_password_hash
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
@@ -84,3 +86,50 @@ def login_usuario_route():
     mongo = current_app.mongo
     return login_usuario(mongo)
 
+@usuario_bp.route('/solicitar_reset_password', methods=['POST'])
+def solicitar_reset_password():
+    mongo = current_app.mongo
+    data = request.get_json()
+    email = data.get('email')
+    usuario = mongo.db.usuarios.find_one({"email": email})
+    if not usuario:
+        return jsonify({"error": "No existe un usuario con ese email"}), 404
+
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
+    mongo.db.passwordReset.insert_one({
+        "email": email,
+        "token": token,
+        "expiresAt": expires_at
+    })
+
+    # Enviar email
+    reset_url = f"https://sensia.com/reset-password.html?token={token}"
+    from flask_mail import Message
+    mail = current_app.mail
+    msg = Message("Recuperación de contraseña SensIA", recipients=[email])
+    msg.body = f"Para restablecer tu contraseña, haz clic en el siguiente enlace:\n{reset_url}\nEste enlace expirará en 30 minutos."
+    mail.send(msg)
+
+    return jsonify({"message": "Se ha enviado un correo con instrucciones para restablecer tu contraseña."})
+
+@usuario_bp.route('/reset_password', methods=['POST'])
+def reset_password():
+    mongo = current_app.mongo
+    data = request.get_json()
+    token = data.get('token')
+    new_password = data.get('newPassword')
+
+    token_doc = mongo.db.passwordReset.find_one({"token": token})
+    if not token_doc:
+        return jsonify({"error": "Token inválido o expirado"}), 400
+    # Usar timezone-aware datetime para la comparación
+    if token_doc['expiresAt'] < datetime.datetime.now(datetime.timezone.utc):
+        return jsonify({"error": "Token expirado"}), 400
+
+    email = token_doc['email']
+    hashed = generate_password_hash(new_password, method='pbkdf2:sha256')
+    mongo.db.usuarios.update_one({"email": email}, {"$set": {"password": hashed}})
+    mongo.db.passwordReset.delete_one({"token": token})
+
+    return jsonify({"message": "Contraseña restablecida correctamente"})
