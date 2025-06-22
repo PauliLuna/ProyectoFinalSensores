@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, jsonify
 from controllers.sensor_controller import register_sensor, update_sensor, get_all_sensors
+from bson import ObjectId
 
 sensor_bp = Blueprint('sensor_bp', __name__)
 
@@ -30,8 +31,19 @@ def get_sensor(sensor_id):
             sensor['_id'] = str(sensor['_id'])
         # También recuperar las asignaciones de este sensor
         assignments = list(mongo.db.asignaciones.find({"idSensor": sensor["nroSensor"]}))
+        
+        # Obtener todos los idUsuario únicos
+        user_ids = [a["idUsuario"] for a in assignments]
+
+        # Busca los usuarios por _id
+        usuarios = list(mongo.db.usuarios.find({"_id": {"$in": [ObjectId(uid) for uid in user_ids]}}))
+        
+        # Crear un diccionario de lookup
+        id_to_email = {str(u["_id"]): u["email"] for u in usuarios}
+
         # Serializar ObjectId en cada asignación
         for assignment in assignments:
+            assignment["email"] = id_to_email.get(assignment["idUsuario"], assignment["idUsuario"])
             if '_id' in assignment:
                 assignment['_id'] = str(assignment['_id'])
         sensor["assignments"] = assignments

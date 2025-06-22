@@ -288,7 +288,7 @@
                     const tr = document.createElement('tr');
                     tr.setAttribute("data-user-id", assignment.idUsuario);
                     tr.innerHTML = `
-                        <td>${assignment.email || assignment.idUsuario}</td>
+                        <td>${assignment.email}</td>
                         <td>
                             <select class="assignment-permission">
                                 <option value="Read" ${assignment.permiso === "Read" ? "selected" : ""}>Read</option>

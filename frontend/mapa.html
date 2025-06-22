@@ -16,7 +16,7 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div><h1>Aún estamos trabajando en esta página... ⚙</h1></div>
+        <div><h1>Sensores por Ubicación – Estado Actual</h1></div>
         <div id="map"></div>
         <script>
             const map = L.map('map').setView([-32.9442, -60.6505], 12); // Ejemplo: Rosario
@@ -25,8 +25,19 @@
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            const marker = L.marker([-32.9442, -60.6505]).addTo(map);
-            marker.bindPopup("Sucursal Central - Cámara 1\nTemp: 23.13°C").openPopup();
+            fetch('/sensores')
+                .then(res => res.json())
+                .then(sensores => {
+                    sensores.forEach(sensor => {
+                        if (sensor.latitud && sensor.longitud) {
+                            const marker = L.marker([sensor.latitud, sensor.longitud]).addTo(map);
+                            marker.bindPopup(`<b>${sensor.alias || 'Sensor ' + sensor.nroSensor}</b>`);
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error('Error al cargar sensores:', err);
+                });
 
             map.on('click', function(e) {
             const popup = L.popup()
