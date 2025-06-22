@@ -105,7 +105,6 @@
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
 
-                // Validar contraseñas
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
                 if (password !== confirmPassword) {
@@ -113,9 +112,32 @@
                     return;
                 }
 
-                // Preparar FormData para empresa y usuario
+                const mailUsuario = form.email.value;
+                const codeInvitation = form.codeInvitation.value;
+
+                try {
+                    const verifyResponse = await fetch('/verificar-codigo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ mailUsuario: mailUsuario, codigo: codeInvitation })
+                    });
+
+                    const verifyResult = await verifyResponse.json();
+
+                    if (!verifyResult.valido) {
+                        alert("Código de invitación inválido: " + verifyResult.motivo);
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error al verificar código:", error);
+                    alert("Error al verificar el código de invitación.");
+                    return;
+                }
+
                 const companyData = new FormData();
-                companyData.append('codeInvitation', form.codeInvitation.value);
+                companyData.append('codeInvitation', codeInvitation);
                 companyData.append('companyName', form.companyName.value);
                 companyData.append('cuil', form.cuil.value);
                 companyData.append('address', form.address.value);
@@ -125,11 +147,11 @@
                 companyData.append('cp', form.cp.value);
 
                 const userData = new FormData();
-                userData.append('codeInvitation', form.codeInvitation.value);
-                userData.append('email', form.email.value);
+                userData.append('codeInvitation', codeInvitation);
+                userData.append('email', mailUsuario);
                 userData.append('phone', form.phone.value);
                 userData.append('username', form.username.value);
-                userData.append('password', form.password.value);
+                userData.append('password', password);
 
                 try {
                     const responseEmpresa = await fetch('/empresa', {
@@ -138,7 +160,7 @@
                     });
                     const resultEmpresa = await responseEmpresa.json();
 
-                    userData.append('idEmpresa', resultEmpresa.empresa_id); // <-- Agregá esto
+                    userData.append('idEmpresa', resultEmpresa.empresa_id);
 
                     const responseUsuario = await fetch('/usuario', {
                         method: 'POST',

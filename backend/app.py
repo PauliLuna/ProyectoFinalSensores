@@ -51,5 +51,9 @@ app.register_blueprint(usuario_bp)
 from routes.empresa_routes import empresa_bp
 app.register_blueprint(empresa_bp)
 
+# Registrar codigo invitacion blueprint
+from routes.codigo_invitacion_routes import codigo_bp
+app.register_blueprint(codigo_bp)
+
 if __name__ == '__main__':
     app.run(debug=True)
