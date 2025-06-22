@@ -40,6 +40,21 @@
             </div>
         </div>
     </div>
+    <!-- Modal para recuperación de contraseña -->
+    <div id="resetModal" class="modal" >
+        <div class="modal-content" style="max-width: 350px; margin: 0 auto;">
+            <span id="closeResetModal" class="close">&times;</span>
+            <h3 style="margin-bottom: 20px;">Recuperar contraseña</h3>
+            <form id="resetRequestForm"  >
+                <div class="form-group mb-3" >
+                    <label for="resetEmail">Correo electrónico</label>
+                    <input type="email" id="resetEmail" required style="margin-bottom: 20px;">
+                    <button type="submit" class="btn-primary">Enviar</button>
+                </div>
+            </form>
+            <div id="resetMsg" style="margin-top:10px;"></div>
+        </div>
+    </div>
     <script>
         function togglePassword() {
             const passwordInput = document.getElementById('password');
@@ -78,6 +93,30 @@
             alert("Error de conexión con el servidor.");
         }
     });
+    </script>
+    <script>
+        // Mostrar modal
+        document.querySelector('.forgot-link a').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('resetModal').style.display = 'block';
+        });
+        // Cerrar modal
+        document.getElementById('closeResetModal').onclick = function() {
+            document.getElementById('resetModal').style.display = 'none';
+            document.getElementById('resetMsg').textContent = '';
+        };
+        // Enviar solicitud de recuperación
+        document.getElementById('resetRequestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            const res = await fetch('/solicitar_reset_password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email})
+            });
+            const data = await res.json();
+            document.getElementById('resetMsg').textContent = data.message || data.error;
+        });
     </script>
 </body>
 </html>
