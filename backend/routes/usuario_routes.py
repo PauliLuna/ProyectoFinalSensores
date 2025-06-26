@@ -3,6 +3,7 @@ import secrets, datetime
 from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
 from bson import ObjectId
 from werkzeug.security import generate_password_hash
+from flask_mail import Message
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
@@ -104,12 +105,39 @@ def solicitar_reset_password():
     })
 
     # Enviar email
-    reset_url = f"https://sensia.com/reset-password.html?token={token}"
-    from flask_mail import Message
+    reset_url = f"https://sensia.onrender.com/reset-password.html?token={token}"
     mail = current_app.mail
-    msg = Message("Recuperación de contraseña SensIA", recipients=[email])
-    msg.body = f"Para restablecer tu contraseña, haz clic en el siguiente enlace:\n{reset_url}\nEste enlace expirará en 30 minutos."
+    html_template = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #222; }}
+        .container {{ padding: 20px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }}
+        h2 {{ color: #2a7ae2; }}
+        .info {{ margin-bottom: 10px; }}
+        .label {{ font-weight: bold; }}
+        .message {{ margin-top: 15px; padding: 10px; background: #f1f7ff; border-radius: 5px; }}
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <h2>Recuperación de contraseña SensIA</h2>
+        <div class="info"><span class="label">Para restablecer tu contraseña, haz clic en el siguiente enlace: \n{reset_url}\n Este enlace expirará en 30 minutos.</span></div>
+    </div>
+    </body>
+    </html>
+    """.format(reset_url=reset_url)
+
+    msg = Message(
+        subject=f"Recuperación de contraseña SensIA",
+        sender=current_app.config['MAIL_USERNAME'],
+        recipients=[email],
+        html=html_template  # Usar HTML aquí
+    )
     mail.send(msg)
+
 
     return jsonify({"message": "Se ha enviado un correo con instrucciones para restablecer tu contraseña."})
 
