@@ -24,7 +24,7 @@
             <div class="sensor-data" style="text-align: right; margin-left: auto;">
                 <h2 id="sensor-alias"></h2>
                 <p><strong>Estado: </strong><span id="sensor-estado"></span></p>
-                <p><strong>Condición: </strong><span id="sensor-alarma"></span></p>
+                <p><strong>Condición: </strong><span id="sensor-alerta"></span></p>
             </div>
         </div>
         <div style="width: 100%; max-width: 900px; margin: 30px auto;">
@@ -38,12 +38,12 @@
                 document.addEventListener('DOMContentLoaded', () => {
                     const alias = sessionStorage.getItem('sensor_alias');
                     const estado = sessionStorage.getItem('sensor_estado');
-                    const alarma = sessionStorage.getItem('sensor_alarma');
+                    const alerta = sessionStorage.getItem('sensor_alarma');
 
-                    if (alias && estado && alarma) {
+                    if (alias && estado && alerta) {
                         document.getElementById('sensor-alias').textContent = alias;
                         document.getElementById('sensor-estado').textContent = estado;
-                        document.getElementById('sensor-alarma').textContent = alarma;
+                        document.getElementById('sensor-alerta').textContent = alerta;
                 }
                 });
 
