@@ -105,7 +105,7 @@ def solicitar_reset_password():
     })
 
     # Enviar email
-    reset_url = f"https://sensia.onrender.com/reset-password.html?token={token}"
+    reset_url = f"https://sensia.onrender.com/password_reset.html?token={token}"
     mail = current_app.mail
     html_template = """
     <!DOCTYPE html>
@@ -152,7 +152,12 @@ def reset_password():
     if not token_doc:
         return jsonify({"error": "Token inválido o expirado"}), 400
     # Usar timezone-aware datetime para la comparación
-    if token_doc['expiresAt'] < datetime.datetime.now(datetime.timezone.utc):
+    expires_at = token_doc['expiresAt']
+    if expires_at.tzinfo is None:
+        # Si no tiene zona horaria, asígnale UTC
+        expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
+
+    if expires_at < datetime.datetime.now(datetime.timezone.utc):
         return jsonify({"error": "Token expirado"}), 400
 
     email = token_doc['email']
