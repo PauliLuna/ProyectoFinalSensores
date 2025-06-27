@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, jsonify, session, request, url_for
-import secrets, datetime
+import secrets, datetime, re
 from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
 from bson import ObjectId
 from werkzeug.security import generate_password_hash
@@ -141,12 +141,25 @@ def solicitar_reset_password():
 
     return jsonify({"message": "Se ha enviado un correo con instrucciones para restablecer tu contraseña."})
 
+
+def es_password_fuerte(password):
+    return (
+        len(password) >= 8 and
+        re.search(r'[A-Z]', password) and
+        re.search(r'[a-z]', password) and
+        re.search(r'[^A-Za-z0-9]', password)
+    )
+
 @usuario_bp.route('/reset_password', methods=['POST'])
 def reset_password():
     mongo = current_app.mongo
     data = request.get_json()
     token = data.get('token')
     new_password = data.get('newPassword')
+
+      # Validación de contraseña fuerte
+    if not es_password_fuerte(new_password):
+        return jsonify({"error": "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo."}), 400
 
     token_doc = mongo.db.passwordReset.find_one({"token": token})
     if not token_doc:
@@ -166,3 +179,4 @@ def reset_password():
     mongo.db.passwordReset.delete_one({"token": token})
 
     return jsonify({"message": "Contraseña restablecida correctamente"})
+
