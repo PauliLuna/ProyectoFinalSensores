@@ -895,6 +895,14 @@ input[disabled] {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
+.btn-primary:disabled,
+button[disabled] {
+    background-color: #b0b0b0 !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
 /* Form Footer */
 .form-footer {
     margin-top: 15px;

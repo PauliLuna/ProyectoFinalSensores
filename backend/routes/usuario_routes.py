@@ -96,8 +96,17 @@ def solicitar_reset_password():
     if not usuario:
         return jsonify({"error": "No existe un usuario con ese email"}), 404
 
+    now = datetime.datetime.now(datetime.timezone.utc)
+    # Buscar si ya hay un token válido para este email
+    token_existente = mongo.db.passwordReset.find_one({
+        "email": email,
+        "expiresAt": {"$gt": now}
+    })
+    if token_existente:
+        return jsonify({"message": "Ya se envió un correo de recuperación. Por favor, revisa tu casilla antes de solicitar uno nuevo."}), 200
+
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
+    expires_at = now + datetime.timedelta(minutes=30)
     mongo.db.passwordReset.insert_one({
         "email": email,
         "token": token,
