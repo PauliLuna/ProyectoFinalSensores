@@ -129,10 +129,11 @@
                                     <button type="button" class="btn-primary" style="margin-top: 10px;" onclick="addUserAssignments()">Confirmar</button>
                                 </div>
                             </div>
-                            <!-- Row 8: Botón "Registrar Sensor" -->
-                            
-                            <button type="submit" class="btn-primary submit-btn">Guardar Cambios</button>
-                            
+                            <!-- Row 8: Botones de acción alineados en la misma fila -->
+                            <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 80px; margin-top: 24px;">
+                                <button type="button" class="btn-secondary" id="btnVolver" style="width: 190px; margin:0;">Volver</button>
+                                <button type="submit" class="btn-primary submit-btn" style="width:190px; margin:0;">Guardar Cambios</button>
+                            </div>
                         </form>
                     <!-- Fin del formulario -->
                     </div>
@@ -238,6 +239,37 @@
             actualizarUserSelect();
         }
     }
+
+    let initialFormState = null;
+
+    function getFormState() {
+        const form = document.getElementById('editSensorForm');
+        const formData = new FormData(form);
+        const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => ({
+            idUsuario: row.getAttribute("data-user-id"),
+            permiso: row.querySelector('.assignment-permission').value,
+            estadoAsignacion: row.querySelector('.assignment-status').textContent
+        }));
+        formData.append('assignments', JSON.stringify(assignments));
+        return JSON.stringify(Array.from(formData.entries()));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            initialFormState = getFormState();
+        }, 500);
+
+        document.getElementById('btnVolver').addEventListener('click', function() {
+            const currentState = getFormState();
+            if (currentState !== initialFormState) {
+                if (confirm("Tienes cambios sin guardar. ¿Deseas descartarlos y volver?")) {
+                    window.location.href = "sensores.html";
+                }
+            } else {
+                window.location.href = "sensores.html";
+            }
+        });
+    });
     </script>
 
     <script>
@@ -331,6 +363,7 @@
             const result = await response.json();
             if (response.ok) {
                 alert("Sensor actualizado correctamente");
+                window.location.href = "sensores.html";
             } else {
                 alert(result.message);
             }
