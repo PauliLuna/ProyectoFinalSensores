@@ -170,10 +170,6 @@ def reset_password():
     new_password = data.get('newPassword')
     validate_only = data.get('validateOnly', False)
 
-      # Validación de contraseña fuerte
-    if not es_password_fuerte(new_password):
-        return jsonify({"error": "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo."}), 400
-
     token_doc = mongo.db.passwordReset.find_one({"token": token})
     if not token_doc:
         return jsonify({"error": "Token inválido o expirado"}), 400
@@ -188,6 +184,10 @@ def reset_password():
     
     if validate_only:
         return jsonify({"message": "Token válido"}), 200
+    
+      # Sólo validar si la contraseña es fuerte si se está intentando cambiarla
+    if not es_password_fuerte(new_password):
+        return jsonify({"error": "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo."}), 400
 
     email = token_doc['email']
     hashed = generate_password_hash(new_password, method='pbkdf2:sha256')
