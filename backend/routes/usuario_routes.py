@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, jsonify, session, request, url_for
-import secrets, datetime, re
+import secrets, datetime, re, random, string
 from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -78,7 +78,59 @@ def register_usuario_route():
 @usuario_bp.route('/invite_user', methods=['POST'])
 def invite_user_route():
     mongo = current_app.mongo
-    return invite_user(mongo)
+    email = request.form.get('mail')
+    idEmpresa = session.get('idEmpresa')
+    if not idEmpresa:
+        return jsonify({"error": "No autorizado"}), 401
+
+    # 1. Generar código alfanumérico de 8 caracteres
+    codigo = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    now = datetime.datetime.now()
+    fecha_expiracion = now + datetime.timedelta(hours=24)
+
+    # 2. Guardar en codigoInvitacion
+    mongo.db.codigoInvitacion.insert_one({
+        "codigo": codigo,
+        "mailUsuario": email,
+        "fechaGenerado": now,
+        "fechaExpiracion": fecha_expiracion,
+        "tipoInvitacion": "Usuario",
+        "idEmpresa": idEmpresa,
+        "fechaUsado": None
+    })
+
+    # 3. Crear usuario en estado "Invitado"
+    mongo.db.usuarios.insert_one({
+        "email": email,
+        "idEmpresa": idEmpresa,
+        "estado": "Invitado",
+        "roles": "usuario"
+    })
+
+    # 4. Enviar mail con el código
+    mail = current_app.mail
+    html_template = f"""
+    <html>
+    <body>
+        <h2>Invitación a SensIA</h2>
+        <p>Has sido invitado a unirte a SensIA.</p>
+        <p><b>Código de invitación:</b> <span style="font-size:1.2em;">{codigo}</span></p>
+        <p>Este código es válido por 24 horas. Ingresa a la plataforma y completa tu registro usando este código.</p>
+    </body>
+    </html>
+    """
+    msg = Message(
+        subject="Invitación a SensIA",
+        sender=current_app.config['MAIL_USERNAME'],
+        recipients=[email],
+        html=html_template
+    )
+    try:
+        mail.send(msg)
+    except Exception as e:
+        return jsonify({"error": f"Error al enviar el correo: {str(e)}"}), 500
+
+    return jsonify({"message": f"Se mandó un correo de invitación a {email}"}), 200
 
 @usuario_bp.route('/complete_registration', methods=['POST'])
 def complete_registration_route():
