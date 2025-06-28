@@ -129,10 +129,13 @@
                                     <button type="button" class="btn-primary" style="margin-top: 10px;" onclick="addUserAssignments()">Confirmar</button>
                                 </div>
                             </div>
-                            <!-- Row 8: Botón "Registrar Sensor" -->
-                            
-                            <button type="submit" class="btn-primary submit-btn">Guardar Cambios</button>
-                            
+
+                            <div class="form-actions" style="display: flex; justify-content: center; gap: 16px; margin-top: 24px;"></div>
+                                <!-- Row 8: Botón "Registrar Sensor" -->             
+                                <button type="submit" class="btn-primary submit-btn">Guardar Cambios</button>
+                                <!-- Botón Volver -->
+                                <button type="button" class="btn-secondary" id="btnVolver">Volver</button>
+                            </div>
                         </form>
                     <!-- Fin del formulario -->
                     </div>
@@ -238,6 +241,37 @@
             actualizarUserSelect();
         }
     }
+
+    let initialFormState = null;
+
+    function getFormState() {
+        const form = document.getElementById('editSensorForm');
+        const formData = new FormData(form);
+        const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => ({
+            idUsuario: row.getAttribute("data-user-id"),
+            permiso: row.querySelector('.assignment-permission').value,
+            estadoAsignacion: row.querySelector('.assignment-status').textContent
+        }));
+        formData.append('assignments', JSON.stringify(assignments));
+        return JSON.stringify(Array.from(formData.entries()));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            initialFormState = getFormState();
+        }, 500);
+
+        document.getElementById('btnVolver').addEventListener('click', function() {
+            const currentState = getFormState();
+            if (currentState !== initialFormState) {
+                if (confirm("Tienes cambios sin guardar. ¿Deseas descartarlos y volver?")) {
+                    window.location.href = "sensores.html";
+                }
+            } else {
+                window.location.href = "sensores.html";
+            }
+        });
+    });
     </script>
 
     <script>
