@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </head>
 <body class="body-loading">
     <!-- Left and Top menu -->
@@ -46,16 +49,34 @@
                         shadowSize: [41, 41]
                     });
 
+                    const markers = L.markerClusterGroup({
+                        iconCreateFunction: function(cluster) {
+                            // Obtén todos los marcadores hijos del cluster
+                            const childMarkers = cluster.getAllChildMarkers();
+                            // Si alguno está fuera de rango, el cluster será rojo
+                            const anyOutOfRange = childMarkers.some(marker => marker.options.icon.options.iconUrl.includes('red'));
+                            // Usa el icono rojo si alguno está fuera de rango, azul si todos en rango
+                            const clusterClass = anyOutOfRange ? 'marker-cluster-red' : 'marker-cluster-blue';
+                            return L.divIcon({
+                                html: `<div><span>${cluster.getChildCount()}</span></div>`,
+                                className: `marker-cluster ${clusterClass}`,
+                                iconSize: L.point(40, 40)
+                            });
+                        }
+                    });
+
                     sensores.forEach(sensor => {
                         if (sensor.latitud && sensor.longitud) {
                             const icon = sensor.enRango ? blueIcon : redIcon;
-                            const marker = L.marker([sensor.latitud, sensor.longitud], { icon }).addTo(map);
+                            const marker = L.marker([sensor.latitud, sensor.longitud], { icon });
                             marker.bindPopup(
                                 `<b>${sensor.alias || 'Sensor ' + sensor.nroSensor}</b><br>
                                 Temp. Interna: ${sensor.temperaturaInterna !== null && sensor.temperaturaInterna !== undefined ? sensor.temperaturaInterna + '°C' : '-- °C'}`
                             );
+                            markers.addLayer(marker);
                         }
                     });
+                    map.addLayer(markers);
                 })
                 .catch(err => {
                     console.error('Error al cargar sensores:', err);

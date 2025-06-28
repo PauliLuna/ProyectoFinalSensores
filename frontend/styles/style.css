@@ -1558,3 +1558,20 @@ canvas {
 .back-button:hover {
     background-color: #457B9D;
 }
+
+/* Markers de mapas*/
+.marker-cluster-red {
+    background: radial-gradient(circle at 60% 40%, #f44336 60%, #ffb3b3 100%);
+    border: 2px solid #fff;
+    color: #fff;
+    box-shadow: 0 0 16px 4px #f4433688, 0 2px 8px #0002;
+}
+.marker-cluster-blue {
+    background: radial-gradient(circle at 60% 40%, #2196f3 60%, #b3e0ff 100%);
+    border: 2px solid #fff;
+    color: #fff;
+    box-shadow: 0 0 16px 4px #2196f388, 0 2px 8px #0002;
+}
+.marker-cluster-red div, .marker-cluster-blue div {
+    background: transparent !important;
+}
