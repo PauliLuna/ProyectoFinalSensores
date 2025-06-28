@@ -150,6 +150,14 @@
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault(); // Esto evita que se envíe "a la antigua"
 
+                    // Validación: valor mínimo < valor máximo
+                    const valorMin = parseFloat(document.getElementById('valorMin').value);
+                    const valorMax = parseFloat(document.getElementById('valorMax').value);
+                    if (!isNaN(valorMin) && !isNaN(valorMax) && valorMin >= valorMax) {
+                        alert("El valor mínimo debe ser menor que el valor máximo.");
+                        return; // No submittear el form
+                    }
+
                      // Recopilar asignaciones: leer el id (desde el atributo data-user-id) y el permiso de cada fila
                     const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => {
                         const idUsuario = row.getAttribute("data-user-id");
