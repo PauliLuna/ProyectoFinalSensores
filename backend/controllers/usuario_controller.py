@@ -2,6 +2,7 @@ from flask import request, jsonify, session
 from models.usuario import insert_usuario, get_usuario_by_email
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+from models.codigo_invitacion import verificar_codigo_invitacion
 
 
 def register_usuario(mongo):
@@ -65,13 +66,19 @@ def complete_registration(mongo):
     username = request.form.get('username')
     phone = request.form.get('phone')
     password = request.form.get('password')
+    codigo = request.form.get('codigo')
 
-    # Buscar el usuario invitado por email
+    # 1. Verificar código de invitación
+    resultado = verificar_codigo_invitacion(mongo, email, codigo)
+    if not resultado.get("valido"):
+        return jsonify({"error": resultado.get("motivo", "Código inválido")}), 400
+
+    # 2. Buscar el usuario invitado por email
     usuario = get_usuario_by_email(mongo, email)
     if not usuario:
         return jsonify({"error": "Usuario no encontrado"}), 404
     
-    # Actualizar los datos
+    # 3. Actualizar los datos del usuario
     now = datetime.datetime.now()
     update_fields = {
         "username": username,

@@ -20,8 +20,8 @@
                 <form id="userRegistrationForm" class="form" action="/complete_registration" method="POST">
                     <!-- Código de Identificación -->
                     <div class="form-group mb-3">
-                        <label for="codeInvitation">Código de Identificación</label>
-                        <input type="text" id="codeInvitation" class="form-control" name="codeInvitation" placeholder="Ingrese el código de identificación" required>
+                        <label for="codigo">Código de Identificación</label>
+                        <input type="text" id="codigo" class="form-control" name="codigo" placeholder="Ingrese el código de identificación" required>
                     </div>
 
                     <!-- Datos del Usuario -->
@@ -56,6 +56,7 @@
                 <div class="form-footer mt-3 text-center">
                     <span>¿Ya tienes cuenta? <a href="signin.html">Inicia sesión</a></span>
                 </div>
+                <div id="registerMsg"></div>
             </div>
         </div>
     </div>
@@ -84,6 +85,7 @@
                     if (response.ok) {
                         alert(result.message + "\nMail de usuario: " + result.user_email);
                         this.reset();
+                        window.location.href = "signin.html"; // Redirige al login después del registro exitoso
                     } else {
                         alert('Error al registrar el usuario: ' + (result.error || 'Inténtelo nuevamente.'));
                     }
