@@ -168,6 +168,7 @@ def reset_password():
     data = request.get_json()
     token = data.get('token')
     new_password = data.get('newPassword')
+    validate_only = data.get('validateOnly', False)
 
       # Validación de contraseña fuerte
     if not es_password_fuerte(new_password):
@@ -184,6 +185,9 @@ def reset_password():
 
     if expires_at < datetime.datetime.now(datetime.timezone.utc):
         return jsonify({"error": "Token expirado"}), 400
+    
+    if validate_only:
+        return jsonify({"message": "Token válido"}), 200
 
     email = token_doc['email']
     hashed = generate_password_hash(new_password, method='pbkdf2:sha256')
