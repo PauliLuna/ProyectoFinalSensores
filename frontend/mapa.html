@@ -50,7 +50,10 @@
                         if (sensor.latitud && sensor.longitud) {
                             const icon = sensor.enRango ? blueIcon : redIcon;
                             const marker = L.marker([sensor.latitud, sensor.longitud], { icon }).addTo(map);
-                            marker.bindPopup(`<b>${sensor.alias || 'Sensor ' + sensor.nroSensor}</b>`);
+                            marker.bindPopup(
+                                `<b>${sensor.alias || 'Sensor ' + sensor.nroSensor}</b><br>
+                                Temp. Interna: ${sensor.temperaturaInterna !== null && sensor.temperaturaInterna !== undefined ? sensor.temperaturaInterna + '°C' : '-- °C'}`
+                            );
                         }
                     });
                 })
