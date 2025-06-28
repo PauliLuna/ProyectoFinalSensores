@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, jsonify, session, request, url_for
 import secrets, datetime, re
 from controllers.usuario_controller import register_usuario, invite_user, login_usuario, complete_registration, get_ultimas_conexiones
 from bson import ObjectId
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 
 usuario_bp = Blueprint('usuario_bp', __name__)
@@ -55,9 +55,12 @@ def usuario_actual_route():
             "username": data.get("username", usuario.get("username", "")),
             "phone": data.get("phone", usuario.get("phone", ""))
         }
-        if data.get("password"):
-            from werkzeug.security import generate_password_hash
-            update_fields["password"] = generate_password_hash(data["password"], method='pbkdf2:sha256')
+        # Cambiar contraseña solo si se proveen los campos
+        if data.get("newPassword"):
+            current_password = data.get("currentPassword", "")
+            if not check_password_hash(usuario["password"], current_password):
+                return jsonify({"error": "La contraseña actual es incorrecta."}), 400
+            update_fields["password"] = generate_password_hash(data["newPassword"], method='pbkdf2:sha256')
         mongo.db.usuarios.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": update_fields}
