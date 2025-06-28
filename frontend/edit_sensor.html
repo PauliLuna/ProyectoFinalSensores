@@ -344,6 +344,15 @@
         // Manejo del envío del formulario para actualizar el sensor (método PUT)
         document.getElementById('editSensorForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // Validación: valor mínimo < valor máximo
+            const valorMin = parseFloat(document.getElementById('valorMin').value);
+            const valorMax = parseFloat(document.getElementById('valorMax').value);
+            if (!isNaN(valorMin) && !isNaN(valorMax) && valorMin >= valorMax) {
+                alert("El valor mínimo debe ser menor que el valor máximo.");
+                return; // No submittear el form
+            }
+
             const sensorId = document.getElementById('nroSensor').value
             const formData = new FormData(this);
             
