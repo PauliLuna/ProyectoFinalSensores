@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 def get_next_sequence(mongo, name):
     """
     Obtiene el siguiente valor de secuencia para un nombre dado usando una colección 'counters'.
@@ -21,3 +23,26 @@ def insert_sensor(mongo, sensor_data):
     sensors_coll = mongo.db.sensors  # se asume que la colección se llama sensors
     result = sensors_coll.insert_one(sensor_data)
     return str(result.inserted_id)
+
+def get_sensor_with_assignments(mongo, sensor_id):
+    sensor = mongo.db.sensors.find_one({"nroSensor": int(sensor_id)})
+    if not sensor:
+        return None
+    # Serializar ObjectId en el sensor
+    if '_id' in sensor:
+        sensor['_id'] = str(sensor['_id'])
+    # Recuperar las asignaciones de este sensor
+    assignments = list(mongo.db.asignaciones.find({"idSensor": sensor["nroSensor"]}))
+    # Obtener todos los idUsuario únicos
+    user_ids = [a["idUsuario"] for a in assignments]
+    # Busca los usuarios por _id
+    usuarios = list(mongo.db.usuarios.find({"_id": {"$in": [ObjectId(uid) for uid in user_ids]}}))
+    id_to_email = {str(u["_id"]): u["email"] for u in usuarios}
+
+    # Serializar ObjectId en cada asignación
+    for assignment in assignments:
+        assignment["email"] = id_to_email.get(assignment["idUsuario"], assignment["idUsuario"])
+        if '_id' in assignment:
+            assignment['_id'] = str(assignment['_id'])
+    sensor["assignments"] = assignments
+    return sensor

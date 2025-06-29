@@ -1,6 +1,5 @@
-from bson import ObjectId
 from flask import request, jsonify, session
-from models.sensor import insert_sensor
+from models.sensor import insert_sensor, get_sensor_with_assignments
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
@@ -191,6 +190,16 @@ def get_all_sensors(mongo):
             "temperaturaExterna": temp_externa,
             "enRango": en_rango,
             "latitud": latitud,
-            "longitud": longitud
+            "longitud": longitud,
         })
     return result
+
+def get_sensor(mongo, sensor_id):
+    try:
+        sensor = get_sensor_with_assignments(mongo, sensor_id)
+        if not sensor:
+            return jsonify({"error": "Sensor no encontrado"}), 404
+        return jsonify(sensor), 200
+    except Exception as e:
+        print(f"Error en get_sensor: {e}")
+        return jsonify({"error": str(e)}), 500
