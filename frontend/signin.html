@@ -25,7 +25,7 @@
                     <div class="form-group mb-3 password-wrapper">
                         <label for="password" style="text-align: center;">Contraseña</label>
                         <input type="password" id="password" class="form-control" placeholder="Ingrese su contraseña" required>
-                        <button type="button" class="toggle-password" tabindex="-1" onclick="togglePassword()">
+                        <button type="button" class="toggle-password" tabindex="-1" onclick="togglePassword('password','eyeIcon')">
                             <span id="eyeIcon">🙈</span>
                         </button>
                     </div>
@@ -55,19 +55,7 @@
             <div id="resetMsg" style="margin-top:10px;"></div>
         </div>
     </div>
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const eyeIcon = document.getElementById('eyeIcon');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                eyeIcon.textContent = '👁️'; // Mostrar ojito cuando se ve la contraseña
-            } else {
-                passwordInput.type = 'password';
-                eyeIcon.textContent = '🙈'; // Mostrar mono cuando está oculta
-            }
-        }
-    </script>
+    <script src="scripts/utils.js"></script>
     <script>
     document.getElementById('signin-form').addEventListener('submit', async function(e) {
         e.preventDefault();

@@ -100,15 +100,6 @@
         const newPassword = document.getElementById('newPassword').value;
         const repeatPassword = document.getElementById('repeatPassword').value;
         
-        function esPasswordFuerte(pass) {
-            return (
-                pass.length >= 8 &&
-                /[A-Z]/.test(pass) &&    // al menos una mayúscula
-                /[a-z]/.test(pass) &&    // al menos una minúscula
-                /[^A-Za-z0-9]/.test(pass) // al menos un símbolo
-            );
-        }
-        
         if (newPassword || repeatPassword) {
             if (newPassword !== repeatPassword) {
                 alert("Las contraseñas nuevas no coinciden.");
@@ -154,17 +145,7 @@
         }
     };
     // 4. Función para mostrar/ocultar contraseñas
-    function togglePassword(inputId, eyeIconId) {
-        const passwordInput = document.getElementById(inputId);
-        const eyeIcon = document.getElementById(eyeIconId);
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            eyeIcon.textContent = "👁️";
-        } else {
-            passwordInput.type = "password";
-            eyeIcon.textContent = "🙈";
-        }
-    }
     </script>
+    <script src="scripts/utils.js"></script>
 </body>
 </html>

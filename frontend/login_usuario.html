@@ -73,16 +73,6 @@
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
 
-                // Validación de contraseña fuerte
-                function esPasswordFuerte(pass) {
-                    return (
-                        pass.length >= 8 &&
-                        /[A-Z]/.test(pass) &&    // al menos una mayúscula
-                        /[a-z]/.test(pass) &&    // al menos una minúscula
-                        /[^A-Za-z0-9]/.test(pass) // al menos un símbolo
-                    );
-                }
-
                 if (password !== confirmPassword) {
                     alert('Las contraseñas no coinciden. Por favor, inténtelo de nuevo.');
                     return;
@@ -114,18 +104,7 @@
             });
         });
 
-        function togglePassword(fieldId, iconId) {
-            const inputField = document.getElementById(fieldId);
-            const icon = document.getElementById(iconId);
-            if (inputField.type === 'password') {
-                inputField.type = 'text';
-                icon.textContent = '👁️';
-            } else {
-                inputField.type = 'password';
-                icon.textContent = '🙈';
-            }
-        }
-
     </script>
+    <script src="scripts/utils.js"></script>
 </body>
 </html>

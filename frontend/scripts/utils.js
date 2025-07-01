@@ -81,3 +81,26 @@ function resaltarSidebarActivo() {
         }
     });
 }
+
+// --- Función para mostrar/ocultar contraseña ---
+function togglePassword(inputId, eyeIconId) {
+    const passwordInput = document.getElementById(inputId);
+    const eyeIcon = document.getElementById(eyeIconId);
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        eyeIcon.textContent = "👁️";
+    } else {
+        passwordInput.type = "password";
+        eyeIcon.textContent = "🙈";
+    }
+}
+
+// --- Validación de contraseña fuerte ---
+function esPasswordFuerte(pass) {
+    return (
+        pass.length >= 8 &&
+        /[A-Z]/.test(pass) &&    // al menos una mayúscula
+        /[a-z]/.test(pass) &&    // al menos una minúscula
+        /[^A-Za-z0-9]/.test(pass) // al menos un símbolo
+    );
+}
