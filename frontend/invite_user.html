@@ -36,18 +36,16 @@
             </div>
         </div>
     </div>
-    
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/usuarios.js"></script>
     <script>
     document.getElementById('inviteForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const formData = new FormData(this);
         try {
-            const response = await fetch('/invite_user', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            if (response.ok) {
+            const result = await invitarUsuario(formData);
+
+            if (result.message) {
                 document.getElementById('successMessage').textContent =
                     `Se mandó un correo de invitación a ${formData.get('mail')}`;
                 document.getElementById('successModal').style.display = 'block';
@@ -73,6 +71,5 @@
         }
     };
     </script>
-    <script src="scripts/utils.js"></script>
 </body>
 </html>

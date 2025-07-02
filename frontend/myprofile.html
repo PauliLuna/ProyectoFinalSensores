@@ -79,6 +79,7 @@
         </div>
     </div>
     <script src="scripts/utils.js"></script>
+    <script src="scripts/usuarios.js"></script>
     <script>
     // 1. Poblar el formulario con los datos del usuario logueado
     async function cargarPerfil() {
@@ -105,6 +106,7 @@
                 alert("Las contraseñas nuevas no coinciden.");
                 return;
             }
+            // Llama a esPasswordFuerte de utils.js (global)
             if (!esPasswordFuerte(newPassword)) {
                 alert("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.");
                 return;
@@ -117,13 +119,10 @@
             currentPassword: document.getElementById('currentPassword').value,
             newPassword: newPassword
         };
-        const res = await fetch('/usuario_actual', {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
-        });
-        const result = await res.json();
-        if (res.ok) {
+        
+        const result = await actualizarPerfil(body);
+
+        if (result.message) {
             document.getElementById('successMessage').textContent = "¡Perfil actualizado con éxito!";
             document.getElementById('successModal').style.display = 'block';
             document.getElementById('currentPassword').value = '';
@@ -146,6 +145,6 @@
     };
     // 4. Función para mostrar/ocultar contraseñas
     </script>
-    <script src="scripts/utils.js"></script>
+    
 </body>
 </html>

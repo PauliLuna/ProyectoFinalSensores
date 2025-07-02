@@ -56,6 +56,7 @@
         </div>
     </div>
     <script src="scripts/utils.js"></script>
+    <script src="scripts/usuarios.js"></script>
     <script>
     document.getElementById('signin-form').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -66,12 +67,8 @@
         formData.append('password', password);
 
         try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            if (response.ok) {
+            const result = await loginUsuario(formData);
+            if (result.message) {
                 // Login exitoso, redirigir o mostrar mensaje
                 window.location.href = "home.html"; // o la página principal de tu app
             } else {
@@ -102,12 +99,9 @@
             const email = document.getElementById('resetEmail').value;
             const btn = this.querySelector('button[type="submit"]');
             btn.disabled = true;
-            const res = await fetch('/solicitar_reset_password', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email})
-            });
-            const data = await res.json();
+            
+            const data = await solicitarResetPassword(email);
+
             document.getElementById('resetMsg').textContent = data.message || data.error;
 
             // Solo dejar el botón deshabilitado si fue exitoso o si ya existe un token válido
