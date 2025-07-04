@@ -18,8 +18,9 @@ if (!token) {
     })
     .then(async res => {
         const data = await res.json();
-        if (!res.ok && data.error && data.error.toLowerCase().includes("expirado")) {
+        if (!res.ok && data.error && (data.error.toLowerCase().includes("expirado") || data.error.toLowerCase().includes("inválido"))) {
             window.location.href = "token_expired.html";
+            return;
         }
         // Si es válido:
         document.getElementById('loadingMsg').style.display = 'none';
@@ -48,7 +49,7 @@ document.getElementById('resetPasswordForm').addEventListener('submit', async fu
         setTimeout(() => window.location.href = "signin.html", 2000);
     } else {
         // Si el error es de token expirado, redirige
-        if (data.error && data.error.toLowerCase().includes("expirado")) {
+        if (data.error && (data.error.toLowerCase().includes("expirado") || data.error.toLowerCase().includes("inválido"))) {
             window.location.href = "token_expired.html";
         } else {
             document.getElementById('resetResult').textContent = data.error || "Error al restablecer la contraseña.";
