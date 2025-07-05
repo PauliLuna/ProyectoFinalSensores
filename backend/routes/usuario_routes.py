@@ -110,12 +110,52 @@ def invite_user_route():
     # 4. Enviar mail con el código
     mail = current_app.mail
     html_template = f"""
+    <!DOCTYPE html>
     <html>
+    <head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; max-width: 600px; margin: auto; }}
+        h2 {{ color: #2a7ae2; }}
+        .info {{ margin-bottom: 10px; }}
+        .label {{ font-weight: bold; }}
+        .message {{ margin-top: 15px; padding: 12px; background-color: #e8f0fe; border-left: 5px solid #2a7ae2; border-radius: 4px; }}
+        a {{ color: #2a7ae2; text-decoration: none; }}
+    </style>
+    </head>
     <body>
-        <h2>Invitación a SensIA</h2>
-        <p>Has sido invitado a unirte a SensIA.</p>
-        <p><b>Código de invitación:</b> <span style="font-size:1.2em;">{codigo}</span></p>
-        <p>Este código es válido por 24 horas. Ingresa a la plataforma y completa tu registro usando este código.</p>
+    <div class="container">
+        <h2>Fuiste invitado a unirte a la plataforma SensIA</h2>
+
+        <p>Tu empresa te ha invitado a registrarte como usuario en SensIA, la plataforma de monitoreo inteligente de cámaras de frío.</p>
+
+        <div class="info">
+        <span class="label">Correo invitado:</span> {email}
+        </div>
+
+        <div class="info">
+        <span class="label">Código de invitación:</span> <span style="color: #2a7ae2; font-weight: bold;">{codigo}</span>
+        </div>
+
+        <div class="message">
+        ⚠️ Este código de invitación es válido por <strong>24 horas</strong> desde su emisión.  
+        Usalo lo antes posible para activar tu cuenta.
+        </div>
+
+        <p><strong>Para completar tu registro:</strong></p>
+        <ol>
+        <li>Accedé al formulario de alta de usuario: <a href="https://sensia.onrender.com/login_usuario.html">https://sensia.onrender.com/login_usuario.html</a></li>
+        <li>Ingresá tu correo, el código de invitación y tu nueva contraseña.</li>
+        <li>Listo, ya vas a poder acceder a la plataforma con tu cuenta.</li>
+        </ol>
+
+        <p>Ante cualquier duda, podés responder a este correo o escribirnos a  
+        <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a>.</p>
+
+        <p>Bienvenido/a a <strong>SensIA</strong> 👋  
+        <br>🌐 <a href="https://sensia.onrender.com/">https://sensia.onrender.com/</a></p>
+    </div>
     </body>
     </html>
     """
