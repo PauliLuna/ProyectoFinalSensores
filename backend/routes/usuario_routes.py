@@ -211,29 +211,57 @@ def solicitar_reset_password():
     # Enviar email
     reset_url = f"https://sensia.onrender.com/password_reset.html?token={token}"
     mail = current_app.mail
-    html_template = """
+    html_template = f"""
     <!DOCTYPE html>
     <html>
     <head>
     <meta charset="UTF-8">
     <style>
-        body {{ font-family: Arial, sans-serif; color: #222; }}
-        .container {{ padding: 20px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }}
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa; max-width: 600px; margin: auto; }}
         h2 {{ color: #2a7ae2; }}
-        .info {{ margin-bottom: 10px; }}
-        .label {{ font-weight: bold; }}
-        .message {{ margin-top: 15px; padding: 10px; background: #f1f7ff; border-radius: 5px; }}
+        .info {{ margin: 15px 0; }}
+        .button {{
+        display: inline-block;
+        background-color: #2a7ae2;
+        color: white;
+        padding: 10px 16px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        }}
+        .message {{ margin-top: 15px; padding: 10px; background-color: #fff3cd; border-left: 5px solid #ffc107; border-radius: 4px; }}
     </style>
     </head>
     <body>
     <div class="container">
-        <h2>Recuperación de contraseña SensIA</h2>
-        <div class="info"><span class="label">Para restablecer tu contraseña, haz clic en el siguiente enlace: \n{reset_url}\n Este enlace expirará en 30 minutos.</span></div>
+        <h2>Recuperación de contraseña en SensIA</h2>
+
+        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>SensIA</strong>.</p>
+
+        <p>Hacé clic en el siguiente botón para crear una nueva contraseña:</p>
+
+        <div class="info">
+        <a href="{reset_url}"
+        style="display:inline-block; background-color:#2a7ae2; color:white; padding:12px 20px; text-decoration:none; border-radius:6px; font-weight:bold; font-family:Arial, sans-serif; font-size:15px;">
+        Restablecer contraseña
+        </a>
+        </div>
+
+        <p class="message">⚠️ Este enlace es válido por <strong>30 minutos</strong>.  
+        Si no solicitaste el cambio, podés ignorar este mensaje.</p>
+
+        <p>¿Tenés problemas con el botón? Copiá y pegá esta URL en tu navegador:</p>
+        <p><a href="{reset_url}">{reset_url}</a></p>
+
+        <p>Gracias por usar <strong>SensIA</strong>.</p>
+
+        <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
+        📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
     </div>
     </body>
     </html>
-    """.format(reset_url=reset_url)
-
+    """
     msg = Message(
         subject=f"Recuperación de contraseña SensIA",
         sender=current_app.config['MAIL_USERNAME'],
