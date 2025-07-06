@@ -55,5 +55,10 @@ app.register_blueprint(empresa_bp)
 from routes.codigo_invitacion_routes import codigo_bp
 app.register_blueprint(codigo_bp)
 
+# Registrar alertas blueprint
+from routes.alerta_routes import create_alerta_routes
+app.register_blueprint(create_alerta_routes(mongo))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
