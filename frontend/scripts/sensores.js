@@ -1,9 +1,20 @@
 function filterSensors() {
     const input = document.getElementById("sensorInput").value.toLowerCase();
+    const estado = document.getElementById("estadoFilter").value;
+    const rango = document.getElementById("rangoFilter").value;
     const cards = document.querySelectorAll(".sensor-card");
     cards.forEach(card => {
         const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(input) ? "block" : "none";
+        const cardEstado = card.getAttribute('data-estado');
+        const cardRango = card.getAttribute('data-alerta');
+        let show = true;
+        if (input && !text.includes(input)) show = false;
+        if (estado && cardEstado !== estado) show = false;
+        if (rango) {
+            if (rango === "enRango" && cardRango !== "En rango") show = false;
+            if (rango === "fueraRango" && cardRango !== "Fuera de rango") show = false;
+        }
+        card.style.display = show ? "block" : "none";
     });
 }
 
@@ -59,4 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (refreshIcon) {
         refreshIcon.addEventListener('click', cargarSensores);
     }
+    // Filtros
+    document.getElementById('estadoFilter').addEventListener('change', filterSensors);
+    document.getElementById('rangoFilter').addEventListener('change', filterSensors);
 });

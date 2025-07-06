@@ -17,6 +17,18 @@
     <div class="main-content">
         <div class="sensor-search">
             <input type="text" id="sensorInput" placeholder="Buscar sensores..." onkeyup="filterSensors()">
+            <label for="estadoFilter" style="margin-left:16px; font-weight: bold;">Estado:</label>
+            <select id="estadoFilter">
+                <option value="">Todos</option>
+                <option value="ONLINE">Solo ONLINE</option>
+                <option value="OFFLINE">Solo OFFLINE</option>
+            </select>
+            <label for="rangoFilter" style="margin-left:16px; font-weight: bold;">Rango:</label>
+            <select id="rangoFilter">
+                <option value="">Todos</option>
+                <option value="enRango">En Rango</option>
+                <option value="fueraRango">Fuera de Rango</option>
+            </select>
             <span id="refreshIcon" title="Refrescar" style="cursor: pointer; font-size: 1.5em; margin-left: 6px; color: #457B9D; display: flex; align-items: center;">
                 🔄
             </span>

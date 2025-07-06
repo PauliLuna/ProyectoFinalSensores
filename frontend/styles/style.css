@@ -1317,12 +1317,11 @@ canvas {
 /* Sensor Search Bar */
 .sensor-search {
     width: 100%;
-    max-width: 900px; /* Optional: limit max width */
-    margin: 30px auto 20px auto; /* Center and add space above/below */
-    padding: 0 20px; /* Add horizontal padding */
+    margin: 30px 20px;
+    padding: 0 40px 0px 20px; /* Add horizontal padding */
     box-sizing: border-box;
-    display: flex;                /* <-- AÑADE ESTO */
-    align-items: center;          /* <-- Y ESTO */
+    display: flex;        
+    align-items: center;         
     gap: 16px;
 }
 
