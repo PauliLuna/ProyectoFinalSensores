@@ -15,7 +15,7 @@ function redirectToDashboard(element) {
     window.location.href = `dashboard_sensor.html`;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function cargarSensores() {
     const grid = document.getElementById('sensorGrid');
     grid.innerHTML = '<p>Cargando sensores...</p>';
     try {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.setAttribute('data-estado', sensor.estado);
             card.setAttribute('data-alerta', sensor.enRango ? 'En rango' : 'Fuera de rango');
             card.innerHTML = `
-            <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">    
+                <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">    
                 <div class="sensor-status ${sensor.estado === 'ONLINE' ? 'status-online' : 'status-offline'}">● ${sensor.estado}</div>
                 <div class="sensor-info">
                     <strong>${sensor.alias}</strong><br>
@@ -45,8 +45,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             grid.appendChild(card);
         });
+        filterSensors();
     } catch (error) {
         grid.innerHTML = '<p>Error al cargar sensores.</p>';
         console.error(error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    cargarSensores();
+    // Refrescar
+    const refreshIcon = document.getElementById('refreshIcon');
+    if (refreshIcon) {
+        refreshIcon.addEventListener('click', cargarSensores);
     }
 });

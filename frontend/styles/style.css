@@ -1321,7 +1321,9 @@ canvas {
     margin: 30px auto 20px auto; /* Center and add space above/below */
     padding: 0 20px; /* Add horizontal padding */
     box-sizing: border-box;
-    
+    display: flex;                /* <-- AÑADE ESTO */
+    align-items: center;          /* <-- Y ESTO */
+    gap: 16px;
 }
 
 .sensor-search input {
