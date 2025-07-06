@@ -1577,3 +1577,14 @@ canvas {
 .marker-cluster-red div, .marker-cluster-blue div {
     background: transparent !important;
 }
+
+select {
+    font-family: sans-serif;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 10px;
+}
