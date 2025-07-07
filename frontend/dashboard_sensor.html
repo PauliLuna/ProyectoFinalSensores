@@ -51,59 +51,52 @@
 
             let tempChart = null;
 
-            document.getElementById('btnGraficar').addEventListener('click', () => {
+            document.getElementById('btnGraficar').addEventListener('click', async () => {
                 const fromDateInput = document.getElementById('desde');
                 const toDateInput = document.getElementById('hasta');
-                const fromDate = new Date(fromDateInput.value);
-                const toDate = new Date(toDateInput.value);
+                const fromDate = fromDateInput.value;
+                const toDate = toDateInput.value;
 
-                if (!fromDateInput.value || !toDateInput.value || fromDate > toDate) {
+                if (!fromDate || !toDate || new Date(fromDate) > new Date(toDate)) {
                     alert('Por favor seleccioná un rango de fechas válido.');
                     return;
                 }
 
-                const labels = [];
-                const internalTemps = [];
-                const externalTemps = [];
-                let sumInternal = 0;
-                let sumExternal = 0;
-                let count = 0;
+                // Obtener el nroSensor del sessionStorage (deberías guardarlo al seleccionar el sensor)
+                const sensorAlias = sessionStorage.getItem('sensor_alias');
+                const sensores = await fetch('/sensores').then(r => r.json());
+                const sensor = sensores.find(s => s.alias === sensorAlias);
+                if (!sensor) {
+                    alert('No se encontró el sensor.');
+                    return;
+                }
+                const sensorId = sensor.nroSensor;
 
-                const current = new Date(fromDate);
+                // Fetch mediciones reales
+                const res = await fetch(`/mediciones?sensor_id=${sensorId}&desde=${fromDate}T00:00:00&hasta=${toDate}T23:59:59`);
+                const mediciones = await res.json();
 
-                while (current <= toDate) {
-                    for (let hour = 0; hour < 24; hour++) {
-                        const timestamp = new Date(current);
-                        timestamp.setHours(hour, 0, 0, 0);
-
-                        const internalTemp = parseFloat((Math.random() * 1 + 3.5).toFixed(2)); // 3.5–4.5 °C
-                        const externalTemp = parseFloat((Math.random() * 10 + 15).toFixed(2)); // 15–25 °C
-
-                        labels.push(timestamp.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }));
-                        internalTemps.push(internalTemp);
-                        externalTemps.push(externalTemp);
-
-                        sumInternal += internalTemp;
-                        sumExternal += externalTemp;
-                        count++;
-                    }
-                    current.setDate(current.getDate() + 1);
+                if (!Array.isArray(mediciones) || mediciones.length === 0) {
+                    alert('No hay mediciones para ese rango.');
+                    return;
                 }
 
-                const avgInternal = (sumInternal / count).toFixed(2);
-                const avgExternal = (sumExternal / count).toFixed(2);
+                const labels = mediciones.map(m => new Date(m.fechaHoraMed).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }));
+                const internalTemps = mediciones.map(m => m.valorTempInt);
+                const externalTemps = mediciones.map(m => m.valorTempExt);
 
-                // Mostrar promedios debajo del gráfico
+                // Calcular promedios
+                const avgInternal = (internalTemps.reduce((a, b) => a + (b || 0), 0) / internalTemps.length).toFixed(2);
+                const avgExternal = (externalTemps.reduce((a, b) => a + (b || 0), 0) / externalTemps.length).toFixed(2);
+
                 document.getElementById('averageTemperatures').innerHTML = `
                     <p><strong>Promedio temperatura interna:</strong> ${avgInternal} °C</p>
                     <p><strong>Promedio temperatura externa:</strong> ${avgExternal} °C</p>
                 `;
 
                 const ctx = document.getElementById('temperatureChart').getContext('2d');
-
-                if (tempChart) tempChart.destroy();
-
-                tempChart = new Chart(ctx, {
+                if (window.tempChart) window.tempChart.destroy();
+                window.tempChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
@@ -153,7 +146,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Serie de tiempo de temperaturas simuladas',
+                                text: 'Serie de tiempo de temperaturas',
                                 font: {
                                     size: 20,
                                     weight: 'bold',
