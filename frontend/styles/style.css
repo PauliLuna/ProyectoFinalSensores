@@ -1337,8 +1337,9 @@ canvas {
 
 .sensor-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 395px));
     gap: 20px;
+    justify-content: start; /* Centra al inicio las cards cuando hay pocas */
 }
 
 .sensor-card {
@@ -1349,6 +1350,21 @@ canvas {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: transform 0.2s;
+    max-width: 395px;
+    min-width: 320px;
+    width: 100%;
+    height: 190px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Centrar las cards cuando el sidebar está colapsado */
+.sidebar-collapsed .sensor-grid,
+.main-content.sidebar-collapsed .sensor-grid {
+    justify-content: start;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 320px)); /* Ajusta el ancho de las cards */
 }
 
 .corner-icon {
