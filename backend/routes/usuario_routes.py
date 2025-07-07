@@ -82,6 +82,14 @@ def invite_user_route():
     idEmpresa = session.get('idEmpresa')
     if not idEmpresa:
         return jsonify({"error": "No autorizado"}), 401
+    
+    # --- VERIFICAR SI YA EXISTE EL USUARIO PARA ESA EMPRESA ---
+    usuario_existente = mongo.db.usuarios.find_one({
+        "email": email,
+        "idEmpresa": idEmpresa
+    })
+    if usuario_existente:
+        return jsonify({"error": "El usuario ya fue invitado y/o registrado para esta empresa."}), 400
 
     # 1. Generar código alfanumérico de 8 caracteres
     codigo = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
