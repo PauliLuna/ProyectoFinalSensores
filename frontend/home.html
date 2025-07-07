@@ -20,20 +20,20 @@
         <h1 class="centered-title">Executive Dashboard</h1>
         <div class="kpi-cards">
             <div class="kpi-card primary">
-                <h3 id="total-sensores">120</h3>
+                <h3 id="total-sensores"></h3>
                 <p>Total Sensores Instalados</p>
             </div>
             <div class="kpi-card success">
-                <h3 id="sensores-en-rango">98</h3>
+                <h3 id="sensores-en-rango"></h3>
                 <p>Sensores en Rango</p>
             </div>
             <div class="kpi-card warning">
-                <h3 id="sensores-fuera-rango">15</h3>
+                <h3 id="sensores-fuera-rango"></h3>
                 <p>Sensores Fuera de Rango</p>
             </div>
             <div class="kpi-card" style="background:#e76f51;">
-                <h3 id="sensores-fallo">7</h3>
-                <p>Sensores con Fallos/Sin Señal</p>
+                <h3 id="sensores-fallo"></h3>
+                <p>Sensores sin Señal (offline)</p>
             </div>
         </div>
 
@@ -141,6 +141,34 @@
         // (Opcional) Cuando conectes con backend, reemplazá los valores de ejemplo por datos reales usando fetch/AJAX.
     </script>
     <script>
+
+    // Cargar datos de KPIs desde el backend
+    async function cargarKPIs() {
+        try {
+            const res = await fetch('/sensores');
+            const sensores = await res.json();
+
+            // Total de sensores
+            document.getElementById('total-sensores').textContent = sensores.length;
+
+            // Sensores en rango
+            const enRango = sensores.filter(s => s.enRango).length;
+            document.getElementById('sensores-en-rango').textContent = enRango;
+
+            // Sensores fuera de rango (solo los que tienen medición)
+            const fueraRango = sensores.filter(s => s.enRango === false).length;
+            document.getElementById('sensores-fuera-rango').textContent = fueraRango;
+
+            // Sensores offline (fallos/sin señal)
+            const offline = sensores.filter(s => s.estado && s.estado.toLowerCase() === 'offline').length;
+            document.getElementById('sensores-fallo').textContent = offline;
+
+        } catch (error) {
+            console.error('Error al cargar KPIs:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarKPIs);
     // Cargar últimas conexiones de usuarios desde el backend
     async function cargarUltimasConexiones() {
         const res = await fetch('/ultimas_conexiones');
