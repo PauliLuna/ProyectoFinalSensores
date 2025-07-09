@@ -3,8 +3,6 @@ from flask import request, jsonify
 import jwt
 import os
 
-SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
-
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -16,9 +14,12 @@ def token_required(f):
         if not token:
             return jsonify({'error': 'Token requerido'}), 401
         try:
-            data = jwt.decode(token, SECRET_KEY_TOKEN, algorithms=["HS256"])
-            # Puedes agregar más validaciones aquí (roles, expiración, etc.)
-        except Exception as e:
-            return jsonify({'error': 'Token inválido o expirado'}), 401
+            data = jwt.decode(token, os.getenv("SECRET_KEY_TOKEN"), algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expirado'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Token inválido'}), 401
+        except Exception:
+            return jsonify({'error': 'Error al validar token'}), 401
         return f(*args, **kwargs)
     return decorated
