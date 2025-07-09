@@ -95,3 +95,21 @@ async function cargarUltimasConexiones() {
     });
 }
 cargarUltimasConexiones();
+
+// Redirigir a la página de sensores al hacer clic en los KPIs
+
+document.getElementById('total-sensores').parentElement.onclick = () => {
+    window.location.href = 'sensores.html';
+};
+
+document.getElementById('sensores-en-rango').parentElement.onclick = () => {
+    window.location.href = 'sensores.html?rango=enRango';
+};
+
+document.getElementById('sensores-fuera-rango').parentElement.onclick = () => {
+    window.location.href = 'sensores.html?rango=fueraRango';
+};
+
+document.getElementById('sensores-fallo').parentElement.onclick = () => {
+    window.location.href = 'sensores.html?estado=OFFLINE';
+};

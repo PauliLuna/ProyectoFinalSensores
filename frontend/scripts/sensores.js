@@ -73,4 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Filtros
     document.getElementById('estadoFilter').addEventListener('change', filterSensors);
     document.getElementById('rangoFilter').addEventListener('change', filterSensors);
+
+    // Cargar filtros desde la URL si existen
+    const params = new URLSearchParams(window.location.search);
+    const estado = params.get('estado');
+    const rango = params.get('rango');
+    if (estado) {
+        document.getElementById('estadoFilter').value = estado;
+    }
+    if (rango) {
+        document.getElementById('rangoFilter').value = rango;
+    }
+    filterSensors();
+
 });
