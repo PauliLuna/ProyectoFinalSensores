@@ -35,6 +35,10 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 app.mail = mail
 
+# Configuración de la clave secreta para tokens JWT
+print("Configurando clave secreta para tokens JWT...")
+SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
+
 # Importar y registrar Blueprints
 from routes.contacto_routes import contacto_bp
 app.register_blueprint(contacto_bp)

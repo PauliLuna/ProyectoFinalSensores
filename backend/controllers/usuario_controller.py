@@ -3,7 +3,10 @@ from models.usuario import insert_usuario, get_usuario_by_email
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from models.codigo_invitacion import verificar_codigo_invitacion
+import jwt
+import os
 
+SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
 
 def register_usuario(mongo):
     """
@@ -104,7 +107,6 @@ def login_usuario(mongo):
     password = request.form.get('password')
     usuario = get_usuario_by_email(mongo, email)
     if usuario and check_password_hash(usuario['password'], password):
-    #if usuario and usuario['password'] == password:  # ← NO encriptado, solo para pruebas
         session['user_id'] = str(usuario['_id'])
         session['idEmpresa'] = usuario.get('idEmpresa')  # Guarda el idEmpresa en la sesión
          # Actualizar fechaUltimoAcceso
@@ -112,7 +114,14 @@ def login_usuario(mongo):
             {"_id": usuario['_id']},
             {"$set": {"fechaUltimoAcceso": datetime.datetime.now()}}
         )
-        return jsonify({"message": "Login exitoso"}), 200
+        # Generar token JWT
+        payload = {
+            "user_id": str(usuario['_id']),
+            "idEmpresa": usuario.get('idEmpresa'),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+        }
+        token = jwt.encode(payload, SECRET_KEY_TOKEN, algorithm="HS256")
+        return jsonify({"message": "Login exitoso", "token": token}), 200
     else:
         return jsonify({"error": "Credenciales inválidas"}), 401
     
