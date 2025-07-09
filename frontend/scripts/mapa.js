@@ -9,30 +9,40 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-fetch('/sensores', {
-    headers: {
-        'Authorization': 'Bearer ' + token
-    }
-})
-    .then(res => res.json())
-    .then(sensores => {
-        // ...todo tu código de iconos, clusters y marcadores...
-        const blueIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+function crearIcono(color) {
+    return new L.Icon({
+        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+}
+
+const blueIcon = crearIcono('blue');
+const redIcon = crearIcono('red');
+
+async function cargarSensores() {
+    try {
+        const response = await fetch('/sensores', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
         });
-        const redIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
+
+        if (response.status === 401) {
+            alert('Sesión expirada o token inválido. Por favor, inicia sesión nuevamente.');
+            sessionStorage.removeItem('authToken');
+            window.location.href = "index.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Error al obtener sensores');
+        }
+
+        const sensores = await response.json();
 
         const markers = L.markerClusterGroup({
             iconCreateFunction: function(cluster) {
@@ -59,10 +69,13 @@ fetch('/sensores', {
             }
         });
         map.addLayer(markers);
-    })
-    .catch(err => {
+    } catch (err) {
         console.error('Error al cargar sensores:', err);
-    });
+        alert('No se pudieron cargar los sensores. Intenta nuevamente.');
+    }
+}
+
+cargarSensores();
 
 map.on('click', function(e) {
     const popup = L.popup()
