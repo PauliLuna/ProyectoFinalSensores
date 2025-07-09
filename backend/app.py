@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, render_template
 from flask_mail import Mail
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
@@ -9,6 +9,11 @@ load_dotenv()
 
 print("Cargando Flask...")
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
+
+# Configuración de la ruta para manejar errores 404
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 #Para que la sesion funcione correctamente en Flask, es necesario establecer una clave secreta.
 # Esta clave se utiliza para firmar cookies y proteger la sesión del usuario.
