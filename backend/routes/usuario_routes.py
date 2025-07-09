@@ -4,12 +4,12 @@ from controllers.usuario_controller import register_usuario, invite_user, login_
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
+from utils.auth import token_required
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
-
-
 @usuario_bp.route('/usuarios', methods=['GET'])
+@token_required
 def get_usuarios():
     id_empresa = session.get('idEmpresa')
     if not id_empresa:
@@ -27,11 +27,13 @@ def get_usuarios():
     return jsonify(usuarios)
 
 @usuario_bp.route('/ultimas_conexiones', methods=['GET'])
+@token_required
 def ultimas_conexiones_route():
     mongo = current_app.mongo
     return get_ultimas_conexiones(mongo)
 
 @usuario_bp.route('/usuario_actual', methods=['GET', 'PUT'])
+@token_required
 def usuario_actual_route():
     mongo = current_app.mongo
     user_id = session.get('user_id')
@@ -76,6 +78,7 @@ def register_usuario_route():
     return register_usuario(mongo)
 
 @usuario_bp.route('/invite_user', methods=['POST'])
+@token_required
 def invite_user_route():
     mongo = current_app.mongo
     email = request.form.get('mail')

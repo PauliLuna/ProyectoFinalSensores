@@ -49,7 +49,11 @@ Promise.all([
 // Función para actualizar el nombre de la empresa en el top-banner
 async function actualizarNombreEmpresa() {
     try {
-        const res = await fetch('/empresa_nombre');
+        const res = await fetch('/empresa_nombre', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
         if (!res.ok) return;
         const data = await res.json();
         if (data.companyName) {
@@ -63,7 +67,11 @@ async function actualizarNombreEmpresa() {
 
 async function actualizarUsuarioActual() {
     try {
-        const res = await fetch('/usuario_actual');
+        const res = await fetch('/usuario_actual', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
         if (!res.ok) return;
         const data = await res.json();
         if (data.username) {
