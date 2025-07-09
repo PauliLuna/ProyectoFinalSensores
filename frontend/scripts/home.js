@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 // Temperatura promedio por sucursal (ejemplo)
 const tempSucursalCtx = document.getElementById('tempSucursalChart').getContext('2d');
 new Chart(tempSucursalCtx, {

@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 function filterSensors() {
     const input = document.getElementById("sensorInput").value.toLowerCase();
     const estado = document.getElementById("estadoFilter").value;

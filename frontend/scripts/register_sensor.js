@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 // pop-up tipo "alerta de éxito o error" cuando se registra un sensor
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registerSensorForm');
