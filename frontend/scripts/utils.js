@@ -7,6 +7,16 @@ Promise.all([
     resaltarSidebarActivo(); 
     document.getElementById('top-banner-container').innerHTML = topBannerHtml;
 
+    // --- Agregar event listener para logout-link ---
+    const logoutLink = document.getElementById('logout-link');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            sessionStorage.removeItem('authToken');
+            window.location.href = "signin.html";
+        });
+    }
+    
     // Ahora sí existen ambos en el DOM
     const toggleSidebarButton = document.getElementById('toggle-sidebar');
     const sidebar = document.querySelector('.sidebar');
