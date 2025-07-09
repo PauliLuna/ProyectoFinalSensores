@@ -281,6 +281,68 @@ html {
     color: #457B9D;
 }
 
+/* Nueva sección "start-now" */
+.start-now {
+   background: #fff;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 50px 0 40px 0;
+    margin: 0;
+    max-width: 100%;
+    width: 100%;
+    text-align: center;
+}
+
+.start-now-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+    text-align: center;
+}
+
+.start-now h2 {
+    color: #1D3557;
+    font-size: 2rem;
+    margin-bottom: 18px;
+}
+
+.start-now p {
+    color: #457B9D;
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+}
+
+.start-steps h3 {
+    color: #1D3557;
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.start-steps ol {
+    text-align: left;
+    margin: 0 auto 18px auto;
+    padding-left: 22px;
+    color: #1D3557;
+    font-size: 1rem;
+}
+
+.start-steps li {
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+
+.start-warning {
+    background: #fff4e6;
+    border-left: 5px solid #e76f51;
+    color: #e76f51;
+    padding: 16px 18px;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-top: 18px;
+    text-align: left;
+}
+
 /* About Us Section */
 .about-us {
     padding: 50px 20px;
@@ -1201,6 +1263,7 @@ button[disabled] {
     color: #FFFFFF;
     font-size: 1.2rem;
     font-weight: bold;
+    cursor: pointer; /* Pointer cursor for interactivity */
 }
 
 .kpi-card.primary {
