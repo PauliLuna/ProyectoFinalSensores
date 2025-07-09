@@ -34,6 +34,15 @@
             </div>
         </div>
         <script>
+            // Verificar si el usuario está autenticado
+            if (!sessionStorage.getItem('authToken')) {
+                alert('Por favor, inicia sesión para acceder a esta página.');
+                window.location.href = 'signin.html'; // Redirigir al inicio de sesión
+            }
+
+            // Obtener el token de sesión
+            const token = sessionStorage.getItem('authToken');
+
             // Sensor details
                 document.addEventListener('DOMContentLoaded', () => {
                     const alias = sessionStorage.getItem('sensor_alias');
@@ -64,7 +73,11 @@
 
                 // Obtener el nroSensor del sessionStorage (deberías guardarlo al seleccionar el sensor)
                 const sensorAlias = sessionStorage.getItem('sensor_alias');
-                const sensores = await fetch('/sensores').then(r => r.json());
+                const sensores = await fetch('/sensores', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                }).then(r => r.json());
                 const sensor = sensores.find(s => s.alias === sensorAlias);
                 if (!sensor) {
                     alert('No se encontró el sensor.');
@@ -73,7 +86,11 @@
                 const sensorId = sensor.nroSensor;
 
                 // Fetch mediciones reales
-                const res = await fetch(`/mediciones?sensor_id=${sensorId}&desde=${fromDate}T00:00:00&hasta=${toDate}T23:59:59`);
+                const res = await fetch(`/mediciones?sensor_id=${sensorId}&desde=${fromDate}T00:00:00&hasta=${toDate}T23:59:59`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
                 const mediciones = await res.json();
 
                 if (!Array.isArray(mediciones) || mediciones.length === 0) {

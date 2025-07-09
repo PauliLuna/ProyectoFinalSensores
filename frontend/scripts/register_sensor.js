@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 // pop-up tipo "alerta de éxito o error" cuando se registra un sensor
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registerSensorForm');
@@ -29,8 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(this);
             
             const response = await fetch('/sensor', {
-            method: 'POST',
-            body: formData
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
             });
 
             const result = await response.json();
@@ -124,7 +132,11 @@ function editAssignment(btn) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch('/usuarios');
+        const response = await fetch('/usuarios', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
         if(response.ok){
             const usuarios = await response.json();
             const select = document.getElementById('userSelect');

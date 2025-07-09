@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 document.getElementById('inviteForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = new FormData(this);

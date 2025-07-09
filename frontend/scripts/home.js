@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 // Temperatura promedio por sucursal (ejemplo)
 const tempSucursalCtx = document.getElementById('tempSucursalChart').getContext('2d');
 new Chart(tempSucursalCtx, {
@@ -52,7 +57,11 @@ new Chart(tendenciaSucursalCtx, {
 // Cargar datos de KPIs desde el backend
 async function cargarKPIs() {
     try {
-        const res = await fetch('/sensores');
+        const res = await fetch('/sensores', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
         const sensores = await res.json();
 
         // Total de sensores
@@ -79,7 +88,11 @@ document.addEventListener('DOMContentLoaded', cargarKPIs);
 
 // Cargar últimas conexiones de usuarios desde el backend
 async function cargarUltimasConexiones() {
-    const res = await fetch('/ultimas_conexiones');
+    const res = await fetch('/ultimas_conexiones', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
     const usuarios = await res.json();
     const tbody = document.getElementById('user-activity-table');
     tbody.innerHTML = '';

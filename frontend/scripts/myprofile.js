@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 // 1. Poblar el formulario con los datos del usuario logueado
 async function cargarPerfil() {
     const res = await fetch('/usuario_actual');

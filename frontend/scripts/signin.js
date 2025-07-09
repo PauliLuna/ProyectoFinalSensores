@@ -8,9 +8,9 @@ document.getElementById('signin-form').addEventListener('submit', async function
 
     try {
         const result = await loginUsuario(formData);
-        if (result.message) {
-            // Login exitoso, redirigir o mostrar mensaje
-            window.location.href = "home.html"; // o la página principal de tu app
+        if (result.token) {
+            sessionStorage.setItem('authToken', result.token);
+            window.location.href = "home.html";
         } else {
             alert(result.error || "Credenciales inválidas");
         }

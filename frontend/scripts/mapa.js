@@ -1,10 +1,19 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 const map = L.map('map').setView([-32.9442, -60.6505], 12); // Ejemplo: Rosario
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-fetch('/sensores')
+fetch('/sensores', {
+    headers: {
+        'Authorization': 'Bearer ' + token
+    }
+})
     .then(res => res.json())
     .then(sensores => {
         // ...todo tu código de iconos, clusters y marcadores...

@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
+}
+const token = sessionStorage.getItem('authToken');
+
 function filterSensors() {
     const input = document.getElementById("sensorInput").value.toLowerCase();
     const estado = document.getElementById("estadoFilter").value;
@@ -30,7 +35,11 @@ async function cargarSensores() {
     const grid = document.getElementById('sensorGrid');
     grid.innerHTML = '<p>Cargando sensores...</p>';
     try {
-        const response = await fetch('/sensores');
+        const response = await fetch('/sensores', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
         const sensores = await response.json();
         grid.innerHTML = '';
         sensores.forEach(sensor => {

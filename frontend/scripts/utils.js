@@ -7,6 +7,16 @@ Promise.all([
     resaltarSidebarActivo(); 
     document.getElementById('top-banner-container').innerHTML = topBannerHtml;
 
+    // --- Agregar event listener para logout-link ---
+    const logoutLink = document.getElementById('logout-link');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            sessionStorage.removeItem('authToken');
+            window.location.href = "signin.html";
+        });
+    }
+    
     // Ahora sí existen ambos en el DOM
     const toggleSidebarButton = document.getElementById('toggle-sidebar');
     const sidebar = document.querySelector('.sidebar');
@@ -39,7 +49,11 @@ Promise.all([
 // Función para actualizar el nombre de la empresa en el top-banner
 async function actualizarNombreEmpresa() {
     try {
-        const res = await fetch('/empresa_nombre');
+        const res = await fetch('/empresa_nombre', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
         if (!res.ok) return;
         const data = await res.json();
         if (data.companyName) {
@@ -53,7 +67,11 @@ async function actualizarNombreEmpresa() {
 
 async function actualizarUsuarioActual() {
     try {
-        const res = await fetch('/usuario_actual');
+        const res = await fetch('/usuario_actual', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
         if (!res.ok) return;
         const data = await res.json();
         if (data.username) {
