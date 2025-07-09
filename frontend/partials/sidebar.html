@@ -13,7 +13,12 @@
     <div class="sidebar-footer">
         <ul>
             <li><a href="myprofile.html"><img src="assets/profile-icon.jpg" alt="Profile Icon"><span>Mi perfil</span></a></li>
-            <li><a href="signin.html"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
+            <li><a href="signin.html" id="logout-link"><img src="assets/logout-icon.png" alt="Logout Icon"><span>Cerrar sesión</span></a></li>
         </ul>
     </div>
 </div>
+<script>
+document.getElementById('logout-link').addEventListener('click', function() {
+    sessionStorage.removeItem('authToken');
+});
+</script>
