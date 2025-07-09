@@ -35,7 +35,11 @@ async function cargarSensores() {
     const grid = document.getElementById('sensorGrid');
     grid.innerHTML = '<p>Cargando sensores...</p>';
     try {
-        const response = await fetch('/sensores');
+        const response = await fetch('/sensores', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
         const sensores = await response.json();
         grid.innerHTML = '';
         sensores.forEach(sensor => {
