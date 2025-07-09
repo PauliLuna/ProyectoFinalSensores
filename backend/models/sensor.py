@@ -20,7 +20,7 @@ def insert_sensor(mongo, sensor_data):
     y devuelve el _id insertado.
     """
     sensor_data['nroSensorIncremental'] = get_next_sequence(mongo, 'sensorid')
-    sensors_coll = mongo.db.sensors  # se asume que la colección se llama sensors
+    sensors_coll = mongo.db.sensors
     result = sensors_coll.insert_one(sensor_data)
     return str(result.inserted_id)
 
@@ -46,3 +46,13 @@ def get_sensor_with_assignments(mongo, sensor_id):
             assignment['_id'] = str(assignment['_id'])
     sensor["assignments"] = assignments
     return sensor
+
+def get_mediciones(mongo, nro_sensor, fecha_desde, fecha_hasta):
+    """
+    Devuelve una lista de mediciones para un sensor y rango de fechas.
+    """
+    mediciones = list(mongo.db.mediciones.find({
+        "idSensor": nro_sensor,
+        "fechaHoraMed": {"$gte": fecha_desde, "$lte": fecha_hasta}
+    }).sort("fechaHoraMed", 1))
+    return mediciones

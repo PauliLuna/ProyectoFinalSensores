@@ -1,9 +1,10 @@
 from flask import request, jsonify, session
-from models.sensor import insert_sensor, get_sensor_with_assignments
+from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
 import json
+import datetime
 
 
 def get_coordinates_from_address(address):
@@ -25,7 +26,6 @@ def register_sensor(mongo):
     """
     Lee los datos del formulario (por POST),convierte la dirección en coordenadas y los inserta en la base de datos.
     """
-
      # Construimos la dirección completa
     full_address = f"{request.form.get('direccion')}, {request.form.get('ciudad')}, {request.form.get('provincia')}, {request.form.get('pais')}"
 
@@ -203,3 +203,24 @@ def get_sensor(mongo, sensor_id):
     except Exception as e:
         print(f"Error en get_sensor: {e}")
         return jsonify({"error": str(e)}), 500
+    
+def get_mediciones(mongo, sensor_id, desde, hasta):
+    if not sensor_id or not desde or not hasta:
+        return jsonify({"error": "Faltan parámetros"}), 400
+
+    try:
+        nro_sensor = int(sensor_id)
+        fecha_desde = datetime.datetime.fromisoformat(desde)
+        fecha_hasta = datetime.datetime.fromisoformat(hasta)
+    except Exception:
+        return jsonify({"error": "Parámetros inválidos"}), 400
+
+    mediciones = get_mediciones(mongo, nro_sensor, fecha_desde, fecha_hasta)
+    result = []
+    for m in mediciones:
+        result.append({
+            "fechaHoraMed": m["fechaHoraMed"].isoformat(),
+            "valorTempInt": m.get("valorTempInt"),
+            "valorTempExt": m.get("valorTempExt")
+        })
+    return jsonify(result)
