@@ -3,80 +3,23 @@ if (!sessionStorage.getItem('authToken')) {
 }
 const token = sessionStorage.getItem('authToken');
 
-// pop-up tipo "alerta de éxito o error" cuando se registra un sensor
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('registerSensorForm');
-
-    if (form) {
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault(); // Esto evita que se envíe "a la antigua"
-
-            // Validación: valor mínimo < valor máximo
-            const valorMin = parseFloat(document.getElementById('valorMin').value);
-            const valorMax = parseFloat(document.getElementById('valorMax').value);
-            if (!isNaN(valorMin) && !isNaN(valorMax) && valorMin >= valorMax) {
-                alert("El valor mínimo debe ser menor que el valor máximo.");
-                return; // No submittear el form
-            }
-
-                // Recopilar asignaciones: leer el id (desde el atributo data-user-id) y el permiso de cada fila
-            const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => {
-                const idUsuario = row.getAttribute("data-user-id");
-                const permiso = row.querySelector('.assignment-permission').value;
-                const estadoAsignacion = row.querySelector('.assignment-status').textContent;
-                return { idUsuario, permiso, estadoAsignacion };
-            });
-            // Asignar al input oculto en formato JSON:
-            document.getElementById('assignments').value = JSON.stringify(assignments);
-
-            // Enviar el formulario usando fetch
-            // Crear un objeto FormData para enviar los datos del formulario
-            const formData = new FormData(this);
-            
-            const response = await fetch('/sensor', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert(result.message); // pop-up
-                // Limpiar la tabla de asignaciones
-                const tbody = document.querySelector('.user-assignment-table tbody');
-                if (tbody) {
-                    tbody.innerHTML = '';
-                }
-                this.reset();
-            } else {
-                alert(result.message);
-            } 
-            
-        });
-    }
-});
-
 // Mostrar/ocultar el dropdown de añadir usuario
 function toggleAddUserDropdown() {
     const dropdown = document.getElementById('addUserDropdown');
     dropdown.style.display = dropdown.style.display === 'none' || dropdown.style.display === '' ? 'block' : 'none';
 }
 
-// Simulación de añadir usuarios (debería hacerse con fetch al backend)
+// Añadir usuarios seleccionados a la tabla de asignaciones
 function addUserAssignments() {
     const select = document.getElementById('userSelect');
-    const selected = Array.from(select.selectedOptions).map(opt => {
-        // opt.value es ahora el id del usuario y textContent es el email
-        return { id: opt.value, email: opt.textContent };
-    });
+    const selected = Array.from(select.selectedOptions).map(opt => ({
+        id: opt.value,
+        email: opt.textContent
+    }));
     if (selected.length === 0) return;
     const tbody = document.querySelector('.user-assignment-table tbody');
     selected.forEach(user => {
         const tr = document.createElement('tr');
-        // Usamos un atributo data-user-id para almacenar el id del usuario
         tr.setAttribute("data-user-id", user.id);
         tr.innerHTML = `
             <td>${user.email}</td>
@@ -104,16 +47,14 @@ function addUserAssignments() {
     });
     document.getElementById('addUserDropdown').style.display = 'none';
     select.selectedIndex = -1;
-    // Aquí deberías enviar los datos al backend si es necesario
+    // Aquí podrías enviar los datos al backend si lo necesitas
 }
 
+// Eliminar asignación de usuario
 function deleteAssignment(btn) {
-    // Elimina la fila correspondiente
     const row = btn.closest('tr');
     if (row) {
-        // Recupera el id del usuario de la fila eliminada
         const userId = row.getAttribute('data-user-id');
-        // Vuelve a mostrar la opción en el select
         const select = document.getElementById('userSelect');
         const option = select.querySelector(`option[value="${userId}"]`);
         if (option) option.style.display = "";
@@ -127,22 +68,21 @@ function editAssignment(btn) {
     const current = td.querySelector('.assignment-status').textContent;
     const newState = current === 'Activo' ? 'Inactivo' : 'Activo';
     td.querySelector('.assignment-status').textContent = newState;
-    // Aquí deberías enviar el cambio de estado al backend
+    // Aquí podrías enviar el cambio de estado al backend si lo necesitas
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Poblar el select de usuarios
     try {
         const response = await fetch('/usuarios', {
             headers: {
                 'Authorization': 'Bearer ' + token
             }
-        })
-        if(response.ok){
+        });
+        if (response.ok) {
             const usuarios = await response.json();
             const select = document.getElementById('userSelect');
-            // Vaciar el select por si tiene datos preexistentes
             select.innerHTML = "";
-            // Por cada usuario, creamos una opción con value = id y texto = email
             usuarios.forEach(usuario => {
                 const option = document.createElement('option');
                 option.value = usuario._id;
@@ -154,5 +94,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error('Error en fetch /usuarios:', error);
+    }
+
+    // Manejo del formulario de registro de sensor
+    const form = document.getElementById('registerSensorForm');
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Validación: valor mínimo < valor máximo
+            const valorMin = parseFloat(document.getElementById('valorMin').value);
+            const valorMax = parseFloat(document.getElementById('valorMax').value);
+            if (!isNaN(valorMin) && !isNaN(valorMax) && valorMin >= valorMax) {
+                alert("El valor mínimo debe ser menor que el valor máximo.");
+                return;
+            }
+
+            // Recopilar asignaciones
+            const assignments = Array.from(document.querySelectorAll('.user-assignment-table tbody tr')).map(row => {
+                const idUsuario = row.getAttribute("data-user-id");
+                const permiso = row.querySelector('.assignment-permission').value;
+                const estadoAsignacion = row.querySelector('.assignment-status').textContent;
+                return { idUsuario, permiso, estadoAsignacion };
+            });
+            document.getElementById('assignments').value = JSON.stringify(assignments);
+
+            const formData = new FormData(this);
+
+            const response = await fetch('/sensor', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                const tbody = document.querySelector('.user-assignment-table tbody');
+                if (tbody) tbody.innerHTML = '';
+                this.reset();
+            } else {
+                alert(result.message);
+            }
+        });
     }
 });

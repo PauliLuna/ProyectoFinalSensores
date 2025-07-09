@@ -161,9 +161,6 @@ async function cargarDatosSensor(sensorId) {
                         <button type="button" class="edit-assignment-btn" title="Editar estado" onclick="editAssignment(this)">
                             <span>✏️</span>
                         </button>
-                        <button type="button" class="delete-assignment-btn" title="Eliminar asignación" onclick="deleteAssignment(this)">
-                            <span>✖️</span>
-                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);

@@ -8,9 +8,7 @@ import datetime
 
 
 def get_coordinates_from_address(address):
-    """
-    Convierte una dirección en coordenadas (latitud, longitud) usando Nominatim.
-    """
+    # Convierte una dirección en coordenadas (latitud, longitud) usando Nominatim.
     geolocator = Nominatim(user_agent="sensor_app")
     try:
         location = geolocator.geocode(address)
