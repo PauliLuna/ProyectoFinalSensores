@@ -5,7 +5,11 @@ const token = sessionStorage.getItem('authToken');
 
 // 1. Poblar el formulario con los datos del usuario logueado
 async function cargarPerfil() {
-    const res = await fetch('/usuario_actual');
+    const res = await fetch('/usuario_actual', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
     if (!res.ok) return;
     const data = await res.json();
     document.getElementById('mail').value = data.email || '';

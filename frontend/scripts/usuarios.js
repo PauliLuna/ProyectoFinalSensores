@@ -11,7 +11,10 @@ async function loginUsuario(formData) {
 async function registrarUsuario(formData) {
     const response = await fetch('/complete_registration', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
     });
     return response.json();
 }
@@ -20,7 +23,10 @@ async function registrarUsuario(formData) {
 async function actualizarPerfil(body) {
     const response = await fetch('/usuario_actual', {
         method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
         body: JSON.stringify(body)
     });
     return response.json();
@@ -30,7 +36,10 @@ async function actualizarPerfil(body) {
 async function invitarUsuario(formData) {
     const response = await fetch('/invite_user', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
     });
     return response.json();
 }
