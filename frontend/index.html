@@ -46,7 +46,7 @@
         <img src="assets/logo2.png" alt="Logo de SensIA">
         <h1>Bienvenido a SensIA</h1>
         <p>Monitorea y gestiona tus sensores fácilmente con nuestra plataforma avanzada.</p>
-        <a href="login_empresa.html" class="btn-primary">Empezar Ahora</a>
+        <a href="#start-now" class="btn-primary" id="startNowBtn">Empezar Ahora</a>
     </section>
 
     <!-- Sección de Características -->
@@ -94,10 +94,42 @@
         </div>
     </section>
 
+    <!-- Sección de Empezar ahora -->
+    <section class="start-now" id="start-now">
+         
+        <h2>¿Querés comenzar a utilizar nuestra aplicación?</h2>
+        <p style="text-align: center; max-width: 1250px; margin: 0 auto; margin-bottom: 20px;">
+            Si tenés consultas o deseás acceder a nuestra plataforma, este es el primer paso. A través del formulario de contacto podrás iniciar el proceso para comenzar a usar la app.
+        </p>
+        <div class="start-now-inner"> 
+            <div class="start-steps">
+                <h3>¿Cómo funciona?</h3>
+                <ol>
+                    <li>
+                        <strong>Completá el formulario de contacto.</strong><br>
+                        Es fundamental que nos envíes tu consulta o solicitud mediante el formulario que aparece a continuación.
+                    </li>
+                    <li>
+                        <strong>Coordinamos una demo personalizada.</strong><br>
+                        Una vez que recibamos tu mensaje, nos pondremos en contacto para agendar una demostración y explicarte cómo funciona la aplicación.
+                    </li>
+                    <li>
+                        <strong>Generamos tu usuario.</strong><br>
+                        Luego de la demo, crearemos tu usuario y te daremos acceso a la plataforma.
+                    </li>
+                </ol>
+                <div class="start-warning">
+                    <span style="font-size:1.5em; color:#e76f51; vertical-align:middle;">&#9888;&#65039;</span>
+                    <strong>Importante:</strong> Si no recibimos tu mensaje, no podremos avanzar con la demo ni generar tu acceso. <u>Contactarte es el primer paso necesario.</u>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Sección de Contacto -->
     <section class="contact">
         <h2>Contáctanos</h2>
-        <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en escribirnos utilizando el formulario a continuación.</p>
+        <p>Completa el formulario a continuación para comenzar con la experiencia SensIA.</p>
         <form id="contact-form">
             <div class="form-group">
                 <label for="name">Nombre</label>
@@ -155,6 +187,12 @@
                 }
             });
         });
+    </script>
+    <script>
+    document.getElementById('startNowBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('start-now').scrollIntoView({ behavior: 'smooth' });
+    });
     </script>
 </body>
 </html>
