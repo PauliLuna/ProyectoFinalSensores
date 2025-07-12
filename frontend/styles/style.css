@@ -789,6 +789,14 @@ button:hover {
 }
 
 /* Estilos para la tabla de asignación de usuario */
+.table-wrapper {
+    position: relative;
+    min-height: 340px; 
+    max-height: 340px;
+    overflow-y: auto;
+    padding-bottom: 10px; /* deja espacio para la paginación */
+}
+
 .table-wrapper table {
     width: 80%;
     border-collapse: collapse;
@@ -1410,12 +1418,17 @@ button[disabled] {
 }
 
 .table-pagination-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    padding: 8px 8px 4px 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 12px;
-    padding: 0 8px;
-    font-size: 1rem;
+    border-top: 1px solid #e0e0e0;
+    z-index: 2;
 }
 
 .pagination-info {
