@@ -1,3 +1,7 @@
+let currentPage = 1;
+const pageSize = 5; // Cambia este valor si quieres más/menos filas por página
+
+
 // Verificar si el usuario está autenticado y el token no está expirado
 function isTokenExpired(token) {
     if (!token) return true;
@@ -121,7 +125,17 @@ cargarUltimasConexiones();
 function renderUserTable(data) {
     const tbody = document.getElementById('user-activity-table');
     tbody.innerHTML = '';
-    data.forEach(u => {
+
+    // Paginación
+    const totalResults = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalResults / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalResults);
+    const pageData = data.slice(startIdx, endIdx);
+
+    pageData.forEach(u => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${u.username || ''}</td>
@@ -131,6 +145,63 @@ function renderUserTable(data) {
         `;
         tbody.appendChild(tr);
     });
+
+      // Actualiza texto "mostrando X de Y resultados"
+    document.getElementById('current-results-showing').textContent = pageData.length;
+    document.getElementById('total-results').textContent = totalResults;
+
+    // Renderiza la paginación
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const pagination = document.getElementById('user-table-pagination');
+    pagination.innerHTML = '';
+
+    // Flecha izquierda
+    const prevItem = document.createElement('li');
+    prevItem.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+    prevItem.innerHTML = `<a href="#" class="page-link">&larr;</a>`;
+    prevItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            renderUserTable(filtroFechaActivo ? filteredUserTableData : userTableData);
+        }
+    });
+    pagination.appendChild(prevItem);
+
+    // Números de página (máximo 5 para no saturar)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i === currentPage ? ' active' : '');
+        li.innerHTML = `<a href="#" class="page-link">${i}</a>`;
+        li.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage !== i) {
+                currentPage = i;
+                renderUserTable(filtroFechaActivo ? filteredUserTableData : userTableData);
+            }
+        });
+        pagination.appendChild(li);
+    }
+
+    // Flecha derecha
+    const nextItem = document.createElement('li');
+    nextItem.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+    nextItem.innerHTML = `<a href="#" class="page-link">&rarr;</a>`;
+    nextItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderUserTable(filtroFechaActivo ? filteredUserTableData : userTableData);
+        }
+    });
+    pagination.appendChild(nextItem);
 }
 
 

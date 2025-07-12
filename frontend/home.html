@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
 </head>
 <body class="body-loading">
+     <!--
     <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
     <!-- Left and Top menu -->
     <div id="sidebar-container"></div>
@@ -96,6 +97,14 @@
                         <!-- Aquí se insertarán las filas dinámicamente -->
                     </tbody>
                 </table>
+                <div class="table-pagination-row">
+                    <div class="pagination-info">
+                        Mostrando <span id="current-results-showing">0</span> de <span id="total-results">0</span> resultados
+                    </div>
+                    <ul class="pagination" id="user-table-pagination">
+                        <!-- Las páginas se generan dinámicamente -->
+                    </ul>
+                </div>
             </div>
         </div>
     <!-- Scripts para KPIs y gráficos -->

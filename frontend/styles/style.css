@@ -1409,6 +1409,59 @@ button[disabled] {
     max-width: 140px;
 }
 
+.table-pagination-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding: 0 8px;
+    font-size: 1rem;
+}
+
+.pagination-info {
+    color: #457B9D;
+    font-size: 0.97rem;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+}
+
+.pagination .page-item {
+    display: inline-block;
+}
+
+.pagination .page-link {
+    display: block;
+    padding: 4px 12px;
+    color: #1D3557;
+    background: #F1FAFB;
+    border: 1px solid #A8DADC;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pagination .page-item.active .page-link,
+.pagination .page-link:hover {
+    background: #457B9D;
+    color: #fff;
+    border-color: #457B9D;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #b0b0b0;
+    background: #f5f5f5;
+    cursor: not-allowed;
+    border-color: #e0e0e0;
+}
+
 /* Canvas for Charts */
 canvas {
     width: 100%; /* Ensure the canvas takes up the full width of the card */
