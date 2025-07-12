@@ -1,7 +1,22 @@
-if (!sessionStorage.getItem('authToken')) {
-    window.location.href = "index.html";
+// Verificar si el usuario está autenticado y el token no está expirado
+function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (!payload.exp) return false; // Si no hay expiración, se asume válido
+        const now = Math.floor(Date.now() / 1000);
+        return payload.exp < now;
+    } catch (e) {
+        return true; // Si falla el decode, se considera inválido
+    }
 }
+
 const token = sessionStorage.getItem('authToken');
+if (!token || isTokenExpired(token)) {
+    alert('Por favor, inicia sesión para acceder a esta página.');
+    sessionStorage.removeItem('authToken');
+    window.location.href = 'signin.html';
+}
 
 const map = L.map('map').setView([-32.9442, -60.6505], 12); // Ejemplo: Rosario
 
