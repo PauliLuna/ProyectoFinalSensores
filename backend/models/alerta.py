@@ -10,8 +10,8 @@ def get_alertas_by_empresa(mongo, id_empresa, tipo=None):
         filtro["tipoAlerta"] = tipo
     return list(mongo.db.alertas.find(filtro))
 
-def get_alertas_filtradas(mongo, id_usuario, tipo=None):
-    filtro = {"idUsuario": id_usuario}
+def get_alertas_filtradas(mongo, id_empresa, tipo=None):
+    filtro = {"idEmpresa": id_empresa}
     if tipo:
         filtro["tipoAlerta"] = tipo
     return list(mongo.db.alertas.find(filtro))

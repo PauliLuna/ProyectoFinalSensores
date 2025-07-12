@@ -1129,27 +1129,52 @@ button[disabled] {
 
 /* Alarms Table */
 .alarms-table {
-    width: calc(100% - 250px); /* Adjust width to fit within the available space */
-    margin-left: 250px; /* Account for the sidebar width */
+    width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
 }
 
 .alarms-table th,
 .alarms-table td {
-    border: 1px solid #A8DADC; /* Primary color: Ice Blue */
+    border: 1px solid #A8DADC;
     padding: 10px;
     text-align: left;
 }
 
 .alarms-table th {
-    background-color: #457B9D; /* Secondary color: Steel Blue */
-    color: #FFFFFF; /* White for contrast */
+    background-color: #457B9D;
+    color: #FFFFFF;
 }
 
 .alarms-table tr:nth-child(even) {
-    background-color: #F1FAFB; /* Background color: White Smoke */
+    background-color: #F1FAFB;
 }
+
+.alerts-container {
+    display: flex;
+    gap: 30px;
+    justify-content: space-between;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+
+.kpi-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.kpi-card.selected-kpi {
+    outline: 3px solid #1D3557;
+    box-shadow: 0 0 0 4px rgba(29, 53, 87, 0.4);
+    transform: scale(1.05);
+}
+
 
 /* Assistant Chat */
 .assistant-container {
@@ -1263,19 +1288,22 @@ button[disabled] {
     color: #FFFFFF;
     font-size: 1.2rem;
     font-weight: bold;
-    cursor: pointer; /* Pointer cursor for interactivity */
 }
 
 .kpi-card.primary {
-    background-color: #457B9D; /* Steel Blue */
+    background-color: #ff6666;
 }
 
 .kpi-card.warning {
-    background-color: #E9C46A; /* Yellow */
+    background-color: #E9C46A;
 }
 
 .kpi-card.success {
-    background-color: #2A9D8F; /* Green */
+    background-color: #2A9D8F;
+}
+
+.kpi-card.preventiva {
+    background-color: #457B9D;
 }
 
 /* Charts Section */

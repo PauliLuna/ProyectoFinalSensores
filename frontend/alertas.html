@@ -6,150 +6,224 @@
     <title>Alertas</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="body-loading">
-    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
+    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script>
 
-    <!-- Left and Top menu -->
     <div id="sidebar-container"></div>
     <div id="top-banner-container"></div>
 
-    <!-- Main Content -->
     <div class="main-content">
+        <!-- Filtros -->
         <div class="filterContainer">
-            <h1 class="centered-title" style="margin-bottom: auto;">Alertas</h1>
+            <h1 class="centered-title">Alertas</h1>
             <select id="periodSelect">
                 <option value="24hs">Últimas 24 hs</option>
                 <option value="7days">Últimos 7 días</option>
                 <option value="1month">1 mes</option>
                 <option value="6months">6 meses</option>
             </select>
-            <button class="btnAplicar" style="min-width: 130px; width: auto;" onclick="showAlarmsOnPeriod()">Aplicar</button>
+            <button class="btnAplicar" onclick="showAlarmsOnPeriod()">Aplicar</button>
         </div>
+
         <!-- KPI Cards -->
         <div class="kpi-cards">
-            <div class="kpi-card primary">
-                <h3>Alertas Críticas</h3>
-                <p>5</p>
+            <div class="kpi-card primary" id="criticalCard" onclick="filterByType('crítica')">
+                <h3>Críticas</h3>
+                <p id="criticaCount">0</p>
             </div>
-            <div class="kpi-card warning">
-                <h3>Alertas Informativas</h3>
-                <p>12</p>
+            <div class="kpi-card warning" id="infoCard" onclick="filterByType('informativa')">
+                <h3>Informativas</h3>
+                <p id="informativaCount">0</p>
             </div>
-            <div class="kpi-card success">
-                <h3>Alertas de Seguridad</h3>
-                <p>3</p>
+            <div class="kpi-card success" id="securityCard" onclick="filterByType('seguridad')">
+                <h3>Seguridad</h3>
+                <p id="seguridadCount">0</p>
+            </div>
+            <div class="kpi-card preventiva" id="preventivaCard" onclick="filterByType('preventiva')">
+                <h3>Preventiva</h3>
+                <p id="preventivaCount">0</p>
             </div>
         </div>
 
-        <!-- Alarm Graphs -->
-        <section>
-            <h2>Gráficos de Alertas</h2>
-            <div class="kpi-container">
-                <div class="card">
-                    <h3>Alertas por Tipo</h3>
-                    <canvas id="alertsByTypeChart"></canvas>
-                </div>
-                <div class="card">
-                    <h3>Alertas por Sucursal</h3>
-                    <canvas id="alertsByBranchChart"></canvas>
-                </div>
+        <!-- Gráficos -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3>Tipos de Alertas</h3>
+                <canvas id="alertsPieChart"></canvas>
             </div>
-        </section>
+
+            <div class="chart-container">
+                <h3>Alertas por Día</h3>
+                <canvas id="alertsLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tabla de Detalle -->
+        <div class="recent-activity">
+            <h3>Detalle de Alertas</h3>
+            <table class="alarms-table" id="alarmsTable">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Mensaje</th>
+                        <th>Sucursal</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        let alertasData = [];
 
-        let alertsByTypeChart;
-        let alertsByBranchChart;
 
-        function getChartDataForPeriod(period) {
-            // Simulación de datos por período
-            switch (period) {
-                case '24hs':
-                    return {
-                        typeData: [5, 12, 3],
-                        branchData: [10, 7, 5]
-                    };
-                case '7days':
-                    return {
-                        typeData: [15, 25, 12],
-                        branchData: [20, 18, 14]
-                    };
-                case '1month':
-                    return {
-                        typeData: [50, 80, 40],
-                        branchData: [60, 55, 48]
-                    };
-                case '6months':
-                    return {
-                        typeData: [200, 300, 150],
-                        branchData: [220, 190, 160]
-                    };
-                default:
-                    return {
-                        typeData: [0, 0, 0],
-                        branchData: [0, 0, 0]
-                    };
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const response = await fetch("/alertas");
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert("No autorizado. Por favor, inicia sesión.");
+                        window.location.href = "signin.html";
+                        return;
+                    }
+                    throw new Error("Error al cargar alertas");
+                }
+                alertasData = await response.json();
+                renderTable(alertasData);
+                renderPieChart(alertasData);
+                renderLineChart(alertasData);
+                updateKPICards(alertasData);
+            } catch (error) {
+                alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
+                console.error("Error al cargar alertas:", error);
             }
+        });
+
+        function updateKPICards(data) {
+            const counts = { critica: 0, informativa: 0, seguridad: 0, preventiva: 0 };
+            data.forEach(a => counts[a.tipoAlerta] = (counts[a.tipoAlerta] || 0) + 1);
+
+            document.getElementById('criticaCount').innerText = counts['crítica'] || 0;
+            document.getElementById('informativaCount').innerText = counts['informativa'] || 0;
+            document.getElementById('seguridadCount').innerText = counts['seguridad'] || 0;
+            document.getElementById('preventivaCount').innerText = counts['preventiva'] || 0;
         }
 
-        function updateCharts(period) {
-            const { typeData, branchData } = getChartDataForPeriod(period);
+        function renderTable(data) {
+            const tbody = document.querySelector("#alarmsTable tbody");
+            tbody.innerHTML = "";
+            if (!data.length) {
+                tbody.innerHTML = "<tr><td colspan='4'>No hay alertas registradas.</td></tr>";
+                return;
+            }
 
-            // Actualiza datos del gráfico de tipo de alerta
-            alertsByTypeChart.data.datasets[0].data = typeData;
-            alertsByTypeChart.update();
+            data.forEach(alerta => {
+                const row = `
+                    <tr>
+                        <td>${alerta.tipoAlerta}</td>
+                        <td>${alerta.mensajeAlerta}</td>
+                        <td>${alerta.sucursal || "–"}</td>
+                        <td>${new Date(alerta.fechaHoraAlerta).toLocaleString("es-AR")}</td>
+                    </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
 
-            // Actualiza datos del gráfico por sucursal
-            alertsByBranchChart.data.datasets[0].data = branchData;
-            alertsByBranchChart.update();
+        function renderPieChart(data) {
+            const counts = data.reduce((acc, a) => {
+                acc[a.tipoAlerta] = (acc[a.tipoAlerta] || 0) + 1;
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById("alertsPieChart").getContext("2d");
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function renderLineChart(data) {
+            const countsByDay = {};
+            data.forEach(alerta => {
+                const date = new Date(alerta.fechaHoraAlerta).toLocaleDateString("es-AR");
+                countsByDay[date] = (countsByDay[date] || 0) + 1;
+            });
+
+            const fechas = Object.keys(countsByDay).sort((a, b) => new Date(a) - new Date(b));
+
+            const ctx = document.getElementById("alertsLineChart").getContext("2d");
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: fechas,
+                    datasets: [{
+                        label: "Alertas por día",
+                        data: fechas.map(f => countsByDay[f]),
+                        borderColor: "#3b82f6",
+                        backgroundColor: "rgba(59, 130, 246, 0.2)",
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function filterByType(tipo) {
+            const filtered = tipo ? alertasData.filter(a => a.tipoAlerta === tipo) : alertasData;
+            renderTable(filtered);
         }
 
         function showAlarmsOnPeriod() {
-            const select = document.getElementById('periodSelect');
-            const selectedPeriod = select.value;
-            updateCharts(selectedPeriod);
+            const period = document.getElementById('periodSelect').value;
+            const now = new Date();
+            let fromDate;
+
+            switch (period) {
+                case '24hs':
+                    fromDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                    break;
+                case '7days':
+                    fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    break;
+                case '1month':
+                    fromDate = new Date(now.setMonth(now.getMonth() - 1));
+                    break;
+                case '6months':
+                    fromDate = new Date(now.setMonth(now.getMonth() - 6));
+                    break;
+                default:
+                    fromDate = null;
+            }
+
+            let filtered = alertasData;
+            if (fromDate) {
+                filtered = alertasData.filter(a => new Date(a.fechaHoraAlerta) >= fromDate);
+            }
+
+            renderTable(filtered);
+            renderPieChart(filtered);
+            renderLineChart(filtered);
+            updateKPICards(filtered);
         }
-
-        // Crear los gráficos al cargar
-        window.onload = function () {
-            const alertsByTypeCtx = document.getElementById('alertsByTypeChart').getContext('2d');
-            alertsByTypeChart = new Chart(alertsByTypeCtx, {
-                type: 'pie',
-                data: {
-                    labels: ['Críticas', 'Informativas', 'Seguridad'],
-                    datasets: [{
-                        data: [5, 12, 3],
-                        backgroundColor: ['#E76F51', '#E9C46A', '#2A9D8F']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
-
-            const alertsByBranchCtx = document.getElementById('alertsByBranchChart').getContext('2d');
-            alertsByBranchChart = new Chart(alertsByBranchCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Sucursal 1', 'Sucursal 2', 'Sucursal 3'],
-                    datasets: [{
-                        label: 'Cantidad de Alertas',
-                        data: [10, 7, 5],
-                        backgroundColor: '#457B9D'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
-        };
-
     </script>
+
     <script src="scripts/utils.js"></script>
 </body>
 </html>
