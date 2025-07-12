@@ -68,15 +68,15 @@
         <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
         <div class="recent-activity">
             <h3>Últimas Conexiones de Usuarios</h3>
-            <div class="table-wrapper" style="max-height:400px; min-height: 400px; overflow-y:auto;">
+            <div class="table-wrapper" style="max-height:340px; min-height: 340px; overflow-y:auto;">
                 <table>
                     <thead>
                         <tr>
                             <th>Username</th>
                             <th>Email</th>
-                            <th id="th-fecha" style="position:relative; text-align:right;">
-                                <span id="fecha-sort-label" style="cursor:pointer;">Fecha</span>
-                                <button class="accordion-button" id="fechaAccordionBtn" type="button" aria-expanded="false" aria-controls="collapseFecha" style="display:inline-block; width:auto; background:none; border:none; box-shadow:none; padding:0 8px; font-size:1.1em; vertical-align:middle; color:#1D3557;">
+                            <th id="th-fecha" style="position:relative;">
+                                <span id="fecha-sort-label" style="cursor:pointer; text-align:right;">Fecha</span>
+                                <button class="accordion-button" id="fechaAccordionBtn" type="button" aria-expanded="false" aria-controls="collapseFecha" style="position: absolute; right: 0; transform:translateY(20%); display:inline-block; width:auto; background:none; border:none; box-shadow:none; padding:0 8px; font-size:1.1em; vertical-align:middle; color:#1D3557;">
                                     &#9660;
                                 </button>
                                 <div id="collapseFecha" class="accordion-collapse collapse" style="position:absolute; right:0; top:100%; min-width:160px; background:#fff; border:1px solid #A8DADC; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.08); z-index:9999; display:none;">

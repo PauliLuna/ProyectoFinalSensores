@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', cargarKPIs);
 // Cargar últimas conexiones de usuarios desde el backend
 // --- Ordenamiento de la tabla de últimas conexiones ---
 let userTableData = [];
+let filtroFechaActivo = false;
 
 async function cargarUltimasConexiones() {
     const res = await fetch('/ultimas_conexiones', {
@@ -112,7 +113,8 @@ async function cargarUltimasConexiones() {
         }
     });
     userTableData = await res.json();
-    renderUserTable(userTableData);
+    filteredUserTableData = [...userTableData]; // Inicializa con todos los datos
+    renderUserTable(filteredUserTableData);
 }
 cargarUltimasConexiones();
 
@@ -131,12 +133,20 @@ function renderUserTable(data) {
     });
 }
 
+
+let filteredUserTableData = []; // Nuevo: almacena el subconjunto filtrado
+
 // Función de ordenamiento genérica
 function sortUserTable(by, asc = true) {
-    let sorted = [...userTableData];
+    let sorted;
+    if (filtroFechaActivo) {
+        sorted = [...filteredUserTableData];
+    } else {
+        sorted = [...userTableData];
+    }
+
     if (by === 'fecha') {
         sorted.sort((a, b) => {
-            // Fechas en formato "dd/mm/yyyy hh:mm"
             const parse = s => {
                 if (!s) return 0;
                 const [d, m, yAndTime] = s.split('/');
@@ -156,11 +166,16 @@ function sortUserTable(by, asc = true) {
         });
     }
     renderUserTable(sorted);
+    // Actualiza el subconjunto filtrado para mantener el orden
+    if (filtroFechaActivo) {
+        filteredUserTableData = sorted;
+    }
 }
 
 // Estado de orden actual
 let fechaAsc = true;
 let estadoAsc = true;
+
 
 // SOLO el texto "Fecha" ordena
 document.getElementById('fecha-sort-label').addEventListener('click', () => {
@@ -230,39 +245,46 @@ function filtrarPorPeriodo(rango) {
         case 'hoy':
             desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
             hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            filtroFechaActivo = true;
             break;
         case 'ayer':
             desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-1);
             hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            filtroFechaActivo = true;
             break;
         case 'ultimos7':
             desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-6);
             hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            filtroFechaActivo = true;
             break;
         case 'ultimos30':
             desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-29);
             hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            filtroFechaActivo = true;
             break;
         case 'estemes':
             desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
             hasta = new Date(hoy.getFullYear(), hoy.getMonth()+1, 1);
+            filtroFechaActivo = true;
             break;
         case 'mespasado':
             desde = new Date(hoy.getFullYear(), hoy.getMonth()-1, 1);
             hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            filtroFechaActivo = true;
             break;
         default:
-            renderUserTable(userTableData);
+            filtroFechaActivo = false;
+            filteredUserTableData = [...userTableData];
+            renderUserTable(filteredUserTableData);
             return;
     }
-    // Filtrar userTableData por fechaUltimoAcceso en el rango
-    const filtered = userTableData.filter(u => {
+    filtroFechaActivo = true;
+    filteredUserTableData = userTableData.filter(u => {
         if (!u.fechaUltimoAcceso) return false;
-        // Asume formato "dd/mm/yyyy hh:mm"
         const [d, m, yAndTime] = u.fechaUltimoAcceso.split('/');
         const [y, time] = yAndTime.split(' ');
         const fecha = new Date(`${y}-${m}-${d}T${time || '00:00'}`);
-                return fecha >= desde && fecha < hasta;
+        return fecha >= desde && fecha < hasta;
     });
-    renderUserTable(filtered);
+    renderUserTable(filteredUserTableData);
 }
