@@ -1,5 +1,5 @@
 from flask import request, jsonify, session
-from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones
+from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
@@ -213,7 +213,7 @@ def get_mediciones(mongo, sensor_id, desde, hasta):
     except Exception:
         return jsonify({"error": "Parámetros inválidos"}), 400
 
-    mediciones = get_mediciones(mongo, nro_sensor, fecha_desde, fecha_hasta)
+    mediciones = get_mediciones_model(mongo, nro_sensor, fecha_desde, fecha_hasta)
     result = []
     for m in mediciones:
         result.append({

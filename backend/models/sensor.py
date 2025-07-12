@@ -47,7 +47,7 @@ def get_sensor_with_assignments(mongo, sensor_id):
     sensor["assignments"] = assignments
     return sensor
 
-def get_mediciones(mongo, nro_sensor, fecha_desde, fecha_hasta):
+def get_mediciones_model(mongo, nro_sensor, fecha_desde, fecha_hasta):
     """
     Devuelve una lista de mediciones para un sensor y rango de fechas.
     """
