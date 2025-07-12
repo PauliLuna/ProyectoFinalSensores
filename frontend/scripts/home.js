@@ -87,16 +87,24 @@ async function cargarKPIs() {
 document.addEventListener('DOMContentLoaded', cargarKPIs);
 
 // Cargar últimas conexiones de usuarios desde el backend
+// --- Ordenamiento de la tabla de últimas conexiones ---
+let userTableData = [];
+
 async function cargarUltimasConexiones() {
     const res = await fetch('/ultimas_conexiones', {
         headers: {
             'Authorization': 'Bearer ' + token
         }
     });
-    const usuarios = await res.json();
+    userTableData = await res.json();
+    renderUserTable(userTableData);
+}
+cargarUltimasConexiones();
+
+function renderUserTable(data) {
     const tbody = document.getElementById('user-activity-table');
     tbody.innerHTML = '';
-    usuarios.forEach(u => {
+    data.forEach(u => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${u.username || ''}</td>
@@ -107,7 +115,50 @@ async function cargarUltimasConexiones() {
         tbody.appendChild(tr);
     });
 }
-cargarUltimasConexiones();
+
+// Función de ordenamiento genérica
+function sortUserTable(by, asc = true) {
+    let sorted = [...userTableData];
+    if (by === 'fecha') {
+        sorted.sort((a, b) => {
+            // Fechas en formato "dd/mm/yyyy hh:mm"
+            const parse = s => {
+                if (!s) return 0;
+                const [d, m, yAndTime] = s.split('/');
+                const [y, time] = yAndTime.split(' ');
+                return new Date(`${y}-${m}-${d}T${time || '00:00'}`);
+            };
+            return asc ? parse(a.fechaUltimoAcceso) - parse(b.fechaUltimoAcceso)
+                       : parse(b.fechaUltimoAcceso) - parse(a.fechaUltimoAcceso);
+        });
+    } else if (by === 'estado') {
+        sorted.sort((a, b) => {
+            const estadoA = (a.estado || '').toLowerCase();
+            const estadoB = (b.estado || '').toLowerCase();
+            if (estadoA < estadoB) return asc ? -1 : 1;
+            if (estadoA > estadoB) return asc ? 1 : -1;
+            return 0;
+        });
+    }
+    renderUserTable(sorted);
+}
+
+// Estado de orden actual
+let fechaAsc = true;
+let estadoAsc = true;
+
+// SOLO el texto "Fecha" ordena
+document.getElementById('fecha-sort-label').addEventListener('click', () => {
+    sortUserTable('fecha', fechaAsc);
+    fechaAsc = !fechaAsc;
+});
+
+// Estado sigue igual
+document.getElementById('th-estado').addEventListener('click', () => {
+    sortUserTable('estado', estadoAsc);
+    estadoAsc = !estadoAsc;
+});
+
 
 // Redirigir a la página de sensores al hacer clic en los KPIs
 
@@ -126,3 +177,77 @@ document.getElementById('sensores-fuera-rango').parentElement.onclick = () => {
 document.getElementById('sensores-fallo').parentElement.onclick = () => {
     window.location.href = 'sensores.html?estado=OFFLINE';
 };
+
+const fechaAccordionBtn = document.getElementById('fechaAccordionBtn');
+const collapseFecha = document.getElementById('collapseFecha');
+
+fechaAccordionBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const expanded = this.getAttribute('aria-expanded') === 'true';
+    this.setAttribute('aria-expanded', !expanded);
+    collapseFecha.style.display = expanded ? 'none' : 'block';
+});
+
+// Cerrar el acordeón si se hace click fuera
+document.addEventListener('click', function(e) {
+    if (!collapseFecha.contains(e.target) && e.target !== fechaAccordionBtn) {
+        collapseFecha.style.display = 'none';
+        fechaAccordionBtn.setAttribute('aria-expanded', 'false');
+    }
+});
+
+// Filtrar por período seleccionado
+collapseFecha.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        collapseFecha.style.display = 'none';
+        fechaAccordionBtn.setAttribute('aria-expanded', 'false');
+        const rango = this.getAttribute('data-range');
+        filtrarPorPeriodo(rango);
+    });
+});
+
+// Función para filtrar la tabla por período
+function filtrarPorPeriodo(rango) {
+    const hoy = new Date();
+    let desde, hasta;
+    switch(rango) {
+        case 'hoy':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            break;
+        case 'ayer':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-1);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            break;
+        case 'ultimos7':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-6);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            break;
+        case 'ultimos30':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-29);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            break;
+        case 'estemes':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth()+1, 1);
+            break;
+        case 'mespasado':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth()-1, 1);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            break;
+        default:
+            renderUserTable(userTableData);
+            return;
+    }
+    // Filtrar userTableData por fechaUltimoAcceso en el rango
+    const filtered = userTableData.filter(u => {
+        if (!u.fechaUltimoAcceso) return false;
+        // Asume formato "dd/mm/yyyy hh:mm"
+        const [d, m, yAndTime] = u.fechaUltimoAcceso.split('/');
+        const [y, time] = yAndTime.split(' ');
+        const fecha = new Date(`${y}-${m}-${d}T${time || '00:00'}`);
+                return fecha >= desde && fecha < hasta;
+    });
+    renderUserTable(filtered);
+}

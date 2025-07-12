@@ -68,14 +68,28 @@
         <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
         <div class="recent-activity">
             <h3>Últimas Conexiones de Usuarios</h3>
-            <div class="table-wrapper" style="max-height:350px; overflow-y:auto;">
+            <div class="table-wrapper" style="max-height:400px; min-height: 400px; overflow-y:auto;">
                 <table>
                     <thead>
                         <tr>
                             <th>Username</th>
                             <th>Email</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
+                            <th id="th-fecha" style="position:relative; text-align:right;">
+                                <span id="fecha-sort-label" style="cursor:pointer;">Fecha</span>
+                                <button class="accordion-button" id="fechaAccordionBtn" type="button" aria-expanded="false" aria-controls="collapseFecha" style="display:inline-block; width:auto; background:none; border:none; box-shadow:none; padding:0 8px; font-size:1.1em; vertical-align:middle; color:#1D3557;">
+                                    &#9660;
+                                </button>
+                                <div id="collapseFecha" class="accordion-collapse collapse" style="position:absolute; right:0; top:100%; min-width:160px; background:#fff; border:1px solid #A8DADC; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.08); z-index:9999; display:none;">
+                                    <a class="dropdown-item" href="#" data-range="hoy">Hoy</a>
+                                    <a class="dropdown-item" href="#" data-range="ayer">Ayer</a>
+                                    <a class="dropdown-item" href="#" data-range="ultimos7">Últimos 7 días</a>
+                                    <a class="dropdown-item" href="#" data-range="ultimos30">Últimos 30 días</a>
+                                    <a class="dropdown-item" href="#" data-range="estemes">Este mes</a>
+                                    <a class="dropdown-item" href="#" data-range="mespasado">Mes pasado</a>
+                                    <a class="dropdown-item" href="#" data-range="todos">Todos</a>
+                                </div>
+                            </th>
+                            <th id="th-estado" style="cursor:pointer;">Estado &#8597;</th>
                         </tr>
                     </thead>
                     <tbody id="user-activity-table">

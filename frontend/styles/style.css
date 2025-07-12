@@ -1375,6 +1375,40 @@ button[disabled] {
     color: #457B9D;
 }
 
+/* Fijar ancho de columnas en la tabla de últimas conexiones */
+.recent-activity table th,
+.recent-activity table td {
+    width: auto;
+}
+
+.recent-activity table th:nth-child(1),
+.recent-activity table td:nth-child(1) {
+    width: 22%;
+    min-width: 120px;
+    max-width: 200px;
+}
+
+.recent-activity table th:nth-child(2),
+.recent-activity table td:nth-child(2) {
+    width: 32%;
+    min-width: 180px;
+    max-width: 320px;
+}
+
+.recent-activity table th:nth-child(3),
+.recent-activity table td:nth-child(3) {
+    width: 26%;
+    min-width: 120px;
+    max-width: 200px;
+}
+
+.recent-activity table th:nth-child(4),
+.recent-activity table td:nth-child(4) {
+    width: 20%;
+    min-width: 90px;
+    max-width: 140px;
+}
+
 /* Canvas for Charts */
 canvas {
     width: 100%; /* Ensure the canvas takes up the full width of the card */
@@ -1693,4 +1727,19 @@ select {
     padding: 8px 12px;
     border-radius: 4px;
     margin: 10px;
+}
+
+#collapseFecha a {
+    display: block;
+    padding: 8px 18px;
+    color: #1D3557;
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 0;
+}
+
+#collapseFecha a:hover {
+    background: #F1FAFB;
 }
