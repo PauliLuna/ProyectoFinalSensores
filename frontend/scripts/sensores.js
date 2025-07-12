@@ -1,28 +1,14 @@
-// Verificar si el usuario está autenticado y el token no está expirado
-function isTokenExpired(token) {
-    if (!token) return true;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (!payload.exp) return false; // Si no hay expiración, se asume válido
-        const now = Math.floor(Date.now() / 1000);
-        return payload.exp < now;
-    } catch (e) {
-        return true; // Si falla el decode, se considera inválido
-    }
+if (!sessionStorage.getItem('authToken')) {
+    window.location.href = "index.html";
 }
-
 const token = sessionStorage.getItem('authToken');
-if (!token || isTokenExpired(token)) {
-    alert('Por favor, inicia sesión para acceder a esta página.');
-    sessionStorage.removeItem('authToken');
-    window.location.href = 'signin.html';
-}
 
 function filterSensors() {
     const input = document.getElementById("sensorInput").value.toLowerCase();
     const estado = document.getElementById("estadoFilter").value;
     const rango = document.getElementById("rangoFilter").value;
     const cards = document.querySelectorAll(".sensor-card");
+    let anyVisible = false;
     cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         const cardEstado = card.getAttribute('data-estado');
@@ -35,7 +21,43 @@ function filterSensors() {
             if (rango === "fueraRango" && cardRango !== "Fuera de rango") show = false;
         }
         card.style.display = show ? "block" : "none";
+        if (show) anyVisible = true;
     });
+
+    const grid = document.getElementById('sensorGrid');
+    let noResultDiv = document.getElementById('noSensorsMsg');
+    if (!anyVisible) {
+        if (!noResultDiv) {
+            noResultDiv = document.createElement('div');
+            noResultDiv.id = 'noSensorsMsg';
+            noResultDiv.innerHTML = `
+                <span class="no-sensors-icon">🔍</span>
+                <b>No hay sensores para los filtros seleccionados.</b>
+                <a class="reset-filters-link" id="resetFiltersLink" href="#">Restablecer filtros</a>
+            `;
+            grid.appendChild(noResultDiv);
+            document.getElementById('resetFiltersLink').onclick = function(e) {
+                e.preventDefault();
+                document.getElementById("sensorInput").value = "";
+                document.getElementById("estadoFilter").value = "";
+                document.getElementById("rangoFilter").value = "";
+                filterSensors();
+            };
+        }
+        // Centrar solo cuando no hay resultados
+        grid.style.display = "flex";
+        grid.style.flexDirection = "column";
+        grid.style.justifyContent = "center";
+        grid.style.alignItems = "center";
+        grid.style.minHeight = "300px";
+    } else {
+        if (noResultDiv) noResultDiv.remove();
+        grid.style.display = "";
+        grid.style.flexDirection = "";
+        grid.style.justifyContent = "";
+        grid.style.alignItems = "";
+        grid.style.minHeight = "";
+    }
 }
 
 function redirectToDashboard(element) {
