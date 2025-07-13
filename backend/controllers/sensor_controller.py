@@ -169,6 +169,7 @@ def get_all_sensors(mongo):
             sort=[("fechaHoraMed", -1)]
         )
         alias = sensor.get('alias', '')
+        notas = sensor.get('notas')
         estado = "ONLINE" if sensor.get('estado') == "active" else "OFFLINE"
         temp_interna = last_med.get('valorTempInt') if last_med else None
         temp_externa = last_med.get('valorTempExt') if last_med else None
@@ -183,6 +184,7 @@ def get_all_sensors(mongo):
         result.append({
             "nroSensor": nro_sensor,
             "alias": alias,
+            "notas": notas,
             "estado": estado,
             "temperaturaInterna": temp_interna,
             "temperaturaExterna": temp_externa,

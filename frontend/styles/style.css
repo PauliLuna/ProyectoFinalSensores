@@ -679,7 +679,7 @@ html {
 
 .card p {
     font-size: 1rem;
-    color: #457B9D;
+    color: #1D3557; 
 }
 
 /* Status Section */
@@ -1266,9 +1266,10 @@ button[disabled] {
 
 /* KPI Container */
 .kpi-container {
+    padding-top: 10px;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 15px;
     justify-content: space-between;
 }
 
@@ -1838,4 +1839,29 @@ select {
 }
 #noSensorsMsg .reset-filters-link:hover {
     background: #1d5bbf;
+}
+
+.data-card {
+    background-color: #FFFFFF;
+    border: 1px solid #A8DADC;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: left;
+    flex: 1;
+    margin: 0 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+}
+
+.data-card .data-value {
+  font-size: 1.6rem;     /* más grande */
+  font-weight: bold;     /* más grueso */
+  margin: 0 0 10px 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.data-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }

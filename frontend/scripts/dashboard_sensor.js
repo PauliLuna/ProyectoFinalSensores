@@ -18,43 +18,68 @@ if (!token || isTokenExpired(token)) {
     window.location.href = 'signin.html';
 }
 
-// Sensor details
-    document.addEventListener('DOMContentLoaded', () => {
-        const alias = sessionStorage.getItem('sensor_alias');
-        const estado = sessionStorage.getItem('sensor_estado');
-        const alerta = sessionStorage.getItem('sensor_alarma');
+async function getSensorByAlias(alias, token) {
+    const sensores = await fetch('/sensores', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    }).then(r => r.json());
 
-        if (alias && estado && alerta) {
-            document.getElementById('sensor-alias').textContent = alias;
-            document.getElementById('sensor-estado').textContent = estado;
-            document.getElementById('sensor-alerta').textContent = alerta;
+    return sensores.find(s => s.alias === alias);
+}
+
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const alias = sessionStorage.getItem('sensor_alias');
+    const estado = sessionStorage.getItem('sensor_estado');
+    const alerta = sessionStorage.getItem('sensor_alarma');
+
+    if (!alias || !estado || !alerta) return;
+
+    const sensor = await getSensorByAlias(alias, token);
+
+    if (!sensor) {
+        alert('No se encontró el sensor.');
+        return;
     }
-    });
+
+    // Fechas por defecto
+    const hoy = new Date();
+    const hace7dias = new Date();
+    hace7dias.setDate(hoy.getDate() - 7);
+    document.getElementById('desde').value = formatDate(hace7dias);
+    document.getElementById('hasta').value = formatDate(hoy);
+
+    // Lanzar gráfico automáticamente
+    document.getElementById('btnGraficar').click();
+
+    // Mostrar datos del sensor
+    document.getElementById('sensor-alias').textContent = alias;
+    document.getElementById('sensor-nro').textContent = sensor.nroSensor;
+    document.getElementById('sensor-notas').textContent = sensor.notas || 'No hay notas disponibles.';
+    document.getElementById('sensor-estado').textContent = estado;
+    document.getElementById('sensor-alerta').textContent = alerta;
+});
 
 // Chart
 let tempChart = null;
 
 document.getElementById('btnGraficar').addEventListener('click', async () => {
-    const fromDateInput = document.getElementById('desde');
-    const toDateInput = document.getElementById('hasta');
-    const fromDate = fromDateInput.value;
-    const toDate = toDateInput.value;
+    const fromDate = document.getElementById('desde').value;
+    const toDate = document.getElementById('hasta').value;
 
     if (!fromDate || !toDate || new Date(fromDate) > new Date(toDate)) {
         alert('Por favor seleccioná un rango de fechas válido.');
         return;
     }
 
-    // Obtener el nroSensor del sessionStorage
-    const sensorAlias = sessionStorage.getItem('sensor_alias');
-    const sensores = await fetch('/sensores', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    }).then(r => r.json());
-    const sensor = sensores.find(s => s.alias === sensorAlias);
+    const alias = sessionStorage.getItem('sensor_alias');
+    const sensor = await getSensorByAlias(alias, token);
     if (!sensor) {
-        alert('No se encontró el sensor.');
+        alert('Sensor no encontrado.');
         return;
     }
     const sensorId = sensor.nroSensor;
@@ -68,6 +93,14 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     const mediciones = await res.json();
 
     if (!Array.isArray(mediciones) || mediciones.length === 0) {
+        document.getElementById('sensor-tempInt').textContent = 'N/A';
+        document.getElementById('sensor-tempExt').textContent = 'N/A';
+        document.getElementById('sensor-tempDif').textContent = 'N/A';
+
+        document.getElementById('sensor-puerta').textContent = 'N/A';
+        document.getElementById('sensor-puertaUltCam').textContent = 'N/A';
+        document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
+        document.getElementById('sensor-aperturas').textContent = 'N/A';
         alert('No hay mediciones para ese rango.');
         return;
     }
@@ -151,4 +184,26 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
             }
         }
     });
+
+    // Obtener última medición del sensor
+    let tempInt = null;
+    let tempExt = null;
+    let puerta = null;
+
+    if (Array.isArray(mediciones) && mediciones.length > 0) {
+        const ultimaMed = mediciones[mediciones.length - 1];
+        tempInt = ultimaMed.valorTempInt ?? null;
+        tempExt = ultimaMed.valorTempExt ?? null;
+        puerta = ultimaMed.puerta === 1 ? 'Abierta' : 'Cerrada';
+    }
+
+    // Mostrar última medición
+    document.getElementById('sensor-tempInt').textContent = tempInt + "°C" || 'N/A';
+    document.getElementById('sensor-tempExt').textContent = tempExt + "°C" || 'N/A';
+    document.getElementById('sensor-tempDif').textContent = tempExt - tempInt + "°C" || 'N/A';
+
+    document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
+    document.getElementById('sensor-puertaUltCam').textContent = 'N/A';
+    document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
+    document.getElementById('sensor-aperturas').textContent = 'N/A';
 });
