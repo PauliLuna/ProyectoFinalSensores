@@ -1,4 +1,6 @@
 from flask_mail import Message
+from flask import jsonify
+from models.contacto import save_contacto
 
 def enviar_mail_contacto(mail, app, name, email, message):
     html_template = """
@@ -33,6 +35,21 @@ def enviar_mail_contacto(mail, app, name, email, message):
         subject=f"Nuevo mensaje de {name}",
         sender="no-reply@sensia.com",
         recipients=[app.config['MAIL_USERNAME']],
-        html=html_template  # Usar HTML aquí
+        html=html_template
     )
     mail.send(msg)
+
+def handle_contact_submission(mongo, mail, app, data):
+    name = data.get('name')
+    email = data.get('email')
+    message = data.get('message')
+
+    if not name or not email or not message:
+        return jsonify({'error': 'Todos los campos son obligatorios'}), 400
+
+    try:
+        save_contacto(mongo, name, email, message)
+        enviar_mail_contacto(mail, app, name, email, message)
+        return jsonify({'success': 'Correo enviado correctamente'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
