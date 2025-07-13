@@ -1803,3 +1803,39 @@ select {
 #collapseFecha a:hover {
     background: #F1FAFB;
 }
+
+#noSensorsMsg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 220px;
+    color: #457B9D;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 1.2em;
+    background: #f6f8fa;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(44, 62, 80, 0.08);
+    margin: 30px auto 0 auto;
+    max-width: 420px;
+    text-align: center;
+}
+#noSensorsMsg .no-sensors-icon {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+#noSensorsMsg .reset-filters-link {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    color: #fff;
+    background: #2a7ae2;
+    padding: 10px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+    display: inline-block;
+}
+#noSensorsMsg .reset-filters-link:hover {
+    background: #1d5bbf;
+}
