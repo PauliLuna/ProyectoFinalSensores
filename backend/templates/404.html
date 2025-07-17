@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Página no encontrada - SensIA</title>
-    <link rel="stylesheet" href="styles/main.css"><!-- Usa tu CSS principal -->
     <style>
         body {
             background: #f6f8fa;
@@ -53,7 +52,29 @@
         <img src="assets/404-robot.png" alt="404">
         <p>¡Ups! La página que buscás no existe.<br>
         Es posible que la dirección esté mal escrita o que la página haya sido movida.</p>
-        <a href="index.html">Volver al inicio</a>
+        <a href="#" id="volverInicio">Volver al inicio</a>
     </div>
+    <script>
+        function isTokenExpired(token) {
+            if (!token) return true;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (!payload.exp) return false;
+                const now = Math.floor(Date.now() / 1000);
+                return payload.exp < now;
+            } catch (e) {
+                return true;
+            }
+        }
+
+        document.getElementById('volverInicio').addEventListener('click', function (e) {
+            e.preventDefault(); // Evita que el enlace actúe por defecto
+
+            const token = sessionStorage.getItem('authToken');
+            const destino = (!token || isTokenExpired(token)) ? 'index.html' : 'home.html';
+
+            window.location.href = destino;
+        });
+    </script>
 </body>
 </html>
