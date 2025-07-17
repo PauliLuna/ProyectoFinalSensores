@@ -207,3 +207,46 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
     document.getElementById('sensor-aperturas').textContent = 'N/A';
 });
+
+// Manejo del filtro de fechas predefinidas
+document.getElementById('fechasFilter').addEventListener('change', () => {
+    const option = document.getElementById('fechasFilter').value;
+
+    if (option === 'custom') return; // El usuario quiere ingresar fechas manualmente
+
+    const hoy = new Date();
+    const desde = new Date(hoy); // Copia
+
+    switch (option) {
+        case '24h':
+            desde.setDate(hoy.getDate() - 1);
+            break;
+        case '7d':
+            desde.setDate(hoy.getDate() - 7);
+            break;
+        case '1m':
+            desde.setMonth(hoy.getMonth() - 1);
+            break;
+        case '6m':
+            desde.setMonth(hoy.getMonth() - 6);
+            break;
+        default:
+            return;
+    }
+
+    const formatDate = (d) => d.toISOString().split('T')[0];
+    document.getElementById('desde').value = formatDate(desde);
+    document.getElementById('hasta').value = formatDate(hoy);
+
+    // Lanzar automáticamente el gráfico
+    document.getElementById('btnGraficar').click();
+});
+
+// Manejo de cambios en los campos de fecha manual
+const fechasFilterSelect = document.getElementById('fechasFilter');
+document.getElementById('desde').addEventListener('change', () => {
+    fechasFilterSelect.value = 'custom';
+});
+document.getElementById('hasta').addEventListener('change', () => {
+    fechasFilterSelect.value = 'custom';
+});
