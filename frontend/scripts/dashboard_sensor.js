@@ -250,3 +250,9 @@ document.getElementById('desde').addEventListener('change', () => {
 document.getElementById('hasta').addEventListener('change', () => {
     fechasFilterSelect.value = 'custom';
 });
+
+// Botón Refrescar
+document.getElementById('refreshIcon').addEventListener('click', () => {
+    // Simular el clic en el botón "Graficar"
+    document.getElementById('btnGraficar').click();
+});
