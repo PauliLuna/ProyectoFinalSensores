@@ -32,6 +32,10 @@ function formatDate(date) {
     return date.toISOString().split('T')[0];
 }
 
+// Charts
+    let tempIntChart = null;
+    let tempExtChart = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const alias = sessionStorage.getItem('sensor_alias');
     const estado = sessionStorage.getItem('sensor_estado');
@@ -63,9 +67,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('sensor-estado').textContent = estado;
     document.getElementById('sensor-alerta').textContent = alerta;
 });
-
-// Chart
-let tempChart = null;
 
 document.getElementById('btnGraficar').addEventListener('click', async () => {
     const fromDate = document.getElementById('desde').value;
@@ -113,42 +114,32 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     const avgInternal = (internalTemps.reduce((a, b) => a + (b || 0), 0) / internalTemps.length).toFixed(2);
     const avgExternal = (externalTemps.reduce((a, b) => a + (b || 0), 0) / externalTemps.length).toFixed(2);
 
-    document.getElementById('averageTemperatures').innerHTML = `
+    document.getElementById('averageTemperatureInt').innerHTML = `
         <p><strong>Promedio temperatura interna:</strong> ${avgInternal} °C</p>
+    `;
+
+    document.getElementById('averageTemperatureExt').innerHTML = `
         <p><strong>Promedio temperatura externa:</strong> ${avgExternal} °C</p>
     `;
 
-    const ctx = document.getElementById('temperatureChart').getContext('2d');
-    if (window.tempChart) window.tempChart.destroy();
-    window.tempChart = new Chart(ctx, {
+    // Temperatura interna
+    const ctxInt = document.getElementById('tempIntChart').getContext('2d');
+    if (tempIntChart) tempIntChart.destroy();
+    tempIntChart = new Chart(ctxInt, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [
-                {
-                    label: 'Temperatura interna (°C)',
-                    data: internalTemps,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.3,
-                    pointRadius: 1.5
-                },
-                {
-                    label: 'Temperatura externa (°C)',
-                    data: externalTemps,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    tension: 0.3,
-                    pointRadius: 1.5
-                }
-            ]
+            datasets: [{
+                label: 'Temperatura interna (°C)',
+                data: internalTemps,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.3,
+                pointRadius: 1.5
+            }]
         },
         options: {
             responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
             scales: {
                 x: {
                     ticks: {
@@ -165,21 +156,57 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
                 }
             },
             plugins: {
-                legend: {
-                    position: 'top'
-                },
+                legend: { position: 'top' },
                 title: {
                     display: true,
-                    text: 'Serie de tiempo de temperaturas',
-                    font: {
-                        size: 20,
-                        weight: 'bold',
-                        family: 'Poppins'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 30
+                    text: 'Serie de tiempo - Temperatura Interna',
+                    font: { size: 20, weight: 'bold', family: 'Poppins' },
+                    padding: { top: 10, bottom: 30 }
+                }
+            }
+        }
+    });
+
+    // Temperatura externa
+    const ctxExt = document.getElementById('tempExtChart').getContext('2d');
+    if (tempExtChart) tempExtChart.destroy();
+    tempExtChart = new Chart(ctxExt, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Temperatura externa (°C)',
+                data: externalTemps,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                tension: 0.3,
+                pointRadius: 1.5
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 60,
+                        minRotation: 45
                     }
+                },
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Temperatura (°C)'
+                    }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' },
+                title: {
+                    display: true,
+                    text: 'Serie de tiempo - Temperatura Externa',
+                    font: { size: 20, weight: 'bold', family: 'Poppins' },
+                    padding: { top: 10, bottom: 30 }
                 }
             }
         }
