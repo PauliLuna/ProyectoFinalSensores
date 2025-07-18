@@ -256,3 +256,8 @@ document.getElementById('refreshIcon').addEventListener('click', () => {
     // Simular el clic en el botón "Graficar"
     document.getElementById('btnGraficar').click();
 });
+
+// Botón Volver
+document.getElementById('btnVolver').addEventListener('click', () => {
+    window.location.href = 'sensores.html';
+});
