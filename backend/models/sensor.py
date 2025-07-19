@@ -1,4 +1,5 @@
 from bson import ObjectId
+import datetime
 
 def get_next_sequence(mongo, name):
     """
@@ -56,3 +57,30 @@ def get_mediciones_model(mongo, nro_sensor, fecha_desde, fecha_hasta):
         "fechaHoraMed": {"$gte": fecha_desde, "$lte": fecha_hasta}
     }).sort("fechaHoraMed", 1))
     return mediciones
+
+def get_last_change_door(mediciones):
+    if not mediciones:
+        return None
+
+    estado_actual = mediciones[-1]['puerta']
+    for i in range(len(mediciones) - 2, -1, -1):
+        if mediciones[i]['puerta'] != estado_actual:
+            return mediciones[i + 1]['fechaHoraMed']
+    return None
+
+
+def obtain_current_state_duration(mediciones):
+    """
+    Devuelve la cantidad de tiempo (timedelta) que la puerta lleva en su estado actual.
+    """
+    fecha_cambio = get_last_change_door(mediciones)
+    print(fecha_cambio)
+    if fecha_cambio:
+        return datetime.datetime.utcnow() - fecha_cambio
+    return None
+
+def get_ultima_medicion(mongo, nro_sensor):
+    return mongo.db.mediciones.find_one(
+        {"idSensor": nro_sensor},
+        sort=[("fechaHoraMed", -1)]
+    )
