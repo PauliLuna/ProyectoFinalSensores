@@ -23,55 +23,7 @@ if (!token || isTokenExpired(token)) {
 }
 
 // Temperatura promedio por sucursal (ejemplo)
-const tempSucursalCtx = document.getElementById('tempSucursalChart').getContext('2d');
-new Chart(tempSucursalCtx, {
-    type: 'bar',
-    data: {
-        labels: ['Sucursal Centro', 'Sucursal Norte', 'Sucursal Sur'],
-        datasets: [{
-            label: 'Temp. Promedio (°C)',
-            data: [22.5, 24.1, 21.8],
-            backgroundColor: ['#457B9D', '#A8DADC', '#F4A261'],
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } }
-    }
-});
-
 // Tendencia térmica reciente (ejemplo: 1 estable, 0 inestable)
-const tendenciaSucursalCtx = document.getElementById('tendenciaSucursalChart').getContext('2d');
-new Chart(tendenciaSucursalCtx, {
-    type: 'line',
-    data: {
-        labels: ['Centro', 'Norte', 'Sur'],
-        datasets: [{
-            label: 'Estabilidad (1=Estable, 0=Inestable)',
-            data: [1, 0, 1],
-            borderColor: '#457B9D',
-            backgroundColor: 'rgba(69,123,157,0.1)',
-            fill: true,
-            tension: 0.4
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                min: 0,
-                max: 1,
-                ticks: {
-                    callback: function(value) {
-                        return value === 1 ? 'Estable' : 'Inestable';
-                    }
-                }
-            }
-        }
-    }
-});
 
 // Cargar datos de KPIs desde el backend
 async function cargarKPIs() {
@@ -103,7 +55,10 @@ async function cargarKPIs() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', cargarKPIs);
+document.addEventListener('DOMContentLoaded', () => {
+    cargarKPIs();
+    cargarUltimasConexiones();
+});
 
 // Cargar últimas conexiones de usuarios desde el backend
 // --- Ordenamiento de la tabla de últimas conexiones ---
@@ -120,7 +75,7 @@ async function cargarUltimasConexiones() {
     filteredUserTableData = [...userTableData]; // Inicializa con todos los datos
     renderUserTable(filteredUserTableData);
 }
-cargarUltimasConexiones();
+
 
 function renderUserTable(data) {
     const tbody = document.getElementById('user-activity-table');
