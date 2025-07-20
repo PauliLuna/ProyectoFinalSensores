@@ -6,11 +6,187 @@
     <title>Panel General</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color:#F1FAFB;
+  }
+
+  h1, h2 {
+    font-weight: 600;
+  }
+
+
+
+
+  .kpi-card h4 {
+    font-size: 1.8rem;
+    margin: 0;
+  }
+
+  .kpi-card p {
+    margin: 0;
+    font-weight: 300;
+  }
+
+  .kpi-subgroup .card {
+    border-radius: 0.75rem;
+    background-color: #fff;
+    transition: transform 0.2s ease;
+  }
+
+  .kpi-subgroup .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .kpi-subgroup h5 {
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  .card-header {
+    background-color: #f1f5f9;
+    font-weight: 500;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .table thead {
+    background-color: #f9fafb;
+  }
+
+  .table th {
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .section-title {
+    margin: 2rem 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1D3557;
+    border-left: 4px solid #457B9D;
+    padding-left: 0.75rem;
+  }
+
+  .alert-kpi-card {
+    background: #ffffff;
+    color: #1f2937;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .alert-kpi-card h5 {
+    font-weight: 600;
+    color: #1e3a8a;
+  }
+
+  .alert-kpi-card .bar {
+    height: 12px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    margin: 1rem 0;
+  }
+
+  .bar .critica {
+    background: #ef4444;
+    width: 40%;
+  }
+
+  .bar .preventiva {
+    background: #facc15;
+    width: 30%;
+  }
+
+  .bar .seguridad {
+    background: #3b82f6;
+    width: 30%;
+  }
+
+  .legend-alerts {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #334155;
+  }
+
+  .legend-alerts span::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  .legend-alerts .critica::before {
+    background-color: #ef4444;
+  }
+
+  .legend-alerts .preventiva::before {
+    background-color: #facc15;
+  }
+
+  .legend-alerts .seguridad::before {
+    background-color: #3b82f6;
+  }
+
+  .ranking-card {
+    background-color: #ffffff;
+    color: #1f2937;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    margin-top: 1.5rem;
+  }
+
+  .ranking-card h6 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #1e3a8a;
+  }
+
+  .ranking-card h6,
+  .alert-kpi-card h5 {
+    color: #1D3557;
+  }
+
+  .ranking-table {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .ranking-table thead {
+    background-color: #F1FAFB;
+}
+
+  .ranking-table th,
+  .ranking-table td {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .ranking-table th {
+    color: #1D3557;
+    font-weight: 500;
+  }
+
+  .ranking-table td {
+    color: #374151;
+  }
+</style>
+
+
 <body class="body-loading">
-     <!--
-    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!-- Chatbot -->
+     
+    <script src='https://cdn.jotfor.ms/agent/embedjs/0196b18b91cc7337901e354c7c8ebf44fd61/embed.js?skipWelcome=1&maximizable=1'></script> <!--Chatbot -->
     <!-- Left and Top menu -->
     <div id="sidebar-container"></div>
     <div id="top-banner-container"></div>
@@ -19,55 +195,165 @@
     <div class="main-content">
         <!-- Estado General del Sistema -->
         <h1 class="centered-title">Executive Dashboard</h1>
-        <div class="kpi-cards">
-            <div class="kpi-card primary">
-                <h3 id="total-sensores"></h3>
-                <p>Total Sensores Instalados</p>
+        <div class="row">
+            <!-- Columna de KPIs Operativos -->
+            <div class="col-md-6">
+                <h5 class="mb-3">KPIs Operativos</h5>
+                
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <h3 id="total-sensores"></h3>
+                        <p>Total Sensores Instalados</p>
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between">
+                                <span>% Sensores Fuera de Rango</span>
+                                <span><strong>--%</strong></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>% Sensores Activos</span>
+                                <span><strong>--%</strong></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>% Sensores con Retraso en Envío de datos</span>
+                                <span><strong>--%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-cards">
+                    <div class="kpi-card success">
+                        <h3 id="sensores-en-rango"></h3>
+                        <p>Sensores en Rango</p>
+                    </div>
+                    <div class="kpi-card warning">
+                        <h3 id="sensores-fuera-rango"></h3>
+                        <p>Sensores Fuera de Rango</p>
+                    </div>
+                </div>
+                <div class="kpi-cards">
+                    <div class="kpi-card offline">
+                        <h3 id="sensores-fallo"></h3>
+                        <p>Sensores sin Señal (offline)</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3 id="frecuencia-aperturas"></h3>
+                        <p>Frecuencia de Aperturas</p>
+                    </div>
+                </div>
+
+                <h5 class="mb-3">KPIs Predictivos</h5>
+
+                <!-- Gráfico de Tendencia de Temperatura Promedio -->
+                <div class="ranking-card">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-primary mb-0">Tendencia Temp. Promedio</h6>
+                    <div class="dropdown">
+                      <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="dropdownPeriodo" data-bs-toggle="dropdown" aria-expanded="false">
+                        Periodo
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownPeriodo">
+                        <li><a class="dropdown-item" href="#" onclick="cambiarPeriodo('7d')">Próximos 7 días</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="cambiarPeriodo('30d')">Próximos 30 días</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                  <canvas id="chart-tendencia-temp" height="180" style="width:100%;"></canvas>
+                </div>
+
+
+                <!-- KPI de Variabilidad -->
+                <div class="ranking-card">
+                    <h6 class="text-primary">Variabilidad Temp. (Desvío Estándar)</h6>
+                    <p class="h4 mt-2" id="kpi-variabilidad">--</p>
+                </div>
             </div>
-            <div class="kpi-card success">
-                <h3 id="sensores-en-rango"></h3>
-                <p>Sensores en Rango</p>
-            </div>
-            <div class="kpi-card warning">
-                <h3 id="sensores-fuera-rango"></h3>
-                <p>Sensores Fuera de Rango</p>
-            </div>
-            <div class="kpi-card" style="background:#e76f51;">
-                <h3 id="sensores-fallo"></h3>
-                <p>Sensores sin Señal (offline)</p>
+
+            <!-- Columna de Alertas -->
+            <div class="col-md-6">
+                <h5 class="mb-3">Alertas y Seguridad</h5>
+                <div class="alert-kpi-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Alertas por Sensor/Cliente</h5>
+                        <button class="btn btn-sm btn-outline-light">Ver Reporte</button>
+                    </div>
+                    <h2 class="mt-3">--%</h2>
+                    <p class="text-success mb-2">⬆ 12.5% respecto al mes anterior</p>
+
+                    <div class="bar">
+                        <div class="critica"></div>
+                        <div class="preventiva"></div>
+                        <div class="seguridad"></div>
+                    </div>
+
+                    <div class="legend-alerts">
+                        <span class="critica">Críticas</span>
+                        <span class="preventiva">Preventivas</span>
+                        <span class="seguridad">Seguridad</span>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Tiempo Promedio Fuera de Rango</span>
+                            <span><strong>-- min</strong></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Tiempo Promedio de Respuesta a Alertas</span>
+                            <span><strong>-- min</strong></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Tiempo Promedio desde Última Medición</span>
+                            <span><strong>-- min</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ranking Sensores con Más Alertas -->
+                <div class="ranking-card">
+                <h6>Sensores con Más Alertas</h6>
+                    <table class="ranking-table">
+                        <thead>
+                        <tr>
+                            <th>Sensor</th>
+                            <th>Alertas</th>
+                            <th>%</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Sensor A</td><td>34</td><td>23.4%</td></tr>
+                            <tr><td>Sensor B</td><td>28</td><td>18.9%</td></tr>
+                            <tr><td>Sensor C</td><td>25</td><td>17.2%</td></tr>
+                            <tr><td>Sensor D</td><td>19</td><td>13.1%</td></tr>
+                            <tr><td>Sensor E</td><td>17</td><td>11.5%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Ranking Sensores con Más Tiempo Fuera de Temp. -->
+                <div class="ranking-card">
+                <h6>Sensores con Más Tiempo Fuera de Temp.</h6>
+                    <table class="ranking-table">
+                        <thead>
+                        <tr>
+                            <th>Sensor</th>
+                            <th>Minutos</th>
+                            <th>%</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Sensor X</td><td>180</td><td>26.4%</td></tr>
+                            <tr><td>Sensor Y</td><td>145</td><td>21.3%</td></tr>
+                            <tr><td>Sensor Z</td><td>132</td><td>18.7%</td></tr>
+                            <tr><td>Sensor W</td><td>101</td><td>14.9%</td></tr>
+                            <tr><td>Sensor V</td><td>89</td><td>12.5%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- Visión térmica por sucursal -->
-        <div class="charts-section">
-            <div class="chart-container">
-                <h3>Temperatura Promedio por Sucursal (24h)</h3>
-                <canvas id="tempSucursalChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3>Tendencia Térmica Reciente</h3>
-                <canvas id="tendenciaSucursalChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Alertas activas (resumen) -->
-        <div class="kpi-cards">
-            <div class="kpi-card" style="background:#e63946;">
-                <h3 id="alertas-criticas">5</h3>
-                <p>Alertas Críticas</p>
-            </div>
-            <div class="kpi-card" style="background:#f4a261;">
-                <h3 id="alertas-preventivas">8</h3>
-                <p>Alertas Preventivas</p>
-            </div>
-            <div class="kpi-card" style="background:#a8dadc;">
-                <h3 id="alertas-informativas">12</h3>
-                <p>Alertas Informativas</p>
-            </div>
-        </div>
+         <!-- KPIs de Usuario y Auditoría -->
 
         <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
-        <div class="recent-activity">
+        <div class="recent-activity" style="margin-top: 20px;">
             <h3 style="margin-bottom: 15px;">Últimas Conexiones de Usuarios</h3>
             <div class="table-wrapper" style="position: relative; min-height: 340px; max-height: 340px; overflow-y: auto; padding-bottom: 10px;">
                 <table>
@@ -106,10 +392,138 @@
                     </ul>
                 </div>
             </div>
+    
         </div>
+
+       <!-- KPIs de Usuarios y Auditoría en tres columnas -->
+        <div class="row mt-5" style=" margin-bottom: 25px">
+          <!-- Columna 1: Usuarios Más Activos -->
+          <div class="col-md-4">
+            <div class="ranking-card h-100">
+              <h6 class="text-primary">Usuarios Más Activos</h6>
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Ingresos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>usuario1</td><td>15</td></tr>
+                  <tr><td>usuario2</td><td>13</td></tr>
+                  <tr><td>usuario3</td><td>10</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Columna 2: Pie Chart de Permisos -->
+          <div class="col-md-4">
+            <div class="ranking-card h-100">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-primary mb-0">Permisos de Usuario</h6>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mt-3">
+                <canvas id="chart-permisos" style="max-width: 100%; height: auto;"></canvas>
+              </div>
+              <div id="chart-permisos-legend" style="margin-left: 20px;"></div>
+            </div>
+          </div>
+
+          <!-- Columna 3: Espacio reservado -->
+          <div class="col-md-4">
+            <div class="ranking-card h-100 text-center d-flex justify-content-center align-items-center">
+              <em style="color: #ccc;">Próximamente métricas adicionales</em>
+            </div>
+          </div>
+        </div>
+
+    </div>
     <!-- Scripts para KPIs y gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="scripts/utils.js"></script>
     <script src="scripts/home.js"></script>
+
+    <script>
+      const ctxTendencia = document.getElementById('chart-tendencia-temp').getContext('2d');
+      new Chart(ctxTendencia, {
+        type: 'line',
+        data: {
+          labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+          datasets: [{
+            label: 'Temp. Promedio (°C)',
+            data: [-18.2, -18.4, -18.1, -18.3, -18.0, -18.5, -18.2],
+            fill: false,
+            borderColor: '#1D3557',
+            backgroundColor: '#457B9D',
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              suggestedMin: -20,
+              suggestedMax: -17,
+              ticks: {
+                color: '#1D3557'
+              }
+            },
+            x: {
+              ticks: {
+                color: '#1D3557'
+              }
+            }
+          }
+        }
+      });
+        function cambiarPeriodo(periodo) {
+          if (periodo === '7d') {
+            console.log("Mostrar datos de los últimos 7 días");
+            // aquí iría lógica para actualizar los datos del gráfico
+          } else if (periodo === '30d') {
+            console.log("Mostrar datos de los últimos 30 días");
+            // lógica similar para otro periodo
+          }
+        }
+    </script>
+
+    <script>
+      const ctxPermisos = document.getElementById('chart-permisos').getContext('2d');
+      const chartPermisos = new Chart(ctxPermisos, {
+        type: 'pie',
+        data: {
+          labels: ['Read', 'Edit', 'Read & Edit'],
+          datasets: [{
+            data: [40, 30, 30],
+            backgroundColor: ['#A8DADC', '#457B9D', '#1D3557'],
+            borderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'right',
+              labels: {
+                color: '#1D3557',
+                font: { size: 13 },
+                boxWidth: 15
+              }
+            }
+          }
+        }
+      });
+    </script>
+
+
+
 </body>
 </html>
