@@ -64,6 +64,10 @@ app.register_blueprint(empresa_bp)
 from routes.codigo_invitacion_routes import codigo_bp
 app.register_blueprint(codigo_bp)
 
+#Registrar asignacion blueprint
+from routes.asignaciones_routes import asignaciones_bp
+app.register_blueprint(asignaciones_bp)
+
 # Registrar alertas blueprint
 from routes.alerta_routes import create_alerta_routes
 app.register_blueprint(create_alerta_routes(mongo))

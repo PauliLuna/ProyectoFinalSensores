@@ -400,7 +400,7 @@
           <!-- Columna 1: Usuarios Más Activos -->
           <div class="col-md-4">
             <div class="ranking-card h-100">
-              <h6 class="text-primary">Usuarios Más Activos</h6>
+              <h6 class="text-primary">Usuarios Más Activos en el último mes</h6>
               <table class="ranking-table">
                 <thead>
                   <tr>
@@ -408,7 +408,7 @@
                     <th>Ingresos</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="top-users-table">
                   <tr><td>usuario1</td><td>15</td></tr>
                   <tr><td>usuario2</td><td>13</td></tr>
                   <tr><td>usuario3</td><td>10</td></tr>
@@ -421,7 +421,7 @@
           <div class="col-md-4">
             <div class="ranking-card h-100">
               <div class="d-flex justify-content-between align-items-center">
-                <h6 class="text-primary mb-0">Permisos de Usuario</h6>
+                <h6 class="text-primary mb-0">Tipo de permisos de Usuario en Asignaciones</h6>
               </div>
               <div class="d-flex align-items-center justify-content-between mt-3">
                 <canvas id="chart-permisos" style="max-width: 100%; height: auto;"></canvas>
@@ -493,35 +493,7 @@
         }
     </script>
 
-    <script>
-      const ctxPermisos = document.getElementById('chart-permisos').getContext('2d');
-      const chartPermisos = new Chart(ctxPermisos, {
-        type: 'pie',
-        data: {
-          labels: ['Read', 'Edit', 'Read & Edit'],
-          datasets: [{
-            data: [40, 30, 30],
-            backgroundColor: ['#A8DADC', '#457B9D', '#1D3557'],
-            borderColor: '#fff',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'right',
-              labels: {
-                color: '#1D3557',
-                font: { size: 13 },
-                boxWidth: 15
-              }
-            }
-          }
-        }
-      });
-    </script>
+ 
 
 
 

@@ -1,6 +1,7 @@
 import datetime
 from models.asignaciones import insert_assignment
 from bson import ObjectId
+from flask import session, jsonify
 
 def register_assignment(mongo, sensor_id, idUsuario, permiso="Read", estadoAsignacion=None):
     """
@@ -47,3 +48,19 @@ def update_assignment(mongo, assignment_id, permiso=None, estadoAsignacion=None)
         {"$set": update_fields}
     )
     return result.modified_count
+
+def get_asignaciones_empresa(mongo):
+    id_empresa = session.get('idEmpresa')
+    if not id_empresa:
+        return jsonify([])
+
+    # Buscar sensores de la empresa
+    sensores = list(mongo.db.sensors.find({"idEmpresa": id_empresa}))
+    ids_sensores = [s["nroSensor"] for s in sensores]
+
+    # Buscar asignaciones de esos sensores
+    asignaciones = list(mongo.db.asignaciones.find({"idSensor": {"$in": ids_sensores}}))
+    # Opcional: convertir ObjectId a str si es necesario
+    for a in asignaciones:
+        a["_id"] = str(a["_id"])
+    return jsonify(asignaciones)
