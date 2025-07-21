@@ -50,6 +50,25 @@ async function cargarKPIs() {
         const offline = sensores.filter(s => s.estado && s.estado.toLowerCase() === 'offline').length;
         document.getElementById('sensores-fallo').textContent = offline;
 
+
+        // Total de sensores
+        const total = sensores.length;
+
+        // a) % fuera de rango
+        const pfueraRango = sensores.filter(s => s.enRango === false).length;
+        const porcentajeFueraRango = total ? ((pfueraRango / total) * 100).toFixed(1) : 0;
+        document.getElementById('porcentaje-fuera-rango').textContent = porcentajeFueraRango + "%";
+
+        // b) % activos (estado === 'ONLINE')
+        const pActivos = sensores.filter(s => s.estado && s.estado.toUpperCase() === 'ONLINE').length;
+        const porcentajeActivos = total ? ((pActivos / total) * 100).toFixed(1) : 0;
+        document.getElementById('porcentaje-activos').textContent = porcentajeActivos + "%";
+
+        // c) % con retraso de envío de datos (estado === 'OFFLINE')
+        const pOffline = sensores.filter(s => s.estado && s.estado.toUpperCase() === 'OFFLINE').length;
+        const porcentajeRetraso = total ? ((pOffline / total) * 100).toFixed(1) : 0;
+        document.getElementById('porcentaje-retraso-envio').textContent = porcentajeRetraso + "%";
+
     } catch (error) {
         console.error('Error al cargar KPIs:', error);
     }
