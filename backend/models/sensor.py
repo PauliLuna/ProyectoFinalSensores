@@ -84,3 +84,23 @@ def get_ultima_medicion(mongo, nro_sensor):
         {"idSensor": nro_sensor},
         sort=[("fechaHoraMed", -1)]
     )
+
+def count_aperturas(mongo, nro_sensor):
+    mediciones = list(mongo.db.mediciones.find(
+        {"idSensor": nro_sensor, "puerta": {"$in": [0, 1]}},
+        sort=[("fechaHoraMed", 1)]
+    ))
+
+    if not mediciones:
+        return 0
+
+    aperturas = 0
+    estado_anterior = mediciones[0]['puerta']
+    
+    for m in mediciones[1:]:
+        estado_actual = m['puerta']
+        if estado_actual != estado_anterior and estado_actual == 1:  # se abrió
+            aperturas += 1
+        estado_anterior = estado_actual
+
+    return aperturas

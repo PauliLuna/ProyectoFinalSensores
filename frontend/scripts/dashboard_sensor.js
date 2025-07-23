@@ -72,6 +72,24 @@ function formatDate(date) {
 let tempIntChart = null;
 let tempExtChart = null;
 
+async function getCantidadAperturas(sensorId) {
+    try {
+        const res = await fetch(`/sensor/${sensorId}/aperturas`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        return data.cantidadAperturas;
+    } catch (err) {
+        console.error('Error al obtener cantidad de aperturas:', err);
+        return null;
+    }
+}
+
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
@@ -122,8 +140,9 @@ async function cargarCards(sensor){
         
 
         document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
-        document.getElementById('sensor-aperturas').textContent = 'N/A';
-
+        
+        const cantidadAperturas = await getCantidadAperturas(sensorId);
+        document.getElementById('sensor-aperturas').textContent = cantidadAperturas ?? 'N/A';
 
     }
     catch(err){

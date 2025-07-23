@@ -1,5 +1,5 @@
 from flask import request, jsonify, session
-from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion
+from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
@@ -273,3 +273,11 @@ def obtener_ultima_medicion(mongo, sensor_id):
         "valorTempExt": medicion.get("valorTempExt"),
         "puerta": medicion.get("puerta")
     }
+
+def obtener_cantidad_aperturas(mongo, sensor_id):
+    try:
+        nro_sensor = int(sensor_id)
+    except ValueError:
+        raise ValueError("ID del sensor inválido")
+
+    return count_aperturas(mongo, nro_sensor)
