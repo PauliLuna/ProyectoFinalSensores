@@ -784,6 +784,11 @@ button:hover {
    
 }
 
+.user-assignment-table td:nth-child(2) select {
+    max-width: 120px; /* Ajusta según necesites */
+    margin: 0 auto; /* Centra el select si es un elemento de bloque */
+    display: block; /* Para que margin: auto funcione */
+}
 .user-assignment-table td:last-child {
     text-align: center;
 }
@@ -1578,7 +1583,7 @@ canvas {
 .sidebar-collapsed .sensor-grid,
 .main-content.sidebar-collapsed .sensor-grid {
     justify-content: start;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 320px)); /* Ajusta el ancho de las cards */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 330px)); /* Ajusta el ancho de las cards */
 }
 
 .corner-icon {
