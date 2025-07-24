@@ -1,10 +1,10 @@
 from flask import request, jsonify, session
-from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model
+from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
 import json
-import datetime
+from datetime import datetime
 
 
 def get_coordinates_from_address(address):
@@ -201,26 +201,83 @@ def get_sensor(mongo, sensor_id):
             return jsonify({"error": "Sensor no encontrado"}), 404
         return jsonify(sensor), 200
     except Exception as e:
-        print(f"Error en get_sensor: {e}")
         return jsonify({"error": str(e)}), 500
     
-def get_mediciones(mongo, sensor_id, desde, hasta):
+def obtener_mediciones(mongo, sensor_id, desde, hasta):
     if not sensor_id or not desde or not hasta:
-        return jsonify({"error": "Faltan parámetros"}), 400
+        raise ValueError("Faltan parámetros")
 
     try:
         nro_sensor = int(sensor_id)
-        fecha_desde = datetime.datetime.fromisoformat(desde)
-        fecha_hasta = datetime.datetime.fromisoformat(hasta)
-    except Exception:
-        return jsonify({"error": "Parámetros inválidos"}), 400
+        fecha_desde = datetime.fromisoformat(desde)
+        fecha_hasta = datetime.fromisoformat(hasta)
+    except Exception as e:
+        raise ValueError(f"Parámetros inválidos: {e}")
 
-    mediciones = get_mediciones_model(mongo, nro_sensor, fecha_desde, fecha_hasta)
+    return get_mediciones_model(mongo, nro_sensor, fecha_desde, fecha_hasta)
+
+def get_mediciones(mongo, sensor_id, desde, hasta):
+    try:
+        mediciones = obtener_mediciones(mongo, sensor_id, desde, hasta)
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+
     result = []
     for m in mediciones:
         result.append({
             "fechaHoraMed": m["fechaHoraMed"].isoformat(),
             "valorTempInt": m.get("valorTempInt"),
-            "valorTempExt": m.get("valorTempExt")
+            "valorTempExt": m.get("valorTempExt"),
+            "puerta": m.get("puerta")
         })
     return jsonify(result)
+
+
+def procesar_sensor(mongo, sensor_id):
+    fecha_hasta = datetime.utcnow()
+    
+    primera_medicion = mongo.db.mediciones.find_one(
+        {"idSensor": sensor_id},
+        sort=[("fechaHoraMed", 1)]
+    )
+
+    fecha_desde = primera_medicion["fechaHoraMed"]
+
+    try:
+        mediciones = obtener_mediciones(mongo, sensor_id, fecha_desde.isoformat(), fecha_hasta.isoformat())
+    except Exception as e:
+        print(f"Error al obtener mediciones para sensor {sensor_id}: {e}")
+        return {}
+
+    fecha_cambio = get_last_change_door(mediciones)
+    duracion = obtain_current_state_duration(mediciones)
+
+    return {
+        "ultimoCambioPuerta": fecha_cambio.isoformat() if fecha_cambio else None,
+        "duracionEstadoActual": str(duracion) if duracion else None
+    }
+
+def obtener_ultima_medicion(mongo, sensor_id):
+    try:
+        nro_sensor = int(sensor_id)
+    except ValueError:
+        raise ValueError("ID del sensor inválido")
+
+    medicion = get_ultima_medicion(mongo, nro_sensor)
+    if not medicion:
+        return None
+
+    return {
+        "fechaHoraMed": medicion["fechaHoraMed"].isoformat(),
+        "valorTempInt": medicion.get("valorTempInt"),
+        "valorTempExt": medicion.get("valorTempExt"),
+        "puerta": medicion.get("puerta")
+    }
+
+def obtener_cantidad_aperturas(mongo, sensor_id):
+    try:
+        nro_sensor = int(sensor_id)
+    except ValueError:
+        raise ValueError("ID del sensor inválido")
+
+    return count_aperturas(mongo, nro_sensor)

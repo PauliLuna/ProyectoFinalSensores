@@ -28,22 +28,139 @@ async function getSensorByAlias(alias, token) {
     return sensores.find(s => s.alias === alias);
 }
 
+async function getEstadoPuerta(sensorId) {
+    try {
+        const res = await fetch(`/sensor/${sensorId}/puerta`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        if (!res.ok) {
+            console.warn('No se pudo obtener el estado de la puerta');
+            return null;
+        }
+
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error('Error al obtener estado de puerta:', err);
+        return null;
+    }
+}
+
+async function getUltimaMedicion(sensorId) {
+    try {
+        const res = await fetch(`/sensor/${sensorId}/ultima`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (err) {
+        console.error('Error al obtener última medición:', err);
+        return null;
+    }
+}
+
 function formatDate(date) {
     return date.toISOString().split('T')[0];
 }
 
 // Charts
-    let tempIntChart = null;
-    let tempExtChart = null;
+let tempIntChart = null;
+let tempExtChart = null;
+
+async function getCantidadAperturas(sensorId) {
+    try {
+        const res = await fetch(`/sensor/${sensorId}/aperturas`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        return data.cantidadAperturas;
+    } catch (err) {
+        console.error('Error al obtener cantidad de aperturas:', err);
+        return null;
+    }
+}
+
+async function cargarCards(sensor){
+    try{
+        const sensorId = parseInt(sensor.nroSensor);
+
+        const alerta = sessionStorage.getItem('sensor_alarma'); // TODO: have to be updated
+
+        // Mostrar datos del sensor
+        document.getElementById('sensor-alias').textContent = sensor.alias;
+        document.getElementById('sensor-nro').textContent = sensor.nroSensor;
+        document.getElementById('sensor-notas').textContent = sensor.notas || 'No hay notas disponibles.';
+        document.getElementById('sensor-estado').textContent = sensor.estado;
+        document.getElementById('sensor-alerta').textContent = alerta;
+
+        // Última medición
+        const ultimaMed = await getUltimaMedicion(sensorId);
+        if (ultimaMed) {
+            const intTemp = ultimaMed.valorTempInt ?? 'N/A';
+            const extTemp = ultimaMed.valorTempExt ?? 'N/A';
+            const difTemp = (extTemp - intTemp).toFixed(2);
+            const puerta = ultimaMed.puerta === 1 ? 'Abierta' : 'Cerrada';
+
+            document.getElementById('sensor-tempInt').textContent = `${intTemp}°C`;
+            document.getElementById('sensor-tempExt').textContent = `${extTemp}°C`;
+            document.getElementById('sensor-tempDif').textContent = `${difTemp}°C`;
+            document.getElementById('sensor-puerta').textContent = puerta;
+        } else {
+            document.getElementById('sensor-tempInt').textContent = 'N/A';
+            document.getElementById('sensor-tempExt').textContent = 'N/A';
+            document.getElementById('sensor-tempDif').textContent = 'N/A';
+            document.getElementById('sensor-puerta').textContent = 'N/A';
+        }
+
+        //Mostrar estado puerta
+        const estadoPuerta = await getEstadoPuerta(sensorId);
+        const duracion = estadoPuerta.duracionEstadoActual;
+        let textoDuracion = 'N/A';
+        if (duracion.includes('day')) {
+            // Ej: "2 days, 5:20:33.123456"
+            const partes = duracion.split(',');
+            const dias = partes[0].split(' ')[0]; // Número de días
+            textoDuracion = `${dias} día${dias === '1' ? '' : 's'}`;
+        } else if (duracion.includes(':')) {
+            // Ej: "0:51:33.123456"
+            const [horas, minutos] = duracion.split(':');
+            textoDuracion = `${parseInt(horas)}h ${parseInt(minutos)}m`;
+        }
+        document.getElementById('sensor-puertaUltCam').textContent = textoDuracion;
+        
+
+        document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
+        
+        const cantidadAperturas = await getCantidadAperturas(sensorId);
+        document.getElementById('sensor-aperturas').textContent = cantidadAperturas ?? 'N/A';
+
+    }
+    catch(err){
+        console.error('Error al cargar las cards:', err);
+        alert('Ocurrió un error al cargar los datos del sensor.');
+    }
+}
+
+const alias = sessionStorage.getItem('sensor_alias');
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const alias = sessionStorage.getItem('sensor_alias');
     const estado = sessionStorage.getItem('sensor_estado');
     const alerta = sessionStorage.getItem('sensor_alarma');
 
     if (!alias || !estado || !alerta) return;
 
     const sensor = await getSensorByAlias(alias, token);
+    await cargarCards(sensor);
 
     if (!sensor) {
         alert('No se encontró el sensor.');
@@ -60,12 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Lanzar gráfico automáticamente
     document.getElementById('btnGraficar').click();
 
-    // Mostrar datos del sensor
-    document.getElementById('sensor-alias').textContent = alias;
-    document.getElementById('sensor-nro').textContent = sensor.nroSensor;
-    document.getElementById('sensor-notas').textContent = sensor.notas || 'No hay notas disponibles.';
-    document.getElementById('sensor-estado').textContent = estado;
-    document.getElementById('sensor-alerta').textContent = alerta;
+    
 });
 
 document.getElementById('btnGraficar').addEventListener('click', async () => {
@@ -79,11 +191,7 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
 
     const alias = sessionStorage.getItem('sensor_alias');
     const sensor = await getSensorByAlias(alias, token);
-    if (!sensor) {
-        alert('Sensor no encontrado.');
-        return;
-    }
-    const sensorId = sensor.nroSensor;
+    const sensorId = parseInt(sensor.nroSensor);
 
     // Fetch mediciones reales
     const res = await fetch(`/mediciones?sensor_id=${sensorId}&desde=${fromDate}T00:00:00&hasta=${toDate}T23:59:59`, {
@@ -94,16 +202,7 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     const mediciones = await res.json();
 
     if (!Array.isArray(mediciones) || mediciones.length === 0) {
-        document.getElementById('sensor-tempInt').textContent = 'N/A';
-        document.getElementById('sensor-tempExt').textContent = 'N/A';
-        document.getElementById('sensor-tempDif').textContent = 'N/A';
-
-        document.getElementById('sensor-puerta').textContent = 'N/A';
-        document.getElementById('sensor-puertaUltCam').textContent = 'N/A';
-        document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
-        document.getElementById('sensor-aperturas').textContent = 'N/A';
         alert('No hay mediciones para ese rango.');
-        return;
     }
 
     const labels = mediciones.map(m => new Date(m.fechaHoraMed).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }));
@@ -211,28 +310,6 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
             }
         }
     });
-
-    // Obtener última medición del sensor
-    let tempInt = null;
-    let tempExt = null;
-    let puerta = null;
-
-    if (Array.isArray(mediciones) && mediciones.length > 0) {
-        const ultimaMed = mediciones[mediciones.length - 1];
-        tempInt = ultimaMed.valorTempInt ?? null;
-        tempExt = ultimaMed.valorTempExt ?? null;
-        puerta = ultimaMed.puerta === 1 ? 'Abierta' : 'Cerrada';
-    }
-
-    // Mostrar última medición
-    document.getElementById('sensor-tempInt').textContent = tempInt + "°C" || 'N/A';
-    document.getElementById('sensor-tempExt').textContent = tempExt + "°C" || 'N/A';
-    document.getElementById('sensor-tempDif').textContent = tempExt - tempInt + "°C" || 'N/A';
-
-    document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
-    document.getElementById('sensor-puertaUltCam').textContent = 'N/A';
-    document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
-    document.getElementById('sensor-aperturas').textContent = 'N/A';
 });
 
 // Manejo del filtro de fechas predefinidas
@@ -279,7 +356,11 @@ document.getElementById('hasta').addEventListener('change', () => {
 });
 
 // Botón Refrescar
-document.getElementById('refreshIcon').addEventListener('click', () => {
+document.getElementById('refreshIcon').addEventListener('click', async() => {
+    
+    const sensor = await getSensorByAlias(alias, token);
+    cargarCards(sensor);
+    
     // Simular el clic en el botón "Graficar"
     document.getElementById('btnGraficar').click();
 });
