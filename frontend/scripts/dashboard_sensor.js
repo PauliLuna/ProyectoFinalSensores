@@ -219,6 +219,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     
 });
 
+document.getElementById('btnAnalizar').addEventListener('click', async () => {
+    if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
+        alert('No hay datos cargados para analizar');
+        return;
+    }
+
+    const alias = sessionStorage.getItem('sensor_alias');
+    const sensor = await getSensorByAlias(alias, token);
+    if (!sensor) {
+        alert('Sensor no encontrado.');
+        return;
+    }
+
+    const sensorId = sensor.nroSensor;
+
+    const res = await fetch(`/sensor/${sensorId}/analisis`, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mediciones: window.ultimaMediciones })
+    });
+
+    if (!res.ok) {
+        alert('Error al obtener análisis');
+        return;
+    }
+
+    const resultado = await res.json();
+    const formattedText = resultado.replace(/\n/g, '<br>');
+    const analisisDiv = document.getElementById('analisisResultado');
+
+    analisisDiv.innerHTML = `
+        <h3>Resultado del análisis</h3>
+        <p style="white-space: pre-wrap; word-wrap: break-word;">${formattedText}</p>
+    `;
+    analisisDiv.style.display = 'block';
+});
+
+
 document.getElementById('btnGraficar').addEventListener('click', async () => {
     const fromDate = document.getElementById('desde').value;
     const toDate = document.getElementById('hasta').value;
@@ -239,6 +280,11 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
         }
     });
     const mediciones = await res.json();
+
+    window.ultimaMediciones = mediciones; // guardar para usar luego
+
+    document.getElementById('analisisResultado').style.display = 'none';
+    document.getElementById('analisisResultado').innerHTML = '';
 
     if (!Array.isArray(mediciones) || mediciones.length === 0) {
         alert('No hay mediciones para ese rango.');
