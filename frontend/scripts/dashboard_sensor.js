@@ -90,6 +90,24 @@ async function getCantidadAperturas(sensorId) {
     }
 }
 
+async function getDuracionUltimaApertura(sensorId) {
+    try {
+        const res = await fetch(`/sensor/${sensorId}/puerta/duracion`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+            console.warn('No se pudo obtener la duración de la última apertura');
+            return null;
+        }
+
+        return await res.json();
+    } catch (err) {
+        console.error('Error al obtener duración de apertura:', err);
+        return null;
+    }
+}
+
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
@@ -126,8 +144,7 @@ async function cargarCards(sensor){
         const estadoPuerta = await getEstadoPuerta(sensorId);
         const duracion = estadoPuerta.duracionEstadoActual;
         let textoDuracion = 'N/A';
-        if (duracion.includes('day')) {
-            // Ej: "2 days, 5:20:33.123456"
+        if (duracion.includes('day')) { // Ej: "2 days, 5:20:33.123456"
             const partes = duracion.split(',');
             const dias = partes[0].split(' ')[0]; // Número de días
             textoDuracion = `${dias} día${dias === '1' ? '' : 's'}`;
@@ -138,9 +155,31 @@ async function cargarCards(sensor){
         }
         document.getElementById('sensor-puertaUltCam').textContent = textoDuracion;
         
+        // Última apertura
+        const duracionApertura = await getDuracionUltimaApertura(sensorId);
+        if (duracionApertura && duracionApertura.duracionUltimaApertura) {
+            const duracion = duracionApertura.duracionUltimaApertura;
+            let textoDuracion;
+            if (duracion.includes('day')) {
+                textoDuracion = duracion.split(',')[0]; // ej: "1 day"
+            } else {
+                const tiempo = duracion.split('.')[0]; // "H:M:S"
+                const [horas, minutos, segundos] = tiempo.split(':').map(n => parseInt(n, 10));
 
-        document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
-        
+                if (horas > 0) {
+                    textoDuracion = `${horas}h ${minutos}m ${segundos}s`;
+                } else if (minutos > 0) {
+                    textoDuracion = `${minutos}m ${segundos}s`;
+                } else {
+                    textoDuracion = `${segundos}s`;
+                }
+            }
+            document.getElementById('sensor-puertaDuracion').textContent = textoDuracion;
+        } else {
+            document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
+        }
+
+        // Cantidad de aperturas
         const cantidadAperturas = await getCantidadAperturas(sensorId);
         document.getElementById('sensor-aperturas').textContent = cantidadAperturas ?? 'N/A';
 

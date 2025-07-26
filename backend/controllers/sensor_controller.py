@@ -1,5 +1,5 @@
 from flask import request, jsonify, session
-from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas
+from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas, get_last_open_duration
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
@@ -281,3 +281,12 @@ def obtener_cantidad_aperturas(mongo, sensor_id):
         raise ValueError("ID del sensor inválido")
 
     return count_aperturas(mongo, nro_sensor)
+
+def get_duracion_ultima_apertura(mongo, sensor_id):
+    # Traer TODAS las mediciones del sensor
+    mediciones = get_mediciones_model(mongo, sensor_id, datetime.min, datetime.utcnow())
+    duracion = get_last_open_duration(mediciones)
+
+    return {
+        "duracionUltimaApertura": str(duracion) if duracion else None
+    }

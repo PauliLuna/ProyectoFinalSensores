@@ -104,3 +104,16 @@ def count_aperturas(mongo, nro_sensor):
         estado_anterior = estado_actual
 
     return aperturas
+
+def get_last_open_duration(mediciones):
+    """
+    Devuelve la duración de la última apertura completa (de 1 -> 0)
+    """
+    if not mediciones or len(mediciones) < 2:
+        return None
+
+    # Recorre desde la última medición hacia atrás buscando un cambio 1 -> 0
+    for i in range(len(mediciones) - 2, -1, -1):
+        if mediciones[i]['puerta'] == 1 and mediciones[i + 1]['puerta'] == 0:
+            return mediciones[i + 1]['fechaHoraMed'] - mediciones[i]['fechaHoraMed']
+    return None
