@@ -3,6 +3,8 @@ from flask_mail import Mail
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import os
+#from apscheduler.schedulers.background import BackgroundScheduler
+from controllers.alerta_controller import chequear_alertas_criticas
 
 print("Cargando variables de entorno...")
 load_dotenv()
@@ -72,6 +74,10 @@ app.register_blueprint(asignaciones_bp)
 from routes.alerta_routes import create_alerta_routes
 app.register_blueprint(create_alerta_routes(mongo))
 
-
 if __name__ == '__main__':
+     # Solo arrancar scheduler en el proceso principal
+    #if not os.environ.get("WERKZEUG_RUN_MAIN"):
+    #    start_scheduler(mongo)
+
+    print("🚀 Iniciando la aplicación Flask...")
     app.run(debug=True)
