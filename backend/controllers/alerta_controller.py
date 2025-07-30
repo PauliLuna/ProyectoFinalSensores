@@ -144,12 +144,20 @@ def chequear_alertas_criticas(mongo, id_empresa):
                             {mensaje}
                         </div>
                         <p>Por favor, revise la situación lo antes posible.</p>
-                        <p>— SensIA</p>
+                        <p>Gracias por usar <strong>SensIA</strong>.</p>
+
+                        <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
+                        📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
                     </div>
                     </body>
                     </html>
                     """
-                    msg = Message(subject=subject, recipients=emails, html=html_template)
+                    msg = Message(
+                        subject=subject, 
+                        sender=current_app.config['MAIL_USERNAME'], 
+                        recipients=emails,
+                        html=html_template
+                    )
                     try:
                         mail.send(msg)
                         print(f"✅ Mail enviado a {emails}")
