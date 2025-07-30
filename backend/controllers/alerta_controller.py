@@ -58,6 +58,9 @@ def chequear_alertas_criticas(mongo, id_empresa):
         if not mediciones:
             continue
 
+        # Mantener un flag de puerta abierta previa
+        puerta_abierta_previa = False
+
         # 3️⃣ Analizar mediciones
         for med in mediciones:
             try:
@@ -65,6 +68,43 @@ def chequear_alertas_criticas(mongo, id_empresa):
             except (TypeError, ValueError):
                 print(f"⚠️ Medición inválida en sensor {nro_sensor}: {med.get('valorTempInt')}")
                 continue
+
+            puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
+
+            # ----- A) ALERTA de puerta abierta prolongada -----
+            if puerta_estado == 1 and puerta_abierta_previa:
+                print(f"⚠️ ALERTA: puerta abierta prolongada en sensor {nro_sensor}")
+
+                alerta_data = {
+                    "idSensor": str(nro_sensor),
+                    "idEmpresa": id_empresa,
+                    "criticidad": "Crítica",
+                    "tipoAlerta": "Puerta abierta prolongada",
+                    "descripcion": f"Puerta abierta ≥10 min en sensor {nro_sensor}. Riesgo de pérdida de frío.",
+                    "estadoAlerta": "pendiente",
+                    "mensajeAlerta": "Puerta abierta prolongada",
+                    "fechaHoraAlerta": med["fechaHoraMed"]
+                }
+                # 4️⃣ Guardar alerta en BD
+                alerta_id = insert_alerta(mongo, alerta_data)
+                print(f"✅ Alerta insertada (puerta abierta) para sensor {nro_sensor} -> ID {alerta_id}")
+
+                # 5️⃣ Notificar por mail
+                emails = _obtener_emails_asignados(mongo, nro_sensor)
+                if emails:
+                    _enviar_mail_alerta(
+                        emails=emails,
+                        tipo_alerta="Puerta abierta prolongada",
+                        descripcion=alerta_data["descripcion"],
+                        criticidad="Crítica",
+                        sensor=sensor,
+                        mensaje="Puerta abierta prolongada",
+                        fecha=med["fechaHoraMed"]
+                    )
+            else:
+                puerta_abierta_previa = puerta_estado == 1
+
+            # ----- B) ALERTA de temperatura fuera de rango -----    
 
             print(f"🔹 Chequeando medición {med['_id']} -> temp={temp}°C | rango=({valor_min}, {valor_max})")
 
@@ -78,14 +118,12 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
                 # Generar mensaje y descripción
                 if temp > valor_max:
-                    #mensaje = f"Temperatura alta: {temp}°C > {sensor['valorMax']}°C"
                     mensaje = "Temperatura interna alta"
                     descripcion = f"La temperatura actual ({temp}°C) excede el límite superior ({valor_max}°C) para el sensor {nro_sensor}."
                 else:
-                    #mensaje = f"Temperatura baja: {temp}°C < {sensor['valorMin']}°C"
                     mensaje = "Temperatura interna baja"
                     descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {nro_sensor}."
-                #descripcion = f"Sensor {sensor['alias']} fuera de rango ({sensor['valorMin']}°C - {sensor['valorMax']}°C)."
+                
                 
                 alerta_data = {
                     "idSensor": str(nro_sensor),
@@ -106,63 +144,15 @@ def chequear_alertas_criticas(mongo, id_empresa):
                 emails = _obtener_emails_asignados(mongo, nro_sensor)
                 print(f"📧 Emails asignados: {emails}")
                 if emails:
-                    mail = current_app.mail
-                    subject = f"[ALERTA] {mensaje} - Sensor {sensor['nroSensor']}"
-                    html_template = f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                    <meta charset="UTF-8">
-                    <style>
-                        body {{ font-family: Arial, sans-serif; color: #333; }}
-                        .container {{ padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; max-width: 600px; margin: auto; }}
-                        h2 {{ color: #ef4444; }}
-                        .info {{ margin-bottom: 10px; }}
-                        .label {{ font-weight: bold; }}
-                        .message {{ margin-top: 15px; padding: 12px; background-color: #fee2e2; border-left: 5px solid #ef4444; border-radius: 4px; }}
-                    </style>
-                    </head>
-                    <body>
-                    <div class="container">
-                        <h2>⚠️ Alerta Crítica en SensIA</h2>
-                        <div class="info">
-                            <span class="label">Sensor:</span> {sensor['nroSensor']}
-                        </div>
-                        <div class="info">
-                            <span class="label">Tipo:</span> {"Temperatura fuera de rango"}
-                        </div>
-                        <div class="info">
-                            <span class="label">Descripción:</span> {descripcion}
-                        </div>
-                        <div class="info">
-                            <span class="label">Fecha y hora:</span> {med["fechaHoraMed"]}
-                        </div>
-                        <div class="info">
-                            <span class="label">Criticidad:</span> {"Critica"}
-                        </div>
-                        <div class="message">
-                            {mensaje}
-                        </div>
-                        <p>Por favor, revise la situación lo antes posible.</p>
-                        <p>Gracias por usar <strong>SensIA</strong>.</p>
-
-                        <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
-                        📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
-                    </div>
-                    </body>
-                    </html>
-                    """
-                    msg = Message(
-                        subject=subject, 
-                        sender=current_app.config['MAIL_USERNAME'], 
-                        recipients=emails,
-                        html=html_template
-                    )
-                    try:
-                        mail.send(msg)
-                        print(f"✅ Mail enviado a {emails}")
-                    except Exception as e:
-                        print(f"❌ Error enviando mail de alerta: {e}")
+                    _enviar_mail_alerta(
+                        emails=emails,
+                        tipo_alerta="Temperatura fuera de rango",
+                        descripcion=descripcion,
+                        criticidad="Crítica",
+                        sensor=sensor,  
+                        mensaje=mensaje,
+                        fecha=med["fechaHoraMed"]
+                        )
 
                 else:
                     print("⚠️ No hay emails asignados a este sensor")
@@ -189,3 +179,62 @@ def _obtener_emails_asignados(mongo, nro_sensor):
         if usuario and usuario.get("email"):
             emails.append(usuario["email"])
     return emails
+
+def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha):
+    mail = current_app.mail
+    subject = f"[ALERTA] {tipo_alerta} - Sensor {sensor['nroSensor']}"
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; max-width: 600px; margin: auto; }}
+        h2 {{ color: #ef4444; }}
+        .info {{ margin-bottom: 10px; }}
+        .label {{ font-weight: bold; }}
+        .message {{ margin-top: 15px; padding: 12px; background-color: #fee2e2; border-left: 5px solid #ef4444; border-radius: 4px; }}
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <h2>⚠️ Alerta en SensIA</h2>
+        <div class="info">
+            <span class="label">Sensor:</span> {sensor['nroSensor']}
+        </div>
+        <div class="info">
+            <span class="label">Tipo:</span> {tipo_alerta}
+        </div>
+        <div class="info">
+            <span class="label">Descripción:</span> {descripcion}
+        </div>
+        <div class="info">
+            <span class="label">Fecha y hora:</span> {fecha}
+        </div>
+        <div class="info">
+            <span class="label">Criticidad:</span> {criticidad}
+        </div>
+        <div class="message">
+            {mensaje}
+        </div>
+        <p>Por favor, revise la situación lo antes posible.</p>
+        <p>Gracias por usar <strong>SensIA</strong>.</p>
+
+        <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
+        📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
+    </div>
+    </body>
+    </html>
+    """
+    msg = Message(
+        subject=subject, 
+        sender=current_app.config['MAIL_USERNAME'], 
+        recipients=emails,
+        html=html_template
+    )
+    try:
+        mail.send(msg)
+        print(f"✅ Mail enviado a {emails}")
+    except Exception as e:
+        print(f"❌ Error enviando mail de alerta: {e}")
