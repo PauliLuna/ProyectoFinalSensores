@@ -38,6 +38,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
     for sensor in sensores:
         nro_sensor = sensor["nroSensor"]
+
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
@@ -60,18 +61,54 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
         # Mantener un flag de puerta abierta previa
         puerta_abierta_previa = False
+        prev_med = None
 
         # 3️⃣ Analizar mediciones
         for med in mediciones:
+            fecha_actual = med["fechaHoraMed"]
+
+            # ---- A) Gap de tiempo -> Sensor offline ----
+            if prev_med:
+                gap = fecha_actual - prev_med["fechaHoraMed"]
+                if gap >= timedelta(minutes=10):
+                    # ALERTA por hueco histórico
+                    alerta_data = {
+                        "idSensor": str(nro_sensor),
+                        "idEmpresa": id_empresa,
+                        "criticidad": "Crítica",
+                        "tipoAlerta": "Sensor offline",
+                        "descripcion": f"El sensor {nro_sensor} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
+                        "estadoAlerta": "pendiente",
+                        "mensajeAlerta": "Sensor offline (sin mediciones)",
+                        "fechaHoraAlerta": fecha_actual
+                    }
+                    # 4️⃣ Guardar alerta en BD
+                    alerta_id = insert_alerta(mongo, alerta_data)
+                    print(f"✅ Alerta offline por hueco histórico para sensor {nro_sensor} -> ID {alerta_id}")
+
+                    # 5️⃣ Notificar por mail
+                    emails = _obtener_emails_asignados(mongo, nro_sensor)
+                    if emails:
+                        _enviar_mail_alerta(
+                            emails=emails,
+                            tipo_alerta="Sensor offline",
+                            descripcion=alerta_data["descripcion"],
+                            criticidad="Crítica",
+                            sensor=sensor,
+                            mensaje="Sensor offline (sin mediciones)",
+                            fecha=fecha_actual
+                        )
+
+
             try:
                 temp = float(med.get("valorTempInt"))
             except (TypeError, ValueError):
                 print(f"⚠️ Medición inválida en sensor {nro_sensor}: {med.get('valorTempInt')}")
                 continue
-
+            
+            # ----- B) ALERTA de puerta abierta prolongada -----
             puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
-
-            # ----- A) ALERTA de puerta abierta prolongada -----
+            
             if puerta_estado == 1 and puerta_abierta_previa:
                 print(f"⚠️ ALERTA: puerta abierta prolongada en sensor {nro_sensor}")
 
@@ -104,7 +141,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
             else:
                 puerta_abierta_previa = puerta_estado == 1
 
-            # ----- B) ALERTA de temperatura fuera de rango -----    
+            # ----- C) ALERTA de temperatura fuera de rango -----    
 
             print(f"🔹 Chequeando medición {med['_id']} -> temp={temp}°C | rango=({valor_min}, {valor_max})")
 
@@ -156,7 +193,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
                 else:
                     print("⚠️ No hay emails asignados a este sensor")
-                
+            prev_med = med      
 
         # 6️⃣ Actualizar checkpoint con la última medición analizada
         last_med = mediciones[-1]
