@@ -341,6 +341,9 @@ def chequear_alertas_preventivas(mongo, id_empresa):
     sensores = get_all_sensors(mongo)
 
     for sensor in sensores:
+        #Validación de caida de energía
+        _alerta_caida_energia(mongo, sensor, id_empresa)
+
         nro_sensor = sensor["nroSensor"]
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
@@ -455,5 +458,60 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
                 criticidad="Preventiva",
                 sensor=sensor,
                 mensaje="Patrón recurrente de puerta abierta",
+                fecha=alerta_data["fechaHoraAlerta"]
+            )
+
+def _alerta_caida_energia(mongo, sensor, id_empresa):
+    """
+    Genera alerta preventiva si todos los sensores de la misma dirección
+    están inactivos -> posible caída de energía eléctrica.
+    """
+    direccion = sensor.get("direccion")
+    if not direccion:
+        return
+
+    # Buscar sensores de la misma dirección
+    sensores_misma_dir = list(mongo.db.sensors.find({
+        "idEmpresa": id_empresa,
+        "direccion": direccion
+    }))
+
+    if not sensores_misma_dir:
+        return
+
+    # Verificar si todos están inactivos
+    todos_inactivos = all(s.get("estado") == "inactive" for s in sensores_misma_dir)
+
+    if todos_inactivos:
+        print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
+
+        alerta_data = {
+            "idSensor": str(sensor["nroSensor"]),  # Usamos uno como referencia
+            "idEmpresa": id_empresa,
+            "criticidad": "Preventiva",
+            "tipoAlerta": "Caída de energía eléctrica",
+            "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
+            "estadoAlerta": "pendiente",
+            "mensajeAlerta": "Caída de energía eléctrica",
+            "fechaHoraAlerta": datetime.utcnow()
+        }
+
+        alerta_id = insert_alerta(mongo, alerta_data)
+        print(f"✅ Alerta preventiva (caída energía) insertada -> ID {alerta_id}")
+
+        # Obtener emails de todos los sensores de la dirección
+        emails = []
+        for s in sensores_misma_dir:
+            emails += _obtener_emails_asignados(mongo, s["nroSensor"])
+        emails = list(set(emails))  # eliminar duplicados
+
+        if emails:
+            _enviar_mail_alerta(
+                emails=emails,
+                tipo_alerta="Caída de energía eléctrica",
+                descripcion=alerta_data["descripcion"],
+                criticidad="Preventiva",
+                sensor=sensor,
+                mensaje="Caída de energía eléctrica en la sucursal",
                 fecha=alerta_data["fechaHoraAlerta"]
             )

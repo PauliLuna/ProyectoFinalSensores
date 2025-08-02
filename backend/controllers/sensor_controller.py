@@ -195,6 +195,7 @@ def get_all_sensors(mongo):
             "longitud": longitud,
             "valorMin": valor_min,
             "valorMax": valor_max,
+            "direccion": sensor.get('direccion')
         })
     return result
 
