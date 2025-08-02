@@ -1,10 +1,12 @@
 from flask import request, jsonify, session
-from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas
+from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas, get_last_open_duration
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from controllers.asignaciones_controller import register_assignment, update_assignment
 import json
 from datetime import datetime
+import requests
+import os 
 
 
 def get_coordinates_from_address(address):
@@ -283,3 +285,51 @@ def obtener_cantidad_aperturas(mongo, sensor_id):
         raise ValueError("ID del sensor inválido")
 
     return count_aperturas(mongo, nro_sensor)
+
+def get_duracion_ultima_apertura(mongo, sensor_id):
+    # Traer TODAS las mediciones del sensor
+    mediciones = get_mediciones_model(mongo, sensor_id, datetime.min, datetime.utcnow())
+    duracion = get_last_open_duration(mediciones)
+
+    return {
+        "duracionUltimaApertura": str(duracion) if duracion else None
+    }
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
+def analizar_mediciones(sensor_id, mediciones):
+    # Construcción del prompt
+    user_prompt = (
+        "Analiza las siguientes mediciones de temperatura y estado de puerta "
+        "de una cámara frigorífica. Identifica tendencias, anomalías y "
+        "eventuales riesgos. Devuelve el resultado en texto claro, incluyendo: "
+        "1) comportamiento general, 2) posibles problemas, 3) recomendaciones.\n"
+        "Formato de salida: resumen breve de máximo 2 párrafos.\n\n"
+        f"Datos del sensor {sensor_id}:\n"
+        f"{json.dumps(mediciones, indent=2)}"
+    )
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": user_prompt}
+                ]
+            }
+        ]
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-goog-api-key": GEMINI_API_KEY
+    }
+
+    response = requests.post(GEMINI_API_URL, headers=headers, json=payload, timeout=60)
+
+    if response.status_code != 200:
+        raise Exception(f"Error en Gemini API: {response.text}")
+
+    data = response.json()
+    # Extraer el texto generado
+    return data["candidates"][0]["content"]["parts"][0]["text"]
