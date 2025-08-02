@@ -357,6 +357,11 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         # 2️⃣ Analizar fluctuaciones
         _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
 
+        # 3️⃣ Alerta de puerta abierta recurrente
+        _alerta_puerta_recurrente(mongo, sensor, id_empresa)
+
+
+
 
 def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa):
     """
@@ -404,4 +409,51 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
                 sensor=sensor,
                 mensaje="Oscilaciones de temperatura detectadas",
                 fecha=mediciones[-1]["fechaHoraMed"]
+            )
+
+def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
+    """
+    Genera alerta preventiva si el sensor tiene más de X alertas de puerta abierta prolongada
+    en el mismo día.
+    """
+    nro_sensor = sensor["nroSensor"]
+    hoy_inicio = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Buscar alertas críticas de puerta abierta prolongada de hoy
+    count_alertas = mongo.db.alertas.count_documents({
+        "idSensor": str(nro_sensor),
+        "idEmpresa": id_empresa,
+        "tipoAlerta": "Puerta abierta prolongada",
+        "fechaHoraAlerta": {"$gte": hoy_inicio}
+    })
+
+    if count_alertas >= max_repeticiones:
+        print(f"⚠️ ALERTA PREVENTIVA: puerta abierta recurrente (sensor {nro_sensor})")
+
+        alerta_data = {
+            "idSensor": str(nro_sensor),
+            "idEmpresa": id_empresa,
+            "criticidad": "Preventiva",
+            "tipoAlerta": "Puerta abierta recurrente",
+            "descripcion": f"Más de {max_repeticiones} alertas de puerta abierta prolongada en el día para el sensor {nro_sensor}.",
+            "estadoAlerta": "pendiente",
+            "mensajeAlerta": "Patrón recurrente de puerta abierta",
+            "fechaHoraAlerta": datetime.utcnow()
+        }
+
+        # Insertar alerta
+        alerta_id = insert_alerta(mongo, alerta_data)
+        print(f"✅ Alerta preventiva (puerta recurrente) insertada -> ID {alerta_id}")
+
+        # Notificar por mail
+        emails = _obtener_emails_asignados(mongo, nro_sensor)
+        if emails:
+            _enviar_mail_alerta(
+                emails=emails,
+                tipo_alerta="Puerta abierta recurrente",
+                descripcion=alerta_data["descripcion"],
+                criticidad="Preventiva",
+                sensor=sensor,
+                mensaje="Patrón recurrente de puerta abierta",
+                fecha=alerta_data["fechaHoraAlerta"]
             )
