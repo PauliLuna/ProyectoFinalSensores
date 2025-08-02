@@ -69,6 +69,13 @@ def chequear_alertas_criticas(mongo, id_empresa):
         for med in mediciones:
             fecha_actual = med["fechaHoraMed"]
 
+              # 🔹 Actualizar estado del sensor a active
+            mongo.db.sensors.update_one(
+                {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
+                {"$set": {"estado": "active"}}
+            )
+            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
+
             # --- ALERTA OFFLINE ---
             if prev_med:
                  _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
@@ -192,6 +199,8 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     """Detecta huecos de tiempo sin mediciones"""
     gap = fecha_actual - prev_med["fechaHoraMed"]
     if gap >= timedelta(minutes=10):
+        print(f"⚠️ ALERTA: sensor {sensor['nroSensor']} sin mediciones por {gap}")
+
         alerta_data = {
             "idSensor": str(sensor["nroSensor"]),
             "idEmpresa": id_empresa,
@@ -204,6 +213,13 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         }
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
+
+          # 🔹 Actualizar estado del sensor a inactive
+        mongo.db.sensors.update_one(
+            {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
+            {"$set": {"estado": "inactive"}}
+        )
+        print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
 
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"])
         if emails:
@@ -316,5 +332,4 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
             )
         return False, None  # reset ciclo
     return en_ciclo, inicio_ciclo
-
 
