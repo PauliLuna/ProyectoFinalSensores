@@ -45,7 +45,8 @@ def chequear_alertas_criticas(mongo, id_empresa):
         # 1️⃣ Obtener checkpoint
         checkpoint = mongo.db.alerta_checkpoint.find_one({
             "idEmpresa": id_empresa,
-            "idSensor": nro_sensor
+            "idSensor": nro_sensor,
+            "tipo": "critica"
         })
         last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
 
@@ -116,7 +117,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
         # 6️⃣ Actualizar checkpoint con la última medición analizada
         last_med = mediciones[-1]
         mongo.db.alerta_checkpoint.update_one(
-            {"idEmpresa": id_empresa, "idSensor": nro_sensor},
+            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "critica"},
             {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
             upsert=True
         )
@@ -348,11 +349,23 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
-        # 1️⃣ Obtener mediciones de las últimas 24 horas (o desde checkpoint)
-        desde_hora = datetime.utcnow() - timedelta(hours=24)
-        mediciones = list(mongo.db.mediciones.find(
-            {"idSensor": nro_sensor, "fechaHoraMed": {"$gte": desde_hora}}
-        ).sort("fechaHoraMed", 1))
+          # 1️⃣ Obtener checkpoint de preventivas
+        checkpoint = mongo.db.alerta_checkpoint.find_one({
+            "idEmpresa": id_empresa,
+            "idSensor": nro_sensor,
+            "tipo": "preventiva"
+        })
+        last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+
+         # 2️⃣ Obtener mediciones nuevas (no analizadas desde el checkpoint)
+        filtro = {"idSensor": nro_sensor}
+        if last_date:
+            filtro["fechaHoraMed"] = {"$gt": last_date}
+
+        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+
+        if not mediciones:
+            continue
 
         if len(mediciones) < 3:
             continue  # Necesitamos varias mediciones para detectar fluctuaciones
@@ -363,13 +376,18 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         # 3️⃣ Alerta de puerta abierta recurrente
         _alerta_puerta_recurrente(mongo, sensor, id_empresa)
 
+        # 3️⃣ Actualizar checkpoint
+        mongo.db.alerta_checkpoint.update_one(
+            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "preventiva"},
+            {"$set": {"fechaUltimaAnalizada": mediciones[-1]["fechaHoraMed"]}},
+            upsert=True
+        )
+
 
 
 
 def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa):
-    """
-    Detecta fluctuaciones de temperatura excesivas en la última hora.
-    """
+    """Detecta oscilaciones abruptas en un periodo corto (ej. 1 hora)"""
     nro_sensor = sensor["nroSensor"]
 
     # Calcular min y max de las últimas mediciones
@@ -480,9 +498,16 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
         return
 
     # Verificar si todos están inactivos
-    todos_inactivos = all(s.get("estado") == "inactive" for s in sensores_misma_dir)
-
-    if todos_inactivos:
+    if all(s["estado"] == "inactive" for s in sensores_misma_dir):
+        existe = mongo.db.alertas.find_one({
+            "idEmpresa": id_empresa,
+            "tipoAlerta": "Caída de energía eléctrica",
+            "direccion": direccion,
+            "estadoAlerta": "pendiente"
+        })
+        if existe:
+            return
+    
         print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
 
         alerta_data = {
