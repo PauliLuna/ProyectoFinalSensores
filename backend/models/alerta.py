@@ -1,5 +1,6 @@
 from bson import ObjectId
 from datetime import datetime
+from flask_mail import Message, current_app
 
 def get_alertas_by_empresa(mongo, id_empresa, tipo=None):
     """
@@ -17,8 +18,6 @@ def get_alertas_filtradas(mongo, id_empresa, tipo=None):
     return list(mongo.db.alertas.find(filtro))
 
 def insert_alerta(mongo, alerta_data):
-    alerta_data["fechaCreacion"] = datetime.now()
-    alerta_data["estadoAlerta"] = "Activa"
     return mongo.db.alertas.insert_one(alerta_data).inserted_id
 
 def cerrar_alerta(mongo, alerta_id):
@@ -26,3 +25,4 @@ def cerrar_alerta(mongo, alerta_id):
         {"_id": ObjectId(alerta_id)},
         {"$set": {"estadoAlerta": "Cerrada", "fechaCierre": datetime.now()}}
     )
+

@@ -193,6 +193,8 @@ def get_all_sensors(mongo):
             "enRango": en_rango,
             "latitud": latitud,
             "longitud": longitud,
+            "valorMin": valor_min,
+            "valorMax": valor_max,
         })
     return result
 
