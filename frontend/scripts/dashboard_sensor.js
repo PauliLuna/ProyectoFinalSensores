@@ -187,7 +187,7 @@ async function cargarCards(sensor){
             (cantidadAperturas !== null && cantidadAperturas !== undefined) 
                 ? cantidadAperturas 
                 : 'N/A';
-                
+
     }
     catch(err){
         console.error('Error al cargar las cards:', err);
@@ -224,6 +224,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     
 });
 
+function renderIAResponse(rawText, targetElementId) {
+    if (!rawText) {
+        document.getElementById(targetElementId).innerHTML = "<p>No se recibió respuesta de la IA.</p>";
+        return;
+    }
+
+    let html = rawText
+        // **Texto** → <strong>Texto</strong>
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        // # Titulo → <h2>Titulo</h2>, ## Subtitulo → <h3>Subtitulo</h3>
+        .replace(/^### (.*)$/gm, "<h4>$1</h4>")
+        .replace(/^## (.*)$/gm, "<h3>$1</h3>")
+        .replace(/^# (.*)$/gm, "<h2>$1</h2>");
+
+    // Procesar línea por línea
+    let lines = html.split("\n").map(line => line.trim());
+
+    let finalHTML = "";
+    let inUL = false;
+    let inOL = false;
+
+    lines.forEach(line => {
+        if (line.startsWith("*")) { // Lista no ordenada
+            if (!inUL) { finalHTML += "<ul>"; inUL = true; }
+            finalHTML += `<li>${line.replace(/^\*\s*/, "")}</li>`;
+        } 
+        else if (/^\d+\.\s/.test(line)) { // Lista ordenada
+            if (!inOL) { finalHTML += "<ol>"; inOL = true; }
+            finalHTML += `<li>${line.replace(/^\d+\.\s*/, "")}</li>`;
+        } 
+        else if (line === "") { 
+            // Línea vacía, cerrar listas abiertas
+            if (inUL) { finalHTML += "</ul>"; inUL = false; }
+            if (inOL) { finalHTML += "</ol>"; inOL = false; }
+        } 
+        else {
+            // Cerrar listas si veníamos dentro de una
+            if (inUL) { finalHTML += "</ul>"; inUL = false; }
+            if (inOL) { finalHTML += "</ol>"; inOL = false; }
+            finalHTML += `<p>${line}</p>`;
+        }
+    });
+
+    // Cerrar listas si quedaron abiertas
+    if (inUL) finalHTML += "</ul>";
+    if (inOL) finalHTML += "</ol>";
+
+    const target = document.getElementById(targetElementId);
+    target.innerHTML = `
+        <h3>Resultado del análisis</h3>
+        <div style="font-family: Poppins, sans-serif; white-space: normal; word-wrap: break-word;">
+            ${finalHTML}
+        </div>
+    `;
+    target.style.display = "block";
+}
+
 document.getElementById('btnAnalizar').addEventListener('click', async () => {
     if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
         alert('No hay datos cargados para analizar');
@@ -245,7 +302,9 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ mediciones: window.ultimaMediciones })
+        body: JSON.stringify({
+            mediciones: window.ultimaMediciones,
+            notas: sensor.notas || "" })
     });
 
     if (!res.ok) {
@@ -254,14 +313,9 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
     }
 
     const resultado = await res.json();
-    const formattedText = resultado.replace(/\n/g, '<br>');
-    const analisisDiv = document.getElementById('analisisResultado');
-
-    analisisDiv.innerHTML = `
-        <h3>Resultado del análisis</h3>
-        <p style="white-space: pre-wrap; word-wrap: break-word;">${formattedText}</p>
-    `;
-    analisisDiv.style.display = 'block';
+    
+    renderIAResponse(resultado, "analisisResultado");
+    
 });
 
 

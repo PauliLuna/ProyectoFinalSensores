@@ -296,14 +296,30 @@ def get_duracion_ultima_apertura(mongo, sensor_id):
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
-def analizar_mediciones(sensor_id, mediciones):
+def analizar_mediciones(sensor_id, mediciones, notas):
     # Construcción del prompt
     user_prompt = (
-        "Analiza las siguientes mediciones de temperatura y estado de puerta "
-        "de una cámara frigorífica. Identifica tendencias, anomalías y "
-        "eventuales riesgos. Devuelve el resultado en texto claro, incluyendo: "
-        "1) comportamiento general, 2) posibles problemas, 3) recomendaciones.\n"
-        "Formato de salida: resumen breve de máximo 2 párrafos.\n\n"
+        "Analiza las siguientes mediciones de temperatura interna, temperatura externa "
+        "y el estado de puerta (0=cerrada, 1=abierta) de una cámara frigorífica, considerando además:\n"
+        "• Los ciclos de descongelamiento son eventos programados que detienen momentáneamente la refrigeración y "
+        "provocan aumentos temporales de temperatura interna, que luego desciende nuevamente al rango normal.\n"
+        "• Frecuencia típica de ciclos:\n"
+        "   - Cámaras de congelados (-18°C a -25°C): 3–4 ciclos/día, 20–40 min cada 6–8 h (00, 06, 12, 18 h).\n"
+        "   - Cámaras de helados (-20°C a -25°C): 3–4 ciclos/día, 20–30 min.\n"
+        "   - Carnes frescas (-1°C a 2°C): 2–3 ciclos/día, 15–25 min.\n"
+        "   - Frutas y verduras (1°C a 8°C): 1–2 ciclos/día, 10–20 min.\n"
+        "No considerar estos aumentos temporales como anomalías si coinciden con la duración y frecuencia típica.\n\n"
+        f"Contexto adicional del sensor: {notas}.\n\n"
+        "Genera un resumen breve en un formato claro y visual con íconos representativos:\n"
+        "1) **Estado actual:** usa 🟢 para funcionamiento normal, 🟠 para alerta leve, 🔴 para problemas críticos.\n"
+        "2) **Tendencias relevantes:** usa 📈 para aumento de temperatura, 📉 para descenso, ➖ para estabilidad.\n"
+        "3) **Riesgos inmediatos:** usa ⚠️ si hay algún riesgo, ✅ si no hay riesgos.\n"
+        "4) **Recomendación rápida:** usa 🛠️ si hay acciones recomendadas, 📋 si no son necesarias.\n\n"
+        "Formato de salida EXACTO (no agregar texto fuera de este bloque):\n"
+        "**Estado actual:** <texto con ícono>\n"
+        "**Tendencias relevantes:** <texto con ícono>\n"
+        "**Riesgos inmediatos:** <texto con ícono>\n"
+        "**Recomendación rápida:** <texto con ícono>\n\n"
         f"Datos del sensor {sensor_id}:\n"
         f"{json.dumps(mediciones, indent=2)}"
     )
