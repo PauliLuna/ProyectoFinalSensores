@@ -111,7 +111,6 @@ async function getDuracionUltimaApertura(sensorId) {
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
-
         const alerta = sessionStorage.getItem('sensor_alarma'); // TODO: have to be updated
 
         // Mostrar datos del sensor
@@ -121,18 +120,30 @@ async function cargarCards(sensor){
         document.getElementById('sensor-estado').textContent = sensor.estado;
         document.getElementById('sensor-alerta').textContent = alerta;
 
+        // Correr en paralelo
+        const [ultimaMed, estadoPuerta, duracionApertura, cantidadAperturas] = await Promise.all([
+            getUltimaMedicion(sensorId),
+            getEstadoPuerta(sensorId),
+            getDuracionUltimaApertura(sensorId),
+            getCantidadAperturas(sensorId)
+        ]);
+
         // Última medición
-        const ultimaMed = await getUltimaMedicion(sensorId);
-        if (ultimaMed) {
-            const intTemp = ultimaMed.valorTempInt ?? 'N/A';
-            const extTemp = ultimaMed.valorTempExt ?? 'N/A';
-            const difTemp = (extTemp - intTemp).toFixed(2);
+        if (ultimaMed && Object.keys(ultimaMed).length > 0) {
+            const intTemp = ultimaMed.valorTempInt ?? null;
+            const extTemp = ultimaMed.valorTempExt ?? null;
+            const difTemp = (intTemp !== null && extTemp !== null) 
+                ? (extTemp - intTemp).toFixed(2)
+                : 'N/A';
             const puerta = ultimaMed.puerta === 1 ? 'Abierta' : 'Cerrada';
 
-            document.getElementById('sensor-tempInt').textContent = `${intTemp}°C`;
-            document.getElementById('sensor-tempExt').textContent = `${extTemp}°C`;
-            document.getElementById('sensor-tempDif').textContent = `${difTemp}°C`;
-            document.getElementById('sensor-puerta').textContent = puerta;
+            document.getElementById('sensor-tempInt').textContent = 
+                intTemp !== null ? `${intTemp}°C` : 'N/A';
+            document.getElementById('sensor-tempExt').textContent = 
+                extTemp !== null ? `${extTemp}°C` : 'N/A';
+            document.getElementById('sensor-tempDif').textContent = 
+                difTemp !== 'N/A' ? `${difTemp}°C` : 'N/A';
+            document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
         } else {
             document.getElementById('sensor-tempInt').textContent = 'N/A';
             document.getElementById('sensor-tempExt').textContent = 'N/A';
@@ -140,49 +151,43 @@ async function cargarCards(sensor){
             document.getElementById('sensor-puerta').textContent = 'N/A';
         }
 
-        //Mostrar estado puerta
-        const estadoPuerta = await getEstadoPuerta(sensorId);
-        const duracion = estadoPuerta.duracionEstadoActual;
+        // --- Estado puerta ---
+        const duracion = estadoPuerta?.duracionEstadoActual || '';
         let textoDuracion = 'N/A';
-        if (duracion.includes('day')) { // Ej: "2 days, 5:20:33.123456"
+        if (duracion.includes('day')) { 
             const partes = duracion.split(',');
-            const dias = partes[0].split(' ')[0]; // Número de días
+            const dias = partes[0].split(' ')[0]; 
             textoDuracion = `${dias} día${dias === '1' ? '' : 's'}`;
         } else if (duracion.includes(':')) {
-            // Ej: "0:51:33.123456"
             const [horas, minutos] = duracion.split(':');
             textoDuracion = `${parseInt(horas)}h ${parseInt(minutos)}m`;
         }
         document.getElementById('sensor-puertaUltCam').textContent = textoDuracion;
-        
-        // Última apertura
-        const duracionApertura = await getDuracionUltimaApertura(sensorId);
-        if (duracionApertura && duracionApertura.duracionUltimaApertura) {
-            const duracion = duracionApertura.duracionUltimaApertura;
-            let textoDuracion;
-            if (duracion.includes('day')) {
-                textoDuracion = duracion.split(',')[0]; // ej: "1 day"
-            } else {
-                const tiempo = duracion.split('.')[0]; // "H:M:S"
-                const [horas, minutos, segundos] = tiempo.split(':').map(n => parseInt(n, 10));
 
-                if (horas > 0) {
-                    textoDuracion = `${horas}h ${minutos}m ${segundos}s`;
-                } else if (minutos > 0) {
-                    textoDuracion = `${minutos}m ${segundos}s`;
-                } else {
-                    textoDuracion = `${segundos}s`;
-                }
+        // --- Duración última apertura ---
+        if (duracionApertura?.duracionUltimaApertura) {
+            const dur = duracionApertura.duracionUltimaApertura;
+            let textoDuracion;
+            if (dur.includes('day')) {
+                textoDuracion = dur.split(',')[0];
+            } else {
+                const tiempo = dur.split('.')[0];
+                const [horas, minutos, segundos] = tiempo.split(':').map(n => parseInt(n, 10));
+                if (horas > 0) textoDuracion = `${horas}h ${minutos}m ${segundos}s`;
+                else if (minutos > 0) textoDuracion = `${minutos}m ${segundos}s`;
+                else textoDuracion = `${segundos}s`;
             }
             document.getElementById('sensor-puertaDuracion').textContent = textoDuracion;
         } else {
             document.getElementById('sensor-puertaDuracion').textContent = 'N/A';
         }
 
-        // Cantidad de aperturas
-        const cantidadAperturas = await getCantidadAperturas(sensorId);
-        document.getElementById('sensor-aperturas').textContent = cantidadAperturas ?? 'N/A';
-
+        // --- Cantidad de aperturas ---
+        document.getElementById('sensor-aperturas').textContent = 
+            (cantidadAperturas !== null && cantidadAperturas !== undefined) 
+                ? cantidadAperturas 
+                : 'N/A';
+                
     }
     catch(err){
         console.error('Error al cargar las cards:', err);
@@ -444,7 +449,7 @@ document.getElementById('hasta').addEventListener('change', () => {
 document.getElementById('refreshIcon').addEventListener('click', async() => {
     
     const sensor = await getSensorByAlias(alias, token);
-    cargarCards(sensor);
+    await cargarCards(sensor);
     
     // Simular el clic en el botón "Graficar"
     document.getElementById('btnGraficar').click();
