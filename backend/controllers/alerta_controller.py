@@ -333,3 +333,75 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
         return False, None  # reset ciclo
     return en_ciclo, inicio_ciclo
 
+
+def chequear_alertas_preventivas(mongo, id_empresa):
+    """
+    Función principal para analizar las alertas preventivas
+    """
+    sensores = get_all_sensors(mongo)
+
+    for sensor in sensores:
+        nro_sensor = sensor["nroSensor"]
+        valor_min = sensor.get("valorMin")
+        valor_max = sensor.get("valorMax")
+
+        # 1️⃣ Obtener mediciones de las últimas 24 horas (o desde checkpoint)
+        desde_hora = datetime.utcnow() - timedelta(hours=24)
+        mediciones = list(mongo.db.mediciones.find(
+            {"idSensor": nro_sensor, "fechaHoraMed": {"$gte": desde_hora}}
+        ).sort("fechaHoraMed", 1))
+
+        if len(mediciones) < 3:
+            continue  # Necesitamos varias mediciones para detectar fluctuaciones
+
+        # 2️⃣ Analizar fluctuaciones
+        _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
+
+
+def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa):
+    """
+    Detecta fluctuaciones de temperatura excesivas en la última hora.
+    """
+    nro_sensor = sensor["nroSensor"]
+
+    # Calcular min y max de las últimas mediciones
+    temps = [float(m["valorTempInt"]) for m in mediciones if m.get("valorTempInt") is not None]
+    if not temps:
+        return
+
+    temp_max = max(temps)
+    temp_min = min(temps)
+    delta = temp_max - temp_min
+    print(f"⚠️fluctuación de {delta}°C detectada en sensor {nro_sensor}, con rango ({temp_max}, {temp_min})")
+
+    # 1️⃣ Validar amplitud mayor al rango normal + margen
+    margen_permitido = abs(valor_max - valor_min)  
+    if delta > margen_permitido:
+        print(f"⚠️ ALERTA PREVENTIVA: fluctuación de {delta}°C detectada en sensor {nro_sensor}")
+
+        # 2️⃣ Insertar alerta
+        alerta_data = {
+            "idSensor": str(nro_sensor),
+            "idEmpresa": id_empresa,
+            "criticidad": "Preventiva",
+            "tipoAlerta": "Fluctuación de temperatura excesiva",
+            "descripcion": f"Oscilaciones de temperatura mayores a {margen_permitido}°C en 1h. Delta: {delta:.2f}°C.",
+            "estadoAlerta": "pendiente",
+            "mensajeAlerta": "Fluctuación de temperatura excesiva",
+            "fechaHoraAlerta": mediciones[-1]["fechaHoraMed"]
+        }
+        alerta_id = insert_alerta(mongo, alerta_data)
+        print(f"✅ Alerta preventiva insertada para sensor {nro_sensor} -> ID {alerta_id}")
+
+        # 3️⃣ Notificar
+        emails = _obtener_emails_asignados(mongo, nro_sensor)
+        if emails:
+            _enviar_mail_alerta(
+                emails=emails,
+                tipo_alerta="Fluctuación de temperatura excesiva",
+                descripcion=alerta_data["descripcion"],
+                criticidad="Preventiva",
+                sensor=sensor,
+                mensaje="Oscilaciones de temperatura detectadas",
+                fecha=mediciones[-1]["fechaHoraMed"]
+            )

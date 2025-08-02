@@ -2,7 +2,7 @@ from flask import request, jsonify, session, current_app
 from models.usuario import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.codigo_invitacion import verificar_codigo_invitacion
-from controllers.alerta_controller import chequear_alertas_criticas
+from controllers.alerta_controller import chequear_alertas_criticas, chequear_alertas_preventivas
 from flask_mail import Message
 import datetime, secrets, random, string, re, jwt, os
 
@@ -191,6 +191,8 @@ def login_usuario_controller(mongo):
         )
         # CHEQUEO DE ALERTAS CRÍTICAS
         chequear_alertas_criticas(mongo, usuario.get('idEmpresa'))
+        chequear_alertas_preventivas(mongo, usuario.get('idEmpresa'))
+        
         payload = {
             "user_id": str(usuario['_id']),
             "idEmpresa": usuario.get('idEmpresa'),
