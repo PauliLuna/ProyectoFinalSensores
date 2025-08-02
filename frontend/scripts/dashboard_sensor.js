@@ -315,9 +315,8 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
     const resultado = await res.json();
     
     renderIAResponse(resultado, "analisisResultado");
-    
-});
 
+});
 
 document.getElementById('btnGraficar').addEventListener('click', async () => {
     const fromDate = document.getElementById('desde').value;
@@ -345,9 +344,16 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     document.getElementById('analisisResultado').style.display = 'none';
     document.getElementById('analisisResultado').innerHTML = '';
 
+    // --- Ocultar o mostrar #graficas
+    const graficasDiv = document.getElementById('graficas');
     if (!Array.isArray(mediciones) || mediciones.length === 0) {
+        graficasDiv.style.display = 'none';
         alert('No hay mediciones para ese rango.');
+        return; // <-- salimos para evitar render vacío
+    } else {
+        graficasDiv.style.display = 'block';
     }
+    // ---
 
     const labels = mediciones.map(m => new Date(m.fechaHoraMed).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }));
     const internalTemps = mediciones.map(m => m.valorTempInt);
