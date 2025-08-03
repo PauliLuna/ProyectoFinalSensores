@@ -17,170 +17,6 @@
     font-family: 'Poppins', sans-serif;
     background-color:#F1FAFB;
   }
-
-  h1, h2 {
-    font-weight: 600;
-  }
-
-
-
-
-  .kpi-card h4 {
-    font-size: 1.8rem;
-    margin: 0;
-  }
-
-  .kpi-card p {
-    margin: 0;
-    font-weight: 300;
-  }
-
-  .kpi-subgroup .card {
-    border-radius: 0.75rem;
-    background-color: #fff;
-    transition: transform 0.2s ease;
-  }
-
-  .kpi-subgroup .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-  }
-
-  .kpi-subgroup h5 {
-    font-weight: 600;
-    color: #4b5563;
-  }
-
-  .card-header {
-    background-color: #f1f5f9;
-    font-weight: 500;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .table thead {
-    background-color: #f9fafb;
-  }
-
-  .table th {
-    color: #6b7280;
-    font-weight: 500;
-  }
-
-  .section-title {
-    margin: 2rem 0 1rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1D3557;
-    border-left: 4px solid #457B9D;
-    padding-left: 0.75rem;
-  }
-
-  .alert-kpi-card {
-    background: #ffffff;
-    color: #1f2937;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-  }
-
-  .alert-kpi-card h5 {
-    font-weight: 600;
-    color: #1e3a8a;
-  }
-
-  .alert-kpi-card .bar {
-    height: 12px;
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex;
-    margin: 1rem 0;
-  }
-
-  .bar .critica {
-    background: #ef4444;
-    width: 40%;
-  }
-
-  .bar .preventiva {
-    background: #facc15;
-    width: 30%;
-  }
-
-  .bar .seguridad {
-    background: #3b82f6;
-    width: 30%;
-  }
-
-  .legend-alerts {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: #334155;
-  }
-
-  .legend-alerts span::before {
-    content: "";
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 6px;
-  }
-
-  .legend-alerts .critica::before {
-    background-color: #ef4444;
-  }
-
-  .legend-alerts .preventiva::before {
-    background-color: #facc15;
-  }
-
-  .legend-alerts .seguridad::before {
-    background-color: #3b82f6;
-  }
-
-  .ranking-card {
-    background-color: #ffffff;
-    color: #1f2937;
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-    margin-top: 1.5rem;
-  }
-
-  .ranking-card h6 {
-    margin-bottom: 1rem;
-    font-weight: 600;
-    color: #1e3a8a;
-  }
-
-  .ranking-card h6,
-  .alert-kpi-card h5 {
-    color: #1D3557;
-  }
-
-  .ranking-table {
-    width: 100%;
-    font-size: 0.9rem;
-  }
-
-  .ranking-table thead {
-    background-color: #F1FAFB;
-}
-
-  .ranking-table th,
-  .ranking-table td {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .ranking-table th {
-    color: #1D3557;
-    font-weight: 500;
-  }
-
-  .ranking-table td {
-    color: #374151;
-  }
 </style>
 
 
@@ -230,12 +66,13 @@
                         <h3 id="sensores-fuera-rango"></h3>
                         <p>Sensores Fuera de Rango</p>
                     </div>
-                </div>
-                <div class="kpi-cards">
                     <div class="kpi-card offline">
                         <h3 id="sensores-fallo"></h3>
                         <p>Sensores sin Señal (offline)</p>
                     </div>
+                </div>
+                <div class="kpi-cards">
+                    
                     <div class="kpi-card">
                         <h3 id="frecuencia-aperturas"></h3>
                         <p>Frecuencia de Aperturas</p>
