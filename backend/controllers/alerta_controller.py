@@ -6,7 +6,13 @@ from flask_mail import Message
 from models.usuario import get_usuario_by_id
 from controllers.sensor_controller import get_all_sensors
 
-
+# Tabla de referencia de parámetros por tipo de cámara
+TIPOS_CAMARA = {
+    "congelados": {"duracion_min": 20, "duracion_max": 40, "incremento_max": 8},
+    "helados": {"duracion_min": 20, "duracion_max": 30, "incremento_max": 6},
+    "carnes frescas": {"duracion_min": 15, "duracion_max": 25, "incremento_max": 4},
+    "frutas": {"duracion_min": 10, "duracion_max": 20, "incremento_max": 4}
+}
 
 def obtener_alertas(mongo):
     id_empresa = session.get("idEmpresa")  # Asegúrate que el login guarda esto en la sesión
@@ -540,3 +546,176 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
                 mensaje="Caída de energía eléctrica en la sucursal",
                 fecha=alerta_data["fechaHoraAlerta"]
             )
+
+
+def chequear_alertas_informativas(mongo, id_empresa):
+    sensores = get_all_sensors(mongo)
+
+    for sensor in sensores:
+        nro_sensor = sensor["nroSensor"]
+
+        notas = sensor.get("notas", "").lower()
+
+        parametros = _obtener_parametros_ciclo(notas)
+        if not parametros:
+            continue
+
+        # 2️⃣ Obtener checkpoint
+        checkpoint = mongo.db.alerta_checkpoint.find_one({
+            "idEmpresa": id_empresa,
+            "idSensor": nro_sensor,
+            "tipo": "informativas"
+        })
+        last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+        en_ciclo = checkpoint.get("enCiclo") if checkpoint else False
+        fecha_inicio_ciclo = checkpoint.get("fechaInicioCiclo") if checkpoint else None
+        temp_max_ciclo = checkpoint["tempMaxCiclo"] if checkpoint else None
+
+        # 3️⃣ Obtener mediciones nuevas (sin analizar desde el ultimo checkpoint)
+        filtro = {"idSensor": nro_sensor}
+        if last_date:
+            filtro["fechaHoraMed"] = {"$gt": last_date}
+
+        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+        if not mediciones:
+            continue
+
+        ciclo_interrumpido = False
+
+        # 4️⃣ Analizar mediciones
+        for med in mediciones:
+            fecha_actual = med["fechaHoraMed"]
+            
+            try:
+                temp = float(med.get("valorTempInt"))
+            except (TypeError, ValueError):
+                last_date = fecha_actual
+                continue
+
+            valor_min = sensor.get("valorMin")
+            valor_max = sensor.get("valorMax")
+
+            en_ciclo, fecha_inicio_ciclo, temp_max_ciclo = _alerta_inicio_fin_ciclo(
+                mongo, sensor, id_empresa, temp, valor_min, valor_max,
+                parametros, en_ciclo, fecha_inicio_ciclo, temp_max_ciclo,
+                fecha_actual, last_date
+            )
+
+            last_date = fecha_actual
+
+        # 5️⃣ Actualizar checkpoint
+        last_med = mediciones[-1]
+        mongo.db.alerta_checkpoint.update_one(
+            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "informativas"},
+            {"$set": {
+                "fechaUltimaAnalizada": last_date,
+                "enCiclo": en_ciclo,
+                "fechaInicioCiclo": fecha_inicio_ciclo,
+                "tempMaxCiclo": temp_max_ciclo
+            }},
+            upsert=True
+        )
+
+
+def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_max,
+                             parametros, en_ciclo, fecha_inicio_ciclo, temp_max_ciclo,
+                             fecha_actual, last_date):
+    """Gestiona el inicio y fin de ciclos de descongelamiento"""
+    duracion_min = parametros["duracion_min"]
+    duracion_max = parametros["duracion_max"]
+    incremento_max = parametros["incremento_max"]
+
+       # Si ya está en ciclo, verificar interrupciones
+    if en_ciclo and last_date and fecha_actual - last_date > timedelta(minutes=10):
+        en_ciclo = False
+        fecha_inicio_ciclo = None
+        temp_max_ciclo = None
+        return en_ciclo, fecha_inicio_ciclo, temp_max_ciclo
+
+    # Inicio potencial
+    if not en_ciclo and temp > valor_max:
+        en_ciclo = True
+        fecha_inicio_ciclo = fecha_actual
+        temp_max_ciclo = temp
+
+    # Fin válido
+    elif en_ciclo and valor_min <= temp <= valor_max:
+        duracion = (fecha_actual - fecha_inicio_ciclo).total_seconds() / 60
+
+        if duracion >= duracion_min:
+            anormal = duracion > duracion_max or (temp_max_ciclo - temp) > incremento_max
+
+            # Alertas de inicio y fin
+
+            alerta_data = {
+                "idSensor": str(sensor["nroSensor"]),
+                "idEmpresa": id_empresa,
+                "criticidad": "Informativa",
+                "tipoAlerta": "Inicio de ciclo de descongelamiento",
+                "descripcion": f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo}.",
+                "estadoAlerta": "pendiente",
+                "mensajeAlerta": "Inicio de ciclo de descongelamiento",
+                "fechaHoraAlerta": fecha_inicio_ciclo
+            }
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"⚠️Alerta inicio ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_inicio_ciclo}")
+
+            _enviar_mail_alerta(
+                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"]),
+                tipo_alerta="Inicio de ciclo de descongelamiento",
+                descripcion=f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo}.",
+                criticidad="Informativa",
+                sensor=sensor,
+                mensaje="Inicio de ciclo",
+                fecha=fecha_inicio_ciclo
+            )
+
+            descripcion_fin = (
+                f"El sensor {sensor['nroSensor']} finalizó el ciclo de descongelamiento. "
+                f"Duración: {duracion:.1f} min."
+            )
+            if anormal:
+                descripcion_fin += " ⚠️ ANORMAL: fuera de los parámetros esperados."
+
+
+            # Insertar alerta de fin de ciclo
+            alerta_data = {
+                "idSensor": str(sensor["nroSensor"]),
+                "idEmpresa": id_empresa,
+                "criticidad": "Informativa",
+                "tipoAlerta": "Fin de ciclo de descongelamiento",
+                "descripcion": descripcion_fin,
+                "estadoAlerta": "pendiente",
+                "mensajeAlerta": "Fin de ciclo de descongelamiento",
+                "fechaHoraAlerta": fecha_actual
+            }
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"⚠️ Alerta fin ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_actual}")
+
+            _enviar_mail_alerta(
+                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"]),
+                tipo_alerta="Fin de ciclo de descongelamiento",
+                descripcion=descripcion_fin,
+                criticidad="Informativa",
+                sensor=sensor,
+                mensaje="Fin de ciclo" + (" ⚠️ ANORMAL" if anormal else ""),
+                fecha=fecha_actual
+            )
+
+        # Resetear variables
+        en_ciclo = False
+        fecha_inicio_ciclo = None
+        temp_max_ciclo = None
+
+    return en_ciclo, fecha_inicio_ciclo, temp_max_ciclo
+
+def _obtener_parametros_ciclo(notas):
+    if "congelados" in notas:
+        return {"duracion_min": 20, "duracion_max": 40, "incremento_max": 8}
+    if "helados" in notas:
+        return {"duracion_min": 20, "duracion_max": 30, "incremento_max": 8}
+    if "carnes frescas" in notas:
+        return {"duracion_min": 15, "duracion_max": 25, "incremento_max": 6}
+    if "frutas" in notas or "verduras" in notas:
+        return {"duracion_min": 10, "duracion_max": 20, "incremento_max": 5}
+    return None
