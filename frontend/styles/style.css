@@ -1556,6 +1556,43 @@ button[disabled] {
     max-width: 140px;
 }
 
+.recent-activity table.alerts-table th,
+.recent-activity table.alerts-table td {
+    width: auto;
+    padding: 10px;
+}
+
+.recent-activity table.alerts-table th:nth-child(1),
+.recent-activity table.alerts-table td:nth-child(1) {
+    width: 10%;
+    min-width: 90px;
+    max-width: 90px;
+}
+.recent-activity table.alerts-table th:nth-child(2),
+.recent-activity table.alerts-table td:nth-child(2) {
+    width: 31%;
+    min-width: 120px;
+    max-width: 220px;
+}
+.recent-activity table.alerts-table th:nth-child(3),
+.recent-activity table.alerts-table td:nth-child(3) {
+    width: 16%;
+    min-width: 90px;
+    max-width: 140px;
+}
+.recent-activity table.alerts-table th:nth-child(4),
+.recent-activity table.alerts-table td:nth-child(4) {
+    width: 26%;
+    min-width: 90px;
+    max-width: 160px;
+}
+.recent-activity table.alerts-table th:nth-child(5),
+.recent-activity table.alerts-table td:nth-child(5) {
+    width: 17%;
+    min-width: 120px;
+    max-width: 120px;
+}
+
 .table-pagination-row {
     position: absolute;
     left: 0;

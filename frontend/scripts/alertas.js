@@ -162,3 +162,216 @@ function showAlarmsOnPeriod() {
     renderLineChart(filtered);
     updateKPICards(filtered);
 }
+
+//funciones para llenar la tabla de alertas
+let currentPage = 1;
+const pageSize = 10; // Cambia este valor si quieres más/menos filas por página
+let dataAlertas = [];
+let filtereddataAlertas = [];
+let filtroFechaActivo = false;
+
+// Cargar alertas desde el backend
+async function cargarAlertas() {
+    const res = await fetch('/alertas', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    dataAlertas = await res.json();
+    filtereddataAlertas = [...dataAlertas];
+    renderAlertasTable(filtereddataAlertas);
+}
+
+function parseFecha(fecha) {
+    if (!fecha) return '';
+    // Si es string tipo ISO
+    if (typeof fecha === 'string') {
+        // Si es formato ISO (ej: "2024-07-26T20:03:58.262+00:00")
+        if (fecha.includes('T')) {
+            return new Date(fecha);
+        }
+        // Si es timestamp numérico
+        if (!isNaN(fecha)) {
+            return new Date(Number(fecha));
+        }
+    }
+    // Si es Date
+    if (fecha instanceof Date) return fecha;
+    // Si es objeto tipo { $date: ... }
+    if (fecha.$date) return new Date(fecha.$date);
+    return new Date(fecha);
+}
+
+function renderAlertasTable(data) {
+    const tbody = document.getElementById('alerts-table');
+    tbody.innerHTML = '';
+
+    // Paginación
+    const totalResults = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalResults / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalResults);
+    const pageData = data.slice(startIdx, endIdx);
+
+    pageData.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${a.criticidad || ''}</td>
+            <td>${a.mensajeAlerta || ''}</td>
+            <td>${a.idSensor || ''}</td>
+            <td>${a.alias || ''}</td>
+            <td>${a.fechaHoraAlerta ? parseFecha(a.fechaHoraAlerta).toLocaleString("es-AR") : ''}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Actualiza texto "mostrando X de Y resultados"
+    document.getElementById('current-results-showing').textContent = pageData.length;
+    document.getElementById('total-results').textContent = totalResults;
+
+    renderAlertasPagination(totalPages);
+}
+
+function renderAlertasPagination(totalPages) {
+    const pagination = document.getElementById('alerts-table-pagination');
+    pagination.innerHTML = '';
+
+    // Flecha izquierda
+    const prevItem = document.createElement('li');
+    prevItem.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+    prevItem.innerHTML = `<a href="#" class="page-link">&larr;</a>`;
+    prevItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            renderAlertasTable(filtroFechaActivo ? filtereddataAlertas : dataAlertas);
+        }
+    });
+    pagination.appendChild(prevItem);
+
+    // Números de página (máximo 5)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i === currentPage ? ' active' : '');
+        li.innerHTML = `<a href="#" class="page-link">${i}</a>`;
+        li.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage !== i) {
+                currentPage = i;
+                renderAlertasTable(filtroFechaActivo ? filtereddataAlertas : dataAlertas);
+            }
+        });
+        pagination.appendChild(li);
+    }
+
+    // Flecha derecha
+    const nextItem = document.createElement('li');
+    nextItem.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+    nextItem.innerHTML = `<a href="#" class="page-link">&rarr;</a>`;
+    nextItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderAlertasTable(filtroFechaActivo ? filtereddataAlertas : dataAlertas);
+        }
+    });
+    pagination.appendChild(nextItem);
+}
+
+// Filtro por fecha (igual que en home.js)
+function filtrarAlertasPorPeriodo(rango) {
+    const hoy = new Date();
+    let desde, hasta;
+    switch(rango) {
+        case 'hoy':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            break;
+        case 'ayer':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-1);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            break;
+        case 'ultimos7':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-6);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            break;
+        case 'ultimos30':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-29);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
+            break;
+        case 'estemes':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth()+1, 1);
+            break;
+        case 'mespasado':
+            desde = new Date(hoy.getFullYear(), hoy.getMonth()-1, 1);
+            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            break;
+        default:
+            filtroFechaActivo = false;
+            filtereddataAlertas = [...dataAlertas];
+            renderAlertasTable(filtereddataAlertas);
+            return;
+    }
+    filtroFechaActivo = true;
+    filtereddataAlertas = dataAlertas.filter(a => {
+        if (!a.fechaHoraAlerta) return false;
+        const fecha = parseFecha(a.fechaHoraAlerta);
+        return fecha >= desde && fecha < hasta;
+    });
+    currentPage = 1;
+    renderAlertasTable(filtereddataAlertas);
+}
+
+// Ordenamiento por fecha
+let fechaAsc = true;
+document.getElementById('fecha-sort-label').addEventListener('click', () => {
+    let sorted;
+    if (filtroFechaActivo) {
+        sorted = [...filtereddataAlertas];
+    } else {
+        sorted = [...dataAlertas];
+    }
+    sorted.sort((a, b) => {
+        const fa = a.fechaHoraAlerta ? new Date(a.fechaHoraAlerta) : new Date(0);
+        const fb = b.fechaHoraAlerta ? new Date(b.fechaHoraAlerta) : new Date(0);
+        return fechaAsc ? fa - fb : fb - fa;
+    });
+    renderAlertasTable(sorted);
+    if (filtroFechaActivo) filtereddataAlertas = sorted;
+    fechaAsc = !fechaAsc;
+});
+
+// Filtro por período desde el acordeón
+document.querySelectorAll('#collapseFecha .dropdown-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('collapseFecha').style.display = 'none';
+        document.getElementById('fechaAccordionBtn').setAttribute('aria-expanded', 'false');
+        const rango = this.getAttribute('data-range');
+        filtrarAlertasPorPeriodo(rango);
+    });
+});
+
+// Acordeón de fecha
+const fechaAccordionBtn = document.getElementById('fechaAccordionBtn');
+const collapseFecha = document.getElementById('collapseFecha');
+fechaAccordionBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const expanded = this.getAttribute('aria-expanded') === 'true';
+    this.setAttribute('aria-expanded', !expanded);
+    collapseFecha.style.display = expanded ? 'none' : 'block';
+});
+document.addEventListener('click', function(e) {
+    if (!collapseFecha.contains(e.target) && e.target !== fechaAccordionBtn) {
+        collapseFecha.style.display = 'none';
+        fechaAccordionBtn.setAttribute('aria-expanded', 'false');
+    }
+});
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', cargarAlertas);

@@ -21,9 +21,18 @@ def obtener_alertas(mongo):
 
     tipo = request.args.get("tipoAlerta")
     alertas = get_alertas_filtradas(mongo, id_empresa, tipo)
+    # Convertir idSensor a int para el join
+    sensores_ids = list(set(int(a["idSensor"]) for a in alertas if "idSensor" in a and a["idSensor"].isdigit()))
+    sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
+    sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
     for alerta in alertas:
-        alerta["_id"] = str(alerta["_id"])
+        try:
+            alerta["_id"] = str(alerta["_id"])
+            alerta["alias"] = sensor_alias.get(int(alerta.get("idSensor")), "")
+        except Exception:
+            alerta["alias"] = ""
     return jsonify(alertas), 200
+
 
 def nueva_alerta(mongo):
     data = request.get_json()
