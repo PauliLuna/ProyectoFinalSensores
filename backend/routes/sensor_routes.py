@@ -79,13 +79,15 @@ def get_duracion_apertura_route(sensor_id):
 @sensor_bp.route('/sensor/<int:sensor_id>/analisis', methods=['POST'])
 @token_required
 def analizar_sensor(sensor_id):
-    datos = request.get_json()
+    data = request.get_json()
+    mediciones = data.get("mediciones", [])
+    notas = data.get("notas", "")
 
-    if not datos or 'mediciones' not in datos:
+    if mediciones == []:
         return jsonify({'error': 'No se enviaron mediciones'}), 400
 
     try:
-        resultado = analizar_mediciones(sensor_id, datos['mediciones'])
+        resultado = analizar_mediciones(sensor_id, mediciones, notas)
         return jsonify(resultado)
     except Exception as e:
         print(e)
