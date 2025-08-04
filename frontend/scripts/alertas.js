@@ -43,13 +43,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function updateKPICards(data) {
-    const counts = { critica: 0, informativa: 0, seguridad: 0, preventiva: 0 };
-    data.forEach(a => counts[a.tipoAlerta] = (counts[a.tipoAlerta] || 0) + 1);
+    // Inicializa los contadores en 0
+    const counts = { crítica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
+    data.forEach(a => {
+        // Normaliza el texto para evitar problemas de tildes y mayúsculas
+        let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (crit === 'critica') counts.crítica++;
+        else if (crit === 'informativa') counts.informativa++;
+        else if (crit === 'preventiva') counts.preventiva++;
+        else if (crit === 'seguridad') counts.seguridad++;
+    });
 
-    document.getElementById('criticaCount').innerText = counts['crítica'] || 0;
-    document.getElementById('informativaCount').innerText = counts['informativa'] || 0;
-    document.getElementById('seguridadCount').innerText = counts['seguridad'] || 0;
-    document.getElementById('preventivaCount').innerText = counts['preventiva'] || 0;
+    document.getElementById('criticaCount').innerText = counts.crítica;
+    document.getElementById('informativaCount').innerText = counts.informativa;
+    document.getElementById('preventivaCount').innerText = counts.preventiva;
+    document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
 }
 
 function renderPieChart(data) {
@@ -140,8 +148,8 @@ function showAlarmsOnPeriod() {
 //funciones para llenar la TABLA DE ALERTAS
 let currentPage = 1;
 const pageSize = 10; // Cambia este valor si quieres más/menos filas por página
-let dataAlertas = [];
-let filtereddataAlertas = [];
+
+let filteredalertasData = [];
 let filtroFechaActivo = false;
 
 // Cargar alertas desde el backend
@@ -149,9 +157,9 @@ async function cargarAlertas() {
     const res = await fetch('/alertas', {
         headers: { 'Authorization': 'Bearer ' + token }
     });
-    dataAlertas = await res.json();
-    filtereddataAlertas = [...dataAlertas];
-    renderAlertasTable(filtereddataAlertas);
+    alertasData = await res.json();
+    filteredalertasData = [...alertasData];
+    renderAlertasTable(filteredalertasData);
 }
 
 function parseFecha(fecha) {
@@ -218,7 +226,7 @@ function renderAlertasPagination(totalPages) {
         e.preventDefault();
         if (currentPage > 1) {
             currentPage--;
-            renderAlertasTable(filtroFechaActivo ? filtereddataAlertas : dataAlertas);
+            renderAlertasTable(filtroFechaActivo ? filteredalertasData : alertasData);
         }
     });
     pagination.appendChild(prevItem);
@@ -236,7 +244,7 @@ function renderAlertasPagination(totalPages) {
             e.preventDefault();
             if (currentPage !== i) {
                 currentPage = i;
-                renderAlertasTable(filtroFechaActivo ? filtereddataAlertas : dataAlertas);
+                renderAlertasTable(filtroFechaActivo ? filteredalertasData : alertasData);
             }
         });
         pagination.appendChild(li);
@@ -250,7 +258,7 @@ function renderAlertasPagination(totalPages) {
         e.preventDefault();
         if (currentPage < totalPages) {
             currentPage++;
-            renderAlertasTable(filtroFechaActivo ? filtereddataAlertas : dataAlertas);
+            renderAlertasTable(filtroFechaActivo ? filteredalertasData : alertasData);
         }
     });
     pagination.appendChild(nextItem);
@@ -287,18 +295,18 @@ function filtrarAlertasPorPeriodo(rango) {
             break;
         default:
             filtroFechaActivo = false;
-            filtereddataAlertas = [...dataAlertas];
-            renderAlertasTable(filtereddataAlertas);
+            filteredalertasData = [...alertasData];
+            renderAlertasTable(filteredalertasData);
             return;
     }
     filtroFechaActivo = true;
-    filtereddataAlertas = dataAlertas.filter(a => {
+    filteredalertasData = alertasData.filter(a => {
         if (!a.fechaHoraAlerta) return false;
         const fecha = parseFecha(a.fechaHoraAlerta);
         return fecha >= desde && fecha < hasta;
     });
     currentPage = 1;
-    renderAlertasTable(filtereddataAlertas);
+    renderAlertasTable(filteredalertasData);
 }
 
 // Ordenamiento por fecha
@@ -306,9 +314,9 @@ let fechaAsc = true;
 document.getElementById('fecha-sort-label').addEventListener('click', () => {
     let sorted;
     if (filtroFechaActivo) {
-        sorted = [...filtereddataAlertas];
+        sorted = [...filteredalertasData];
     } else {
-        sorted = [...dataAlertas];
+        sorted = [...alertasData];
     }
     sorted.sort((a, b) => {
         const fa = a.fechaHoraAlerta ? new Date(a.fechaHoraAlerta) : new Date(0);
@@ -316,7 +324,7 @@ document.getElementById('fecha-sort-label').addEventListener('click', () => {
         return fechaAsc ? fa - fb : fb - fa;
     });
     renderAlertasTable(sorted);
-    if (filtroFechaActivo) filtereddataAlertas = sorted;
+    if (filtroFechaActivo) filteredalertasData = sorted;
     fechaAsc = !fechaAsc;
 });
 
