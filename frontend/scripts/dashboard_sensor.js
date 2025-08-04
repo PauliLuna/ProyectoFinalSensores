@@ -282,40 +282,47 @@ function renderIAResponse(rawText, targetElementId) {
 }
 
 document.getElementById('btnAnalizar').addEventListener('click', async () => {
-    if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
-        alert('No hay datos cargados para analizar');
-        return;
+    // Mostrar el overlay de carga al inicio del proceso
+    document.getElementById('loading-overlay').style.display = 'flex';
+    try{
+        if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
+            alert('No hay datos cargados para analizar');
+            return;
+        }
+
+        const alias = sessionStorage.getItem('sensor_alias');
+        const sensor = await getSensorByAlias(alias, token);
+        if (!sensor) {
+            alert('Sensor no encontrado.');
+            return;
+        }
+
+        const sensorId = sensor.nroSensor;
+
+        const res = await fetch(`/sensor/${sensorId}/analisis`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mediciones: window.ultimaMediciones,
+                notas: sensor.notas || "" })
+        });
+
+        if (!res.ok) {
+            alert('Error al obtener análisis');
+            return;
+        }
+        const resultado = await res.json();
+        renderIAResponse(resultado, "analisisResultado");
+
+    } catch (error) {
+        console.error('Error durante el análisis:', error);
+    } finally {
+        // Ocultar el overlay de carga al finalizar, incluso si hay un error
+        document.getElementById('loading-overlay').style.display = 'none';
     }
-
-    const alias = sessionStorage.getItem('sensor_alias');
-    const sensor = await getSensorByAlias(alias, token);
-    if (!sensor) {
-        alert('Sensor no encontrado.');
-        return;
-    }
-
-    const sensorId = sensor.nroSensor;
-
-    const res = await fetch(`/sensor/${sensorId}/analisis`, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            mediciones: window.ultimaMediciones,
-            notas: sensor.notas || "" })
-    });
-
-    if (!res.ok) {
-        alert('Error al obtener análisis');
-        return;
-    }
-
-    const resultado = await res.json();
-    
-    renderIAResponse(resultado, "analisisResultado");
-
 });
 
 document.getElementById('btnGraficar').addEventListener('click', async () => {
@@ -518,4 +525,252 @@ document.getElementById('refreshIcon').addEventListener('click', async() => {
 // Botón Volver
 document.getElementById('btnVolver').addEventListener('click', () => {
     window.location.href = 'sensores.html';
+});
+
+// Agrega el HTML para el overlay de carga. Esto se puede poner en el cuerpo de tu HTML.
+// Se oculta por defecto.
+const loadingOverlayHTML = `
+    <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    </div>
+`;
+document.body.insertAdjacentHTML('beforeend', loadingOverlayHTML);
+
+// Define la animación del spinner en CSS
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+document.head.appendChild(styleSheet);
+
+// Botón Descargar PDF
+document.getElementById('btnDescargar').addEventListener('click', async () => {
+    // Mostrar el overlay de carga
+    document.getElementById('loading-overlay').style.display = 'flex';
+
+    try{
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 10;
+        const innerWidth = pageWidth - 2 * margin;
+
+        // === Variables de estilo consistentes ===
+        const mainTitleColor = [40, 40, 40];      // Gris oscuro para títulos principales
+        const subtitleColor = [60, 60, 60];       // Gris medio para subtítulos
+        const lightTextColor = [100, 100, 100];    // Gris claro para detalles (como títulos de cards)
+        const lineColor = [200, 200, 200];      // Gris muy claro para las líneas
+
+        // === Logo a la derecha ===
+        const logo = new Image();
+        logo.src = '../assets/logo1.png';
+        await new Promise(resolve => { logo.onload = resolve; });
+        const logoWidth = 40;
+        const logoHeight = 15;
+        const logoX = pageWidth - logoWidth - margin;
+        pdf.addImage(logo, 'PNG', logoX, margin, logoWidth, logoHeight);
+
+        // === Estilo de fuente y texto del encabezado ===
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(22);
+        pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+        pdf.text('Reporte de Sensor', margin, 20);
+
+        // === Información del sensor y rango de fechas (subtítulos) ===
+        const sensorAlias = document.getElementById('sensor-alias').textContent;
+        const sensorNro = document.getElementById('sensor-nro').textContent;
+        const fromDate = document.getElementById('desde').value;
+        const toDate = document.getElementById('hasta').value;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
+        pdf.text(`Sensor: ${sensorNro} - ${sensorAlias}`, margin, 30);
+        pdf.text(`Rango de fechas: ${fromDate} a ${toDate}`, margin, 37);
+
+        // Línea separadora
+        pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
+        pdf.line(margin, 45, pageWidth - margin, 45);
+
+        // --- Sección de resumen ---
+        let y = 55;
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+        pdf.text('Resumen de Datos', margin, y);
+        y += 10;
+
+        const cardGap = 5;
+        const cardHeight = 25;
+        const marginY = 5;
+
+        const titleFontSize = 9;
+        const titleColor = lightTextColor;
+
+        const valueFontSize = 14;
+        const valueColor = [0, 0, 0];
+        const valueBold = 'bold';
+        const valueNormal = 'normal';
+
+        const tempInt = document.getElementById('sensor-tempInt').textContent;
+        const tempExt = document.getElementById('sensor-tempExt').textContent;
+        const tempDif = document.getElementById('sensor-tempDif').textContent;
+        const puerta = document.getElementById('sensor-puerta').textContent;
+        const ultimaDuracion = document.getElementById('sensor-puertaDuracion').textContent;
+        const ultimaCam = document.getElementById('sensor-puertaUltCam').textContent;
+        const aperturas = document.getElementById('sensor-aperturas').textContent;
+
+        // --- PRIMERA FILA: 3 TARJETAS ---
+        const cardWidth3 = (innerWidth - (2 * cardGap)) / 3;
+        const cards3 = [
+        {title: 'Temp. Interna', value: tempInt},
+        {title: 'Temp. Externa', value: tempExt},
+        {title: 'Diferencia', value: tempDif}
+        ];
+
+        cards3.forEach((card, index) => {
+            const xPos = margin + index * (cardWidth3 + cardGap);
+            pdf.setFillColor(245, 245, 245);
+            pdf.roundedRect(xPos, y, cardWidth3, cardHeight, 3, 3, 'F');
+            pdf.setFontSize(titleFontSize);
+            pdf.setTextColor(...titleColor);
+            pdf.text(card.title, xPos + 5, y + 6);
+            pdf.setFontSize(valueFontSize);
+            pdf.setTextColor(...valueColor);
+            pdf.setFont('helvetica', valueBold);
+            pdf.text(card.value, xPos + 5, y + 16);
+        });
+
+        y += cardHeight + marginY;
+
+        // --- SEGUNDA FILA: 4 TARJETAS ---
+        const cardWidth4 = (innerWidth - (3 * cardGap)) / 4;
+        const cards4 = [
+        {title: 'Puerta', value: puerta},
+        {title: 'Aperturas', value: aperturas},
+        {title: 'Duración', value: ultimaDuracion},
+        {title: 'Último cambio', value: ultimaCam}
+        ];
+
+        pdf.setFont('helvetica', valueNormal);
+        cards4.forEach((card, index) => {
+            const xPos = margin + index * (cardWidth4 + cardGap);
+            pdf.setFillColor(245, 245, 245);
+            pdf.roundedRect(xPos, y, cardWidth4, cardHeight, 3, 3, 'F');
+            pdf.setFontSize(titleFontSize);
+            pdf.setTextColor(...titleColor);
+            pdf.text(card.title, xPos + 5, y + 6);
+            pdf.setFontSize(valueFontSize);
+            if (card.title === 'Puerta') {
+                pdf.setTextColor(...(card.value.includes('Abierta') ? [220, 53, 69] : [40, 167, 69]));
+            } else {
+                pdf.setTextColor(...valueColor);
+            }
+            pdf.text(card.value, xPos + 5, y + 16);
+        });
+
+        y += cardHeight + marginY + 5;
+
+        // Línea separadora
+        pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += 1;
+        
+        // === Resultado del análisis IA ===
+        const analisisElement = document.getElementById('analisisResultado');
+        const hasContent = analisisElement.textContent.trim() !== '';
+
+        if (hasContent) {
+            const originalFontSize = window.getComputedStyle(analisisElement).fontSize;
+            analisisElement.style.fontSize = '1.2rem';
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(14);
+            pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+            y += 10;
+            
+            const canvasAnalisis = await html2canvas(analisisElement, {
+                scale: 2,
+                useCORS: true
+            });
+            analisisElement.style.fontSize = originalFontSize; // Restaurar el tamaño de fuente original
+
+            const imgDataAnalisis = canvasAnalisis.toDataURL('image/png');
+            const imgPropsAnalisis = pdf.getImageProperties(imgDataAnalisis);
+            const imgHeightAnalisis = (imgPropsAnalisis.height * innerWidth) / imgPropsAnalisis.width;
+            
+            if (y + imgHeightAnalisis > 280) pdf.addPage();
+            pdf.addImage(imgDataAnalisis, 'PNG', margin, y, innerWidth, imgHeightAnalisis);
+            y += imgHeightAnalisis + 10;
+        } else {
+            y += 8;
+            pdf.setFont('helvetica', 'italic');
+            pdf.setFontSize(11);
+            pdf.setTextColor(lightTextColor[0], lightTextColor[1], lightTextColor[2]);
+            pdf.text('No hay un análisis de IA disponible para este período.', margin, y);
+            y += 10;
+        }
+
+        // === Sección de Gráficos (en una sola página con promedios) ===
+        pdf.addPage();
+        const chartHeight = 80;
+        const chartWidth = innerWidth * 0.95;
+        const chartXPos = margin + (innerWidth - chartWidth) / 2;
+        let yCharts = 20;
+
+        // --- Gráfico de Temperatura Interna ---
+        const averageTempInt = document.getElementById('averageTemperatureInt').textContent;
+        const imgTempInt = tempIntChart.toBase64Image();
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+        pdf.text('Gráfico temperatura interna', margin, yCharts);
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
+        pdf.text(averageTempInt, margin, yCharts + 6);
+
+        const yChartInt = yCharts + 6 + 10;
+        pdf.addImage(imgTempInt, 'PNG', chartXPos, yChartInt, chartWidth, chartHeight);
+
+        // --- Gráfico de Temperatura Externa ---
+        const averageTempExt = document.getElementById('averageTemperatureExt').textContent;
+        const imgTempExt = tempExtChart.toBase64Image();
+        
+        const yChartExtSection = yChartInt + chartHeight + 15;
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+        pdf.text('Gráfico temperatura externa', margin, yChartExtSection);
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
+        pdf.text(averageTempExt, margin, yChartExtSection + 6);
+
+        const yChartExt = yChartExtSection + 6 + 10;
+        pdf.addImage(imgTempExt, 'PNG', chartXPos, yChartExt, chartWidth, chartHeight);
+
+        // === Pie de página ===
+        const now = new Date().toLocaleString();
+        const pageCount = pdf.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            pdf.setPage(i);
+            pdf.setFontSize(10);
+            pdf.setTextColor(100);
+            pdf.text(`Generado el: ${now}`, margin, 290);
+            pdf.text(`Página ${i} de ${pageCount}`, pageWidth - 40, 290);
+        }
+
+        pdf.save(`reporte_sensor_${sensorNro}.pdf`);
+
+    }catch (error) {
+        console.error('Error al generar el PDF:', error);
+    }
+    finally{
+        // Ocultar el overlay de carga al finalizar, incluso si hay un error
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
 });
