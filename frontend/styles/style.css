@@ -1170,12 +1170,12 @@ button[disabled] {
     width: 40%;
   }
 
-  .bar .preventiva {
+  .bar .informativa {
     background: #facc15;
     width: 30%;
   }
 
-  .bar .seguridad {
+  .bar .preventiva {
     background: #3b82f6;
     width: 30%;
   }
@@ -1200,13 +1200,19 @@ button[disabled] {
     background-color: #ef4444;
   }
 
-  .legend-alerts .preventiva::before {
+  .legend-alerts .informativa::before {
     background-color: #facc15;
   }
 
-  .legend-alerts .seguridad::before {
+  .legend-alerts .preventiva::before {
     background-color: #3b82f6;
   }
+ 
+  .legend-pct {
+    color: #888;
+    font-size: 0.95em;
+    margin-left: 4px;
+}
 
 
   /*Ranking Cards en Home */

@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarUltimasConexiones();
     cargarRankingUsuariosActivos();
     cargarPiePermisosUsuarios();
+    cargarAlertasParaBarra();
 });
 
 // Cargar últimas conexiones de usuarios desde el backend
@@ -412,4 +413,40 @@ async function cargarPiePermisosUsuarios() {
             }
         }
     });
+}
+
+async function cargarAlertasParaBarra() {
+    try {
+        const res = await fetch('/alertas', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const alertas = await res.json();
+
+       // Contar por criticidad
+        const counts = { critica: 0, informativa: 0, preventiva: 0 };
+        alertas.forEach(a => {
+            let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (crit === 'critica') counts.critica++;
+            else if (crit === 'informativa') counts.informativa++;
+            else if (crit === 'preventiva') counts.preventiva++;
+        });
+
+        // Calcular porcentajes
+        const total = counts.critica + counts.informativa + counts.preventiva;
+        const pctCritica = total ? (counts.critica / total) * 100 : 0;
+        const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
+        const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
+
+        // Actualizar la barra
+        document.querySelector('.bar .critica').style.width = pctCritica + "%";
+        document.querySelector('.bar .informativa').style.width = pctInformativa + "%";
+        document.querySelector('.bar .preventiva').style.width = pctPreventiva + "%";
+
+        // Mostrar porcentajes en la leyenda
+        document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
+        document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
+        document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
+    } catch (error) {
+        console.error("Error al cargar alertas para la barra:", error);
+    }
 }
