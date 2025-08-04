@@ -1134,28 +1134,6 @@ button[disabled] {
     object-fit: contain; /* Ensure the icon scales properly */
 }
 
-/* Alarms Table */
-.alarms-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-.alarms-table th,
-.alarms-table td {
-    border: 1px solid #A8DADC;
-    padding: 10px;
-    text-align: left;
-}
-
-.alarms-table th {
-    background-color: #457B9D;
-    color: #FFFFFF;
-}
-
-.alarms-table tr:nth-child(even) {
-    background-color: #F1FAFB;
-}
 
 .alerts-container {
     display: flex;

@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw new Error("Error al cargar alertas");
         }
         alertasData = await response.json();
-        renderTable(alertasData);
         renderPieChart(alertasData);
         renderLineChart(alertasData);
         updateKPICards(alertasData);
@@ -51,26 +50,6 @@ function updateKPICards(data) {
     document.getElementById('informativaCount').innerText = counts['informativa'] || 0;
     document.getElementById('seguridadCount').innerText = counts['seguridad'] || 0;
     document.getElementById('preventivaCount').innerText = counts['preventiva'] || 0;
-}
-
-function renderTable(data) {
-    const tbody = document.querySelector("#alarmsTable tbody");
-    tbody.innerHTML = "";
-    if (!data.length) {
-        tbody.innerHTML = "<tr><td colspan='4'>No hay alertas registradas.</td></tr>";
-        return;
-    }
-
-    data.forEach(alerta => {
-        const row = `
-            <tr>
-                <td>${alerta.tipoAlerta}</td>
-                <td>${alerta.mensajeAlerta}</td>
-                <td>${alerta.sucursal || "–"}</td>
-                <td>${new Date(alerta.fechaHoraAlerta).toLocaleString("es-AR")}</td>
-            </tr>`;
-        tbody.innerHTML += row;
-    });
 }
 
 function renderPieChart(data) {
@@ -125,10 +104,6 @@ function renderLineChart(data) {
     });
 }
 
-function filterByType(tipo) {
-    const filtered = tipo ? alertasData.filter(a => a.tipoAlerta === tipo) : alertasData;
-    renderTable(filtered);
-}
 
 function showAlarmsOnPeriod() {
     const period = document.getElementById('periodSelect').value;
@@ -157,13 +132,12 @@ function showAlarmsOnPeriod() {
         filtered = alertasData.filter(a => new Date(a.fechaHoraAlerta) >= fromDate);
     }
 
-    renderTable(filtered);
     renderPieChart(filtered);
     renderLineChart(filtered);
     updateKPICards(filtered);
 }
 
-//funciones para llenar la tabla de alertas
+//funciones para llenar la TABLA DE ALERTAS
 let currentPage = 1;
 const pageSize = 10; // Cambia este valor si quieres más/menos filas por página
 let dataAlertas = [];
