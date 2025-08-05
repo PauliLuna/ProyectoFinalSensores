@@ -71,6 +71,7 @@ function formatDate(date) {
 // Charts
 let tempIntChart = null;
 let tempExtChart = null;
+let aperturasChart = null;
 
 async function getCantidadAperturas(sensorId) {
     try {
@@ -365,6 +366,7 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     const labels = mediciones.map(m => new Date(m.fechaHoraMed).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }));
     const internalTemps = mediciones.map(m => m.valorTempInt);
     const externalTemps = mediciones.map(m => m.valorTempExt);
+    const aperturas = mediciones.map(m => m.puerta);
 
     // Calcular promedios
     const avgInternal = (internalTemps.reduce((a, b) => a + (b || 0), 0) / internalTemps.length).toFixed(2);
@@ -467,6 +469,83 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
             }
         }
     });
+
+    // Aperturas
+    const ctxAper = document.getElementById('aperturasChart').getContext('2d');
+    if (aperturasChart) aperturasChart.destroy();
+    aperturasChart = new Chart(ctxAper, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Estado de la Puerta',
+                data: aperturas, // Asumiendo 'aperturas' array contiene 0s y 1s
+                borderColor: 'rgba(68, 114, 196, 1)', // Azul para el borde
+                backgroundColor: 'rgba(68, 114, 196, 0.5)', // Azul con transparencia para el fondo
+                tension: 0.3,
+                pointRadius: 1.5,
+                stepped: true // Usa línea escalonada para datos binarios
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 60,
+                        minRotation: 45
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 1.1,
+                    ticks: {
+                        callback: function(value, index, ticks) {
+                            if (value === 1) {
+                                return 'Abierta';
+                            } else if (value === 0) {
+                                return 'Cerrada';
+                            }
+                            return '';
+                        },
+                        stepSize: 1
+                    },
+                    title: {
+                        display: true,
+                        text: 'Estado de la Puerta'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.raw === 1) {
+                                label += 'Abierta';
+                            } else if (context.raw === 0) {
+                                label += 'Cerrada';
+                            }
+                            return label;
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Serie de tiempo - Estado de la Puerta',
+                    font: { size: 20, weight: 'bold', family: 'Poppins' },
+                    padding: { top: 10, bottom: 30 }
+                }
+            }
+        }
+    });
+
 });
 
 // Manejo del filtro de fechas predefinidas
@@ -661,7 +740,7 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
             pdf.text(card.title, xPos + 5, y + 6);
             pdf.setFontSize(valueFontSize);
             if (card.title === 'Puerta') {
-                pdf.setTextColor(...(card.value.includes('Abierta') ? [220, 53, 69] : [40, 167, 69]));
+                pdf.setTextColor(...(card.value.includes('Abierta') ? [205, 92, 92] : [68, 114, 196]));
             } else {
                 pdf.setTextColor(...valueColor);
             }
