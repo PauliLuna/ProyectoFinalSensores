@@ -791,10 +791,10 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
 
         // === Sección de Gráficos (en una sola página con promedios) ===
         pdf.addPage();
-        const chartHeight = 80;
+        const chartHeight = 70;
         const chartWidth = innerWidth * 0.95;
         const chartXPos = margin + (innerWidth - chartWidth) / 2;
-        let yCharts = 20;
+        let yCharts = 16;
 
         // --- Gráfico de Temperatura Interna ---
         const averageTempInt = document.getElementById('averageTemperatureInt').textContent;
@@ -808,9 +808,9 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
         pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
-        pdf.text(averageTempInt, margin, yCharts + 6);
+        pdf.text(averageTempInt, margin, yCharts + 2);
 
-        const yChartInt = yCharts + 6 + 10;
+        const yChartInt = yCharts + 6 + 4;
         pdf.addImage(imgTempInt, 'PNG', chartXPos, yChartInt, chartWidth, chartHeight);
 
         // --- Gráfico de Temperatura Externa ---
@@ -827,10 +827,26 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
         pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
-        pdf.text(averageTempExt, margin, yChartExtSection + 6);
+        pdf.text(averageTempExt, margin, yChartExtSection + 2);
 
-        const yChartExt = yChartExtSection + 6 + 10;
+        const yChartExt = yChartExtSection + 6 + 4;
         pdf.addImage(imgTempExt, 'PNG', chartXPos, yChartExt, chartWidth, chartHeight);
+
+        // --- Gráfico de Aperturas ---
+        const yAperturasChartSection = yChartExt + chartHeight + 15; // 15mm de espacio entre gráficos
+        const imgAper = aperturasChart.toBase64Image();
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+        pdf.text('Gráfico estado de la Puerta', margin, yAperturasChartSection); // Título del gráfico de aperturas
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
+
+        const yAperChart = yAperturasChartSection + 6;
+        pdf.addImage(imgAper, 'PNG', chartXPos, yAperChart, chartWidth, chartHeight);
 
         // === Pie de página ===
         const now = new Date().toLocaleString();
