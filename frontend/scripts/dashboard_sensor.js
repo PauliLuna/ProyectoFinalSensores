@@ -881,3 +881,70 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
         document.getElementById('loading-overlay').style.display = 'none';
     }
 });
+
+// Función para convertir un array de objetos a formato CSV
+function convertToCsv(data) {
+    if (!data || data.length === 0) {
+        return '';
+    }
+
+    const headers = Object.keys(data[0]);
+    const csvRows = [];
+
+    // Add headers
+    csvRows.push(headers.join(','));
+
+    // Add data rows
+    for (const row of data) {
+        const values = headers.map(header => {
+            const value = row[header];
+            // Handle values that might contain commas or newlines by enclosing them in quotes
+            if (typeof value === 'string' && (value.includes(',') || value.includes('\n'))) {
+                return `"${value.replace(/"/g, '""')}"`; // Escape double quotes
+            }
+            return value;
+        });
+        csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+}
+
+
+// === Botón Exportar a Excel ===
+document.getElementById('btnExportExcel').addEventListener('click', async () => {
+    // Mostrar el overlay de carga al inicio del proceso
+    document.getElementById('loading-overlay').style.display = 'flex';
+
+    try {
+        if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
+            showMessage('No hay mediciones para exportar.');
+            return;
+        }
+
+        const csvString = convertToCsv(window.ultimaMediciones);
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+
+        // Crear un enlace temporal para la descarga
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `mediciones_sensor_${new Date().toISOString().slice(0,10)}.csv`; // Nombre del archivo con fecha
+
+        // Simular un clic para iniciar la descarga
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Revocar la URL del objeto para liberar memoria
+        URL.revokeObjectURL(link.href);
+
+        showMessage('Mediciones exportadas a CSV con éxito.');
+
+    } catch (error) {
+        console.error('Error al exportar a CSV:', error);
+        showMessage('Error al exportar mediciones a CSV.');
+    } finally {
+        // Ocultar el overlay de carga al finalizar
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+});
