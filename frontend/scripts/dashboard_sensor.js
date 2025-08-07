@@ -659,19 +659,31 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
         const sensorNro = document.getElementById('sensor-nro').textContent;
         const fromDate = document.getElementById('desde').value;
         const toDate = document.getElementById('hasta').value;
+        let sensorNotes = document.getElementById('sensor-notas').textContent;
+
+        // Pre-procesar las notas para asegurar la correcta visualización de caracteres especiales.
+        sensorNotes = sensorNotes.replace(/°/g, ' ').replace(/[\u00A0\u202F]/g, ' ');
+
+        console.log(sensorNotes);
 
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(12);
         pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
         pdf.text(`Sensor: ${sensorNro} - ${sensorAlias}`, margin, 30);
-        pdf.text(`Rango de fechas: ${fromDate} a ${toDate}`, margin, 37);
+        
+        let currentYPos = 37; // Posición Y inicial después del rango de fechas
+        pdf.text(`Rango de fechas: ${fromDate} a ${toDate}`, margin, currentYPos);
+        currentYPos += 7; // Espacio después del rango de fechas
+        pdf.text(`Notas: ${sensorNotes}`, margin, currentYPos);
+        currentYPos += 3; // Espacio después de las notas
 
         // Línea separadora
         pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
-        pdf.line(margin, 45, pageWidth - margin, 45);
+        pdf.line(margin, currentYPos + 5, pageWidth - margin, currentYPos + 5);
+        
 
         // --- Sección de resumen ---
-        let y = 55;
+        let y = currentYPos + 15;
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
         pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
