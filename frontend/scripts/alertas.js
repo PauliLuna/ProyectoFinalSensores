@@ -33,6 +33,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw new Error("Error al cargar alertas");
         }
         alertasData = await response.json();
+        cargarSucursales(alertasData);
+        filteredalertasData = [...alertasData];
+        renderAll(filteredalertasData);
         renderPieChart(alertasData);
         renderLineChart(alertasData);
         updateKPICards(alertasData);
@@ -58,6 +61,70 @@ function updateKPICards(data) {
     document.getElementById('informativaCount').innerText = counts.informativa;
     document.getElementById('preventivaCount').innerText = counts.preventiva;
     document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
+    document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltrosGlobales);
+    // Agregar eventos a los selectores de filtros, filtra automáticamente al cambiar cualquier select
+    ['periodSelect', 'criticidadSelect', 'sucursalSelect'].forEach(id => {
+    document.getElementById(id).addEventListener('change', aplicarFiltrosGlobales);
+    });
+}
+
+function cargarSucursales(alertas) {
+    const sucursalSelect = document.getElementById('sucursalSelect');
+    // Extrae direcciones únicas
+    const direcciones = [...new Set(alertas.map(a => a.alias || a.direccion || '').filter(d => d))];
+    sucursalSelect.innerHTML = '<option value="todas">Todas las sucursales</option>';
+    direcciones.forEach(dir => {
+        const opt = document.createElement('option');
+        opt.value = dir;
+        opt.textContent = dir;
+        sucursalSelect.appendChild(opt);
+    });
+}
+
+function aplicarFiltrosGlobales() {
+    let data = [...alertasData];
+
+    // Filtro de fecha
+    const period = document.getElementById('periodSelect').value;
+    if (period !== 'todos') {
+    // ...aplica filtro de fecha...
+        const now = new Date();
+        let fromDate = null;
+        switch (period) {
+            case '24hs': fromDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+            case '7days': fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case '1month': fromDate = new Date(now.setMonth(now.getMonth() - 1)); break;
+            case '6months': fromDate = new Date(now.setMonth(now.getMonth() - 6)); break;
+            default: fromDate = null;
+        }
+        if (fromDate) {
+            data = data.filter(a => parseFecha(a.fechaHoraAlerta) >= fromDate);
+        }
+    }
+    
+
+    // Filtro de criticidad
+    const crit = document.getElementById('criticidadSelect').value;
+    if (crit !== 'todas') {
+        data = data.filter(a => (a.criticidad || '').toLowerCase() === crit.toLowerCase());
+    }
+
+    // Filtro de sucursal/dirección
+    const sucursal = document.getElementById('sucursalSelect').value;
+    if (sucursal !== 'todas') {
+        data = data.filter(a => (a.alias || a.direccion || '') === sucursal);
+    }
+
+    filteredalertasData = data;
+    currentPage = 1;
+    renderAll(filteredalertasData);
+}
+
+function renderAll(data) {
+    renderAlertasTable(data);
+    renderPieChart(data);
+    renderLineChart(data);
+    updateKPICards(data);
 }
 
 function renderPieChart(data) {
@@ -264,51 +331,6 @@ function renderAlertasPagination(totalPages) {
     pagination.appendChild(nextItem);
 }
 
-// Filtro por fecha (igual que en home.js)
-function filtrarAlertasPorPeriodo(rango) {
-    const hoy = new Date();
-    let desde, hasta;
-    switch(rango) {
-        case 'hoy':
-            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
-            break;
-        case 'ayer':
-            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-1);
-            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-            break;
-        case 'ultimos7':
-            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-6);
-            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
-            break;
-        case 'ultimos30':
-            desde = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()-29);
-            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+1);
-            break;
-        case 'estemes':
-            desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-            hasta = new Date(hoy.getFullYear(), hoy.getMonth()+1, 1);
-            break;
-        case 'mespasado':
-            desde = new Date(hoy.getFullYear(), hoy.getMonth()-1, 1);
-            hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-            break;
-        default:
-            filtroFechaActivo = false;
-            filteredalertasData = [...alertasData];
-            renderAlertasTable(filteredalertasData);
-            return;
-    }
-    filtroFechaActivo = true;
-    filteredalertasData = alertasData.filter(a => {
-        if (!a.fechaHoraAlerta) return false;
-        const fecha = parseFecha(a.fechaHoraAlerta);
-        return fecha >= desde && fecha < hasta;
-    });
-    currentPage = 1;
-    renderAlertasTable(filteredalertasData);
-}
-
 // Ordenamiento por fecha
 let fechaAsc = true;
 document.getElementById('fecha-sort-label').addEventListener('click', () => {
@@ -326,33 +348,6 @@ document.getElementById('fecha-sort-label').addEventListener('click', () => {
     renderAlertasTable(sorted);
     if (filtroFechaActivo) filteredalertasData = sorted;
     fechaAsc = !fechaAsc;
-});
-
-// Filtro por período desde el acordeón
-document.querySelectorAll('#collapseFecha .dropdown-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.getElementById('collapseFecha').style.display = 'none';
-        document.getElementById('fechaAccordionBtn').setAttribute('aria-expanded', 'false');
-        const rango = this.getAttribute('data-range');
-        filtrarAlertasPorPeriodo(rango);
-    });
-});
-
-// Acordeón de fecha
-const fechaAccordionBtn = document.getElementById('fechaAccordionBtn');
-const collapseFecha = document.getElementById('collapseFecha');
-fechaAccordionBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    const expanded = this.getAttribute('aria-expanded') === 'true';
-    this.setAttribute('aria-expanded', !expanded);
-    collapseFecha.style.display = expanded ? 'none' : 'block';
-});
-document.addEventListener('click', function(e) {
-    if (!collapseFecha.contains(e.target) && e.target !== fechaAccordionBtn) {
-        collapseFecha.style.display = 'none';
-        fechaAccordionBtn.setAttribute('aria-expanded', 'false');
-    }
 });
 
 // Inicializar

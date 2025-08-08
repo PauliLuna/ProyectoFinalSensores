@@ -21,8 +21,20 @@
                 <option value="7days">Últimos 7 días</option>
                 <option value="1month">1 mes</option>
                 <option value="6months">6 meses</option>
+                <option value="todos" selected>Todos</option>
             </select>
-            <button class="btnAplicar" onclick="showAlarmsOnPeriod()">Aplicar</button>
+            <select id="criticidadSelect">
+                <option value="todas">Todas las criticidades</option>
+                <option value="crítica">Críticas</option>
+                <option value="informativa">Informativas</option>
+                <option value="preventiva">Preventivas</option>
+                <option value="seguridad">Seguridad</option>
+            </select>
+            <select id="sucursalSelect">
+                <option value="todas">Todas las sucursales</option>
+                <!-- Las opciones se llenan dinámicamente desde JS -->
+            </select>
+            <button class="btnAplicar" id="btnAplicarFiltros">Aplicar</button>
         </div>
 
         <!-- KPI Cards -->
@@ -56,21 +68,7 @@
                             <th>Mensaje</th>
                             <th>Id sensor</th>
                             <th>Alias</th>
-                            <th id="th-fecha" style="position:relative;">
-                                <span id="fecha-sort-label" style="cursor:pointer; text-align:right;">Fecha</span>
-                                <button class="accordion-button" id="fechaAccordionBtn" type="button" aria-expanded="false" aria-controls="collapseFecha" style="position: absolute; right: 0; transform:translateY(20%); display:inline-block; width:auto; background:none; border:none; box-shadow:none; padding:0 8px; font-size:1.1em; vertical-align:middle; color:#1D3557;">
-                                    &#9660;
-                                </button>
-                                <div id="collapseFecha" class="accordion-collapse collapse" style="position:absolute; right:0; top:100%; min-width:160px; background:#fff; border:1px solid #A8DADC; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.08); z-index:9999; display:none;">
-                                    <a class="dropdown-item" href="#" data-range="hoy">Hoy</a>
-                                    <a class="dropdown-item" href="#" data-range="ayer">Ayer</a>
-                                    <a class="dropdown-item" href="#" data-range="ultimos7">Últimos 7 días</a>
-                                    <a class="dropdown-item" href="#" data-range="ultimos30">Últimos 30 días</a>
-                                    <a class="dropdown-item" href="#" data-range="estemes">Este mes</a>
-                                    <a class="dropdown-item" href="#" data-range="mespasado">Mes pasado</a>
-                                    <a class="dropdown-item" href="#" data-range="todos">Todos</a>
-                                </div>
-                            </th>
+                            <th>Fecha</th>
                         </tr>
                     </thead>
                     <tbody id="alerts-table">
