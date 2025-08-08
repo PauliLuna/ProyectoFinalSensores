@@ -48,6 +48,7 @@ def cerrar_alerta_api(mongo, alerta_id):
     return jsonify({"message": "Alerta cerrada"}), 200
 
 
+
 def chequear_alertas_criticas(mongo, id_empresa):
     sensores = get_all_sensors(mongo)
 

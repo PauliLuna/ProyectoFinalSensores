@@ -65,6 +65,22 @@ function updateKPICards(data) {
     ['periodSelect', 'criticidadSelect', 'sucursalSelect'].forEach(id => {
     document.getElementById(id).addEventListener('change', aplicarFiltrosGlobales);
     });
+    // Agregar evento al botón de refrescar alertas
+    document.getElementById('refreshIcon').addEventListener('click', async () => {
+        try {
+            const res = await fetch('/reanalizar_alertas', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error("Error al reanalizar alertas");
+            // Vuelve a cargar las alertas actualizadas
+            await cargarAlertas();
+            alert("Alertas reanalizadas correctamente.");
+        } catch (error) {
+            alert("No se pudieron reanalizar las alertas.");
+            console.error(error);
+        }
+    });
 }
 
 function cargarSucursales(alertas) {
