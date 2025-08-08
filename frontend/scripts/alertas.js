@@ -61,7 +61,6 @@ function updateKPICards(data) {
     document.getElementById('informativaCount').innerText = counts.informativa;
     document.getElementById('preventivaCount').innerText = counts.preventiva;
     document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
-    document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltrosGlobales);
     // Agregar eventos a los selectores de filtros, filtra automáticamente al cambiar cualquier select
     ['periodSelect', 'criticidadSelect', 'sucursalSelect'].forEach(id => {
     document.getElementById(id).addEventListener('change', aplicarFiltrosGlobales);
