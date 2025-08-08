@@ -27,13 +27,25 @@ def usuario_actual_controller(mongo):
             "email": usuario.get("email", ""),
             "username": usuario.get("username", ""),
             "phone": usuario.get("phone", ""),
-            "roles": usuario.get("roles", "")
+            "roles": usuario.get("roles", ""),
+            "notificacionesAlertas": usuario.get("notificacionesAlertas", {
+                "critica": True,
+                "informativa": True,
+                "preventiva": True,
+                "seguridad": True
+            })
         })
     elif request.method == 'PUT':
         data = request.get_json()
         update_fields = {
             "username": data.get("username", usuario.get("username", "")),
-            "phone": data.get("phone", usuario.get("phone", ""))
+            "phone": data.get("phone", usuario.get("phone", "")),
+            "notificacionesAlertas": data.get("notificacionesAlertas", usuario.get("notificacionesAlertas", {
+                "critica": True,
+                "informativa": True,
+                "preventiva": True,
+                "seguridad": True
+            }))
         }
         if data.get("newPassword"):
             current_password = data.get("currentPassword", "")
@@ -58,7 +70,13 @@ def register_usuario_controller(mongo):
         "fechaAlta": now,
         "fechaUltimoAcceso": now,
         "estado": "Active",
-        "roles": "superAdmin"
+        "roles": "superAdmin",
+        "notificacionesAlertas": {
+            "critica": True,
+            "informativa": True,
+            "preventiva": True,
+            "seguridad": True
+        }
     }
     user_id = insert_usuario(mongo, usuario_data)
     return jsonify({"message": "Usuario registrado correctamente", "user_email": usuario_data.get("email")}), 201
@@ -170,7 +188,13 @@ def complete_registration_controller(mongo):
         "password": generate_password_hash(password, method='pbkdf2:sha256'),
         "estado": "Active",
         "fechaAlta": now,
-        "fechaUltimoAcceso": now
+        "fechaUltimoAcceso": now,
+        "notificacionesAlertas": {
+            "critica": True,
+            "informativa": True,
+            "preventiva": True,
+            "seguridad": True
+        }
     }
     mongo.db.usuarios.update_one({"email": email}, {"$set": update_fields})
     return jsonify({

@@ -31,6 +31,12 @@ async function cargarPerfil() {
     document.getElementById('role').value = data.roles || '';
     document.getElementById('userName').value = data.username || '';
     document.getElementById('numCel').value = data.phone || '';
+    // Preferencias de alertas
+    const prefs = data.notificacionesAlertas || {};
+    document.getElementById('notifCritica').checked = !!prefs.critica;
+    document.getElementById('notifInformativa').checked = !!prefs.informativa;
+    document.getElementById('notifPreventiva').checked = !!prefs.preventiva;
+    document.getElementById('notifSeguridad').checked = !!prefs.seguridad;
 }
 cargarPerfil();
 
@@ -58,7 +64,13 @@ document.getElementById('profileForm').addEventListener('submit', async function
         username: document.getElementById('userName').value,
         phone: document.getElementById('numCel').value,
         currentPassword: document.getElementById('currentPassword').value,
-        newPassword: newPassword
+        newPassword: newPassword,
+        notificacionesAlertas: {
+        critica: document.getElementById('notifCritica').checked,
+        informativa: document.getElementById('notifInformativa').checked,
+        preventiva: document.getElementById('notifPreventiva').checked,
+        seguridad: document.getElementById('notifSeguridad').checked
+        }
     };
     
     const result = await actualizarPerfil(body);

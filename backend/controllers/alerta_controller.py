@@ -138,8 +138,9 @@ def chequear_alertas_criticas(mongo, id_empresa):
         )
 
 
-def _obtener_emails_asignados(mongo, nro_sensor):
-    """Obtiene los emails de los usuarios asignados a un sensor"""
+def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
+    """Obtiene los emails de los usuarios asignados a un sensor
+    y que desean recibir ese tipo de alerta"""
     asignaciones = mongo.db.asignaciones.find({
         "idSensor": nro_sensor,
         "estadoAsignacion": "Activo"
@@ -148,7 +149,11 @@ def _obtener_emails_asignados(mongo, nro_sensor):
     for a in asignaciones:
         usuario = mongo.db.usuarios.find_one({"_id": ObjectId(a["idUsuario"])})
         if usuario and usuario.get("email"):
-            emails.append(usuario["email"])
+            prefs = usuario.get("notificacionesAlertas", {})
+            # criticidad puede ser "Crítica", "Preventiva", etc.
+            crit_key = criticidad.lower().replace("í", "i").replace("á", "a")
+            if prefs.get(crit_key, False):
+                emails.append(usuario["email"])
     return emails
 
 def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha):
@@ -237,7 +242,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         )
         print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"])
+        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
                 emails,
@@ -266,7 +271,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"])
+        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
                 emails, 
@@ -306,7 +311,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"])
+        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
                 emails, 
@@ -335,7 +340,7 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta ciclo asincrónico en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"])
+        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
                 emails, 
@@ -435,7 +440,7 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
         print(f"✅ Alerta preventiva insertada para sensor {nro_sensor} -> ID {alerta_id}")
 
         # 3️⃣ Notificar
-        emails = _obtener_emails_asignados(mongo, nro_sensor)
+        emails = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
                 emails=emails,
@@ -482,7 +487,7 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
         print(f"✅ Alerta preventiva (puerta recurrente) insertada -> ID {alerta_id}")
 
         # Notificar por mail
-        emails = _obtener_emails_asignados(mongo, nro_sensor)
+        emails = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
                 emails=emails,
@@ -542,7 +547,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
         # Obtener emails de todos los sensores de la dirección
         emails = []
         for s in sensores_misma_dir:
-            emails += _obtener_emails_asignados(mongo, s["nroSensor"])
+            emails += _obtener_emails_asignados(mongo, s["nroSensor"], alerta_data["criticidad"])
         emails = list(set(emails))  # eliminar duplicados
 
         if emails:
@@ -670,7 +675,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
             print(f"⚠️Alerta inicio ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_inicio_ciclo}")
 
             _enviar_mail_alerta(
-                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"]),
+                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"]),
                 tipo_alerta="Inicio de ciclo de descongelamiento",
                 descripcion=f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo}.",
                 criticidad="Informativa",
@@ -702,7 +707,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
             print(f"⚠️ Alerta fin ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_actual}")
 
             _enviar_mail_alerta(
-                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"]),
+                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"]),
                 tipo_alerta="Fin de ciclo de descongelamiento",
                 descripcion=descripcion_fin,
                 criticidad="Informativa",

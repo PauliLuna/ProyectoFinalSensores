@@ -2034,3 +2034,16 @@ select {
 select {
   font-family: 'Poppins', sans-serif;
 }
+
+.checkbox-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea todo a la izquierda */
+}
+
+.checkbox-container label {
+    display: flex;
+    align-items: center; /* Alinea el checkbox y el texto */
+    gap: 5px; /* Espacio de 5px entre el checkbox y la palabra */
+    margin-bottom: 5px; /* Espacio entre cada línea de checkbox */
+}
