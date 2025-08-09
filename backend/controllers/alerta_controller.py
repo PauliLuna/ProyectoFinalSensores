@@ -1,5 +1,5 @@
 from flask import jsonify, request, session, current_app
-from models.alerta import get_alertas_by_empresa,get_alertas_filtradas,  insert_alerta
+from models.alerta import get_alertas_by_empresa,get_alertas_filtradas,  insert_alerta, get_alertas_caida_de_energia, get_alertas_puerta_abierta
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -451,12 +451,7 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
     hoy_inicio = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Buscar alertas críticas de puerta abierta prolongada de hoy
-    count_alertas = mongo.db.alertas.count_documents({
-        "idSensor": str(nro_sensor),
-        "idEmpresa": id_empresa,
-        "tipoAlerta": "Puerta abierta prolongada",
-        "fechaHoraAlerta": {"$gte": hoy_inicio}
-    })
+    count_alertas = get_alertas_puerta_abierta( mongo, id_empresa, nro_sensor, hoy_inicio)
 
     if count_alertas >= max_repeticiones:
         print(f"⚠️ ALERTA PREVENTIVA: puerta abierta recurrente (sensor {nro_sensor})")
@@ -508,11 +503,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
 
     # Verificar si todos están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
-        existe = mongo.db.alertas.find_one({
-            "idEmpresa": id_empresa,
-            "tipoAlerta": "Caída de energía eléctrica",
-            "direccion": direccion
-        })
+        existe = get_alertas_caida_de_energia(mongo, id_empresa, direccion)
         if existe:
             return
     
