@@ -71,8 +71,9 @@ from routes.asignaciones_routes import asignaciones_bp
 app.register_blueprint(asignaciones_bp)
 
 # Registrar alertas blueprint
-from routes.alerta_routes import create_alerta_routes
-app.register_blueprint(create_alerta_routes(mongo))
+from routes.alerta_routes import alerta_bp
+app.register_blueprint(alerta_bp)
+
 
 if __name__ == '__main__':
      # Solo arrancar scheduler en el proceso principal

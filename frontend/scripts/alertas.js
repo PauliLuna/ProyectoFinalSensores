@@ -23,7 +23,9 @@ let alertasData = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        const response = await fetch("/alertas");
+        const response = await fetch('/alertas', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
         if (!response.ok) {
             if (response.status === 401) {
                 alert("No autorizado. Por favor, inicia sesión.");
