@@ -1,6 +1,6 @@
 document.getElementById('signin-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const email = document.getElementById('email').value;
+    const email = document.getElementById('email').value.trim().toLowerCase();;
     const password = document.getElementById('password').value;
     const formData = new FormData();
     formData.append('email', email);
@@ -35,7 +35,7 @@ document.getElementById('closeResetModal').onclick = function() {
 // Enviar solicitud de recuperación
 document.getElementById('resetRequestForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const email = document.getElementById('resetEmail').value;
+    const email = document.getElementById('resetEmail').value.trim().toLowerCase();;
     const btn = this.querySelector('button[type="submit"]');
     btn.disabled = true;
 

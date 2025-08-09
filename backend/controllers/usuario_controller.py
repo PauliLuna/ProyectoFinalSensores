@@ -24,7 +24,7 @@ def usuario_actual_controller(mongo):
         return jsonify({"error": "Usuario no encontrado"}), 404
     if request.method == 'GET':
         return jsonify({
-            "email": usuario.get("email", ""),
+            "email": usuario.get("email", "").strip().lower(),
             "username": usuario.get("username", ""),
             "phone": usuario.get("phone", ""),
             "roles": usuario.get("roles", ""),
@@ -62,7 +62,7 @@ def register_usuario_controller(mongo):
     now = datetime.datetime.now()
     usuario_data = {
         "codeInvitation": request.form.get('codeInvitation'),
-        "email": request.form.get('email'),
+        "email": request.form.get('email').strip().lower(),
         "idEmpresa": idEmpresa,
         "phone": request.form.get('phone'),
         "username": request.form.get('username'),
@@ -82,7 +82,7 @@ def register_usuario_controller(mongo):
     return jsonify({"message": "Usuario registrado correctamente", "user_email": usuario_data.get("email")}), 201
 
 def invite_user_controller(mongo):
-    email = request.form.get('mail')
+    email = request.form.get('mail').strip().lower()
     idEmpresa = session.get('idEmpresa')
     if not idEmpresa:
         return jsonify({"error": "No autorizado"}), 401
@@ -170,7 +170,7 @@ def invite_user_controller(mongo):
     return jsonify({"message": f"Se mandó un correo de invitación a {email}"}), 200
 
 def complete_registration_controller(mongo):
-    email = request.form.get('email')
+    email = request.form.get('email').strip().lower()
     username = request.form.get('username')
     phone = request.form.get('phone')
     password = request.form.get('password')
@@ -203,7 +203,7 @@ def complete_registration_controller(mongo):
     }), 200
 
 def login_usuario_controller(mongo):
-    email = request.form.get('email')
+    email = request.form.get('email').strip().lower()
     password = request.form.get('password')
     usuario = get_usuario_by_email(mongo, email)
     if usuario and check_password_hash(usuario['password'], password):
@@ -237,7 +237,7 @@ def get_ultimas_conexiones_controller(mongo):
 
 def solicitar_reset_password_controller(mongo):
     data = request.get_json()
-    email = data.get('email')
+    email = data.get('email').strip().lower()
     usuario = get_usuario_by_email(mongo, email)
     if not usuario:
         return jsonify({"error": "No existe un usuario con ese email"}), 404
