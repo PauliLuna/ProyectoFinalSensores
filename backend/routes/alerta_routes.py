@@ -3,7 +3,6 @@ from controllers.usuario_controller import get_usuario_by_id
 from controllers.alerta_controller import (
     obtener_alertas, 
     nueva_alerta, 
-    cerrar_alerta_api,
     chequear_alertas_criticas,
     chequear_alertas_preventivas,
     chequear_alertas_informativas
@@ -26,11 +25,6 @@ def post_alerta():
     mongo = current_app.mongo
     return nueva_alerta(mongo)
 
-@alerta_bp.route('/alertas/<alerta_id>/cerrar', methods=['PUT'])
-@token_required
-def put_cerrar_alerta(alerta_id):
-    mongo = current_app.mongo
-    return cerrar_alerta_api(mongo, alerta_id)
 
 @alerta_bp.route('/reanalizar_alertas', methods=['POST'])
 @token_required

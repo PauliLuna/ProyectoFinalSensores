@@ -1,5 +1,5 @@
 from flask import jsonify, request, session, current_app
-from models.alerta import get_alertas_by_empresa,get_alertas_filtradas,  insert_alerta, cerrar_alerta
+from models.alerta import get_alertas_by_empresa,get_alertas_filtradas,  insert_alerta
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -37,15 +37,9 @@ def obtener_alertas(mongo):
 def nueva_alerta(mongo):
     data = request.get_json()
     data["idEmpresa"] = session.get("idEmpresa")
-    data["estadoAlerta"] = "Activa"
     alerta_id = insert_alerta(mongo, data)
     return jsonify({"message": "Alerta creada", "id": str(alerta_id)}), 201
 
-def cerrar_alerta_api(mongo, alerta_id):
-    result = cerrar_alerta(mongo, alerta_id)
-    if result.modified_count == 0:
-        return jsonify({"message": "No se encontró la alerta"}), 404
-    return jsonify({"message": "Alerta cerrada"}), 200
 
 
 
@@ -229,7 +223,6 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             "criticidad": "Crítica",
             "tipoAlerta": "Sensor offline",
             "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": "Sensor offline (sin mediciones)",
             "fechaHoraAlerta": fecha_actual
         }
@@ -265,7 +258,6 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
             "criticidad": "Crítica",
             "tipoAlerta": "Puerta abierta prolongada",
             "descripcion": f"Puerta abierta ≥10 min en sensor {sensor['nroSensor']}. Riesgo de pérdida de frío.",
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": "Puerta abierta prolongada",
             "fechaHoraAlerta": fecha_actual
         }
@@ -305,7 +297,6 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             "criticidad": "Crítica",
             "tipoAlerta": "Temperatura fuera de rango",
             "descripcion": descripcion,
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": mensaje,
             "fechaHoraAlerta": fecha_actual
         }
@@ -334,7 +325,6 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
             "criticidad": "Crítica",
             "tipoAlerta": "Ciclo de refrigeramiento asincrónico",
             "descripcion": f"La temperatura no retornó al rango seguro ({valor_min}°C-{valor_max}°C) tras un ciclo de descongelamiento.",
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": "Ciclo asincrónico detectado",
             "fechaHoraAlerta": fecha_actual
         }
@@ -433,7 +423,6 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
             "criticidad": "Preventiva",
             "tipoAlerta": "Fluctuación de temperatura excesiva",
             "descripcion": f"Oscilaciones de temperatura mayores a {margen_permitido}°C en 1h. Delta: {delta:.2f}°C.",
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": "Fluctuación de temperatura excesiva",
             "fechaHoraAlerta": mediciones[-1]["fechaHoraMed"]
         }
@@ -478,7 +467,6 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
             "criticidad": "Preventiva",
             "tipoAlerta": "Puerta abierta recurrente",
             "descripcion": f"Más de {max_repeticiones} alertas de puerta abierta prolongada en el día para el sensor {nro_sensor}.",
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": "Patrón recurrente de puerta abierta",
             "fechaHoraAlerta": datetime.utcnow()
         }
@@ -523,8 +511,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
         existe = mongo.db.alertas.find_one({
             "idEmpresa": id_empresa,
             "tipoAlerta": "Caída de energía eléctrica",
-            "direccion": direccion,
-            "estadoAlerta": "pendiente"
+            "direccion": direccion
         })
         if existe:
             return
@@ -537,7 +524,6 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             "criticidad": "Preventiva",
             "tipoAlerta": "Caída de energía eléctrica",
             "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
-            "estadoAlerta": "pendiente",
             "mensajeAlerta": "Caída de energía eléctrica",
             "fechaHoraAlerta": datetime.utcnow()
         }
@@ -668,7 +654,6 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 "criticidad": "Informativa",
                 "tipoAlerta": "Inicio de ciclo de descongelamiento",
                 "descripcion": f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo}.",
-                "estadoAlerta": "pendiente",
                 "mensajeAlerta": "Inicio de ciclo de descongelamiento",
                 "fechaHoraAlerta": fecha_inicio_ciclo
             }
@@ -700,7 +685,6 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 "criticidad": "Informativa",
                 "tipoAlerta": "Fin de ciclo de descongelamiento",
                 "descripcion": descripcion_fin,
-                "estadoAlerta": "pendiente",
                 "mensajeAlerta": "Fin de ciclo de descongelamiento",
                 "fechaHoraAlerta": fecha_actual
             }

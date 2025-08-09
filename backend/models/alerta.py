@@ -20,9 +20,4 @@ def get_alertas_filtradas(mongo, id_empresa, tipo=None):
 def insert_alerta(mongo, alerta_data):
     return mongo.db.alertas.insert_one(alerta_data).inserted_id
 
-def cerrar_alerta(mongo, alerta_id):
-    return mongo.db.alertas.update_one(
-        {"_id": ObjectId(alerta_id)},
-        {"$set": {"estadoAlerta": "Cerrada", "fechaCierre": datetime.now()}}
-    )
 
