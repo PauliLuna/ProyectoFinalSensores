@@ -33,9 +33,13 @@ def reanalizar_alertas_api():
     user_id = session.get('user_id')
     usuario = get_usuario_by_id(mongo, user_id)
     id_empresa = usuario.get('idEmpresa')
-    chequear_alertas_criticas(mongo, id_empresa)
-    chequear_alertas_preventivas(mongo, id_empresa)
-    chequear_alertas_informativas(mongo, id_empresa)
-    return jsonify({"message": "Alertas reanalizadas"}), 200
+    nuevas_criticas = chequear_alertas_criticas(mongo, id_empresa)
+    nuevas_preventivas = chequear_alertas_preventivas(mongo, id_empresa)
+    nuevas_informativas = chequear_alertas_informativas(mongo, id_empresa)
+    total_nuevas = (nuevas_criticas or 0) + (nuevas_preventivas or 0) + (nuevas_informativas or 0)
+    if total_nuevas == 0:
+        return jsonify({"message": "Alertas reanalizadas correctamente. No se detectaron nuevas alertas."}), 200
+    else:
+        return jsonify({"message": f"Alertas reanalizadas correctamente. Se detectaron {total_nuevas} nuevas alertas."}), 200
 
 

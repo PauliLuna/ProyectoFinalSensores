@@ -92,9 +92,18 @@ function updateKPICards(data) {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             if (!res.ok) throw new Error("Error al reanalizar alertas");
-            // Vuelve a cargar las alertas actualizadas
+            const result = await res.json();
             await cargarAlertas();
-            alert("Alertas reanalizadas correctamente.");
+            // Resetear filtros globales
+            document.getElementById('periodSelect').value = 'todos';
+            document.getElementById('criticidadSelect').value = 'todas';
+            document.getElementById('sucursalSelect').value = 'todas';
+            document.getElementById('sensorSelect').value = 'todos';
+            // Vuelve a mostrar toda la data
+            filteredalertasData = [...alertasData];
+            currentPage = 1;
+            renderAll(filteredalertasData);
+            alert(result.message || "Alertas reanalizadas correctamente.");
         } catch (error) {
             alert("No se pudieron reanalizar las alertas.");
             console.error(error);

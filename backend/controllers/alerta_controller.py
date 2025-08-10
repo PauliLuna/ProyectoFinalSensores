@@ -134,6 +134,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
             {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
             upsert=True
         )
+        return len(mediciones)  # Retorna la cantidad de mediciones analizadas
 
 
 def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
@@ -396,6 +397,7 @@ def chequear_alertas_preventivas(mongo, id_empresa):
             {"$set": {"fechaUltimaAnalizada": mediciones[-1]["fechaHoraMed"]}},
             upsert=True
         )
+        return len(mediciones)  # Retorna la cantidad de mediciones analizadas
 
 
 
@@ -610,6 +612,7 @@ def chequear_alertas_informativas(mongo, id_empresa):
             }},
             upsert=True
         )
+        return len(mediciones)  # Retorna la cantidad de mediciones analizadas
 
 
 def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_max,
