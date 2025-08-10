@@ -112,12 +112,26 @@ function updateKPICards(data) {
         else if (crit === 'seguridad') counts.seguridad++;
     });
 
+    const total = counts.crítica + counts.informativa + counts.preventiva + counts.seguridad;
+    // Calcula porcentajes, evita división por cero
+    const pct = {
+        crítica: total ? (counts.crítica / total * 100).toFixed(1) : 0,
+        informativa: total ? (counts.informativa / total * 100).toFixed(1) : 0,
+        preventiva: total ? (counts.preventiva / total * 100).toFixed(1) : 0,
+        seguridad: total ? (counts.seguridad / total * 100).toFixed(1) : 0
+    };
+
     document.getElementById('criticaCount').innerText = counts.crítica;
+    document.querySelector('#criticalCard .kpi-alerta-texto span').innerText = `(${pct.crítica}%)`;
+
     document.getElementById('informativaCount').innerText = counts.informativa;
+    document.querySelector('#infoCard .kpi-alerta-texto span').innerText = `(${pct.informativa}%)`;
+
     document.getElementById('preventivaCount').innerText = counts.preventiva;
+    document.querySelector('#preventivaCard .kpi-alerta-texto span').innerText = `(${pct.preventiva}%)`;
+
     document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
-
-
+        document.querySelector('#securityCard .kpi-alerta-texto span').innerText = `(${pct.seguridad}%)`;
 }
 
 function cargarSucursales(alertas) {
