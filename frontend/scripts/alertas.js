@@ -1,3 +1,5 @@
+window.alertsLineChart = null;
+
 // Verificar si el usuario está autenticado y el token no está expirado
 function isTokenExpired(token) {
     if (!token) return true;
@@ -93,7 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Solo muestra el mensaje si realmente hay un error de red/backend
         setTimeout(() => {
             alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
-        }, 500); // Opcional: pequeño delay para evitar que aparezca instantáneamente
+        }, 1000); // Opcional: pequeño delay para evitar que aparezca instantáneamente
         console.error("Error al cargar alertas:", error);
     }
 });
@@ -322,8 +324,13 @@ function renderLineChart(data) {
 
     const fechas = Object.keys(countsByDay).sort((a, b) => new Date(a) - new Date(b));
 
+     // Destruye el gráfico anterior si existe
+    if (window.alertsLineChart && typeof window.alertsLineChart.destroy === 'function') {
+        window.alertsLineChart.destroy();
+    }
+
     const ctx = document.getElementById("alertsLineChart").getContext("2d");
-    new Chart(ctx, {
+    window.alertsLineChart = new Chart(ctx, {
         type: "line",
         data: {
             labels: fechas,
@@ -495,6 +502,7 @@ function renderAlertasPagination(totalPages) {
 }
 
 // Ordenamiento por fecha
+
 let fechaAsc = true;
 document.getElementById('fecha-sort-label').addEventListener('click', () => {
     let sorted;
