@@ -25,12 +25,15 @@ def obtener_alertas(mongo):
     sensores_ids = list(set(int(a["idSensor"]) for a in alertas if "idSensor" in a and a["idSensor"].isdigit()))
     sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
     sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
+    sensor_direccion = {int(s["nroSensor"]): s.get("direccion", "") for s in sensores}
     for alerta in alertas:
         try:
             alerta["_id"] = str(alerta["_id"])
             alerta["alias"] = sensor_alias.get(int(alerta.get("idSensor")), "")
+            alerta["direccion"] = sensor_direccion.get(int(alerta.get("idSensor")), "")
         except Exception:
             alerta["alias"] = ""
+            alerta["direccion"] = ""
     return jsonify(alertas), 200
 
 

@@ -23,9 +23,12 @@ let alertasData = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     try {
+        // Muestra loader
+        document.body.classList.add('body-loading');
         const response = await fetch('/alertas', {
             headers: { 'Authorization': 'Bearer ' + token }
-        })
+        });
+        document.body.classList.remove('body-loading');
         if (!response.ok) {
             if (response.status === 401) {
                 alert("No autorizado. Por favor, inicia sesión.");
@@ -35,14 +38,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw new Error("Error al cargar alertas");
         }
         alertasData = await response.json();
+        if (Array.isArray(alertasData) && alertasData.length === 0) {
+            // Solo muestra este mensaje si realmente no hay alertas
+            // Puedes mostrar un mensaje en la UI en vez de alert si prefieres
+            // alert("No hay alertas para mostrar.");
+        }
         cargarSucursales(alertasData);
+        cargarSensoresPorSucursal(alertasData);
         filteredalertasData = [...alertasData];
         renderAll(filteredalertasData);
         renderPieChart(alertasData);
         renderLineChart(alertasData);
         updateKPICards(alertasData);
     } catch (error) {
-        alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
+        document.body.classList.remove('body-loading');
+        // Solo muestra el mensaje si realmente hay un error de red/backend
+        setTimeout(() => {
+            alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
+        }, 500); // Opcional: pequeño delay para evitar que aparezca instantáneamente
         console.error("Error al cargar alertas:", error);
     }
 });
@@ -64,8 +77,12 @@ function updateKPICards(data) {
     document.getElementById('preventivaCount').innerText = counts.preventiva;
     document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
     // Agregar eventos a los selectores de filtros, filtra automáticamente al cambiar cualquier select
-    ['periodSelect', 'criticidadSelect', 'sucursalSelect'].forEach(id => {
+    ['periodSelect', 'criticidadSelect', 'sucursalSelect', 'sensorSelect'].forEach(id => {
     document.getElementById(id).addEventListener('change', aplicarFiltrosGlobales);
+    });
+    document.getElementById('sucursalSelect').addEventListener('change', () => {
+        cargarSensoresPorSucursal(filteredalertasData);
+        aplicarFiltrosGlobales();
     });
     // Agregar evento al botón de refrescar alertas
     document.getElementById('refreshIcon').addEventListener('click', async () => {
@@ -87,14 +104,46 @@ function updateKPICards(data) {
 
 function cargarSucursales(alertas) {
     const sucursalSelect = document.getElementById('sucursalSelect');
-    // Extrae direcciones únicas
-    const direcciones = [...new Set(alertas.map(a => a.alias || a.direccion || '').filter(d => d))];
-    sucursalSelect.innerHTML = '<option value="todas">Todas las sucursales</option>';
+    // Extrae direcciones únicas de sensores con alerta
+    const direcciones = [...new Set(alertas.map(a => a.direccion).filter(d => d))];
+    sucursalSelect.innerHTML = '<option value="todas">Todas</option>';
     direcciones.forEach(dir => {
         const opt = document.createElement('option');
         opt.value = dir;
         opt.textContent = dir;
         sucursalSelect.appendChild(opt);
+    });
+}
+
+function cargarSensoresPorSucursal(alertas) {
+    const sucursal = document.getElementById('sucursalSelect').value;
+    const sensorSelect = document.getElementById('sensorSelect');
+    let sensores = [];
+
+    if (sucursal === 'todas') {
+        sensores = [...new Set(
+            alertas
+                .filter(a => a.alias && a.alias.includes(' - '))
+                .map(a => a.alias.split(' - ')[1])
+        )];
+    } else {
+        sensores = [...new Set(
+            alertas
+                .filter(a => {
+                    const dirA = (a.direccion || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                    const dirB = sucursal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                    return dirA === dirB && a.alias && a.alias.includes(' - ');
+                })
+                .map(a => a.alias.split(' - ')[1])
+        )];
+    }
+
+    sensorSelect.innerHTML = '<option value="todos">Todos</option>';
+    sensores.forEach(display => {
+        const opt = document.createElement('option');
+        opt.value = display;
+        opt.textContent = display;
+        sensorSelect.appendChild(opt);
     });
 }
 
@@ -129,7 +178,21 @@ function aplicarFiltrosGlobales() {
     // Filtro de sucursal/dirección
     const sucursal = document.getElementById('sucursalSelect').value;
     if (sucursal !== 'todas') {
-        data = data.filter(a => (a.alias || a.direccion || '') === sucursal);
+        data = data.filter(a => {
+            // Normaliza para evitar problemas de tildes, mayúsculas, espacios
+            const dirA = (a.direccion || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            const dirB = sucursal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            return dirA === dirB;
+        });
+    }
+
+    // Filtro de sensor
+    const sensorAlias = document.getElementById('sensorSelect').value;
+    if (sensorAlias !== 'todos') {
+        data = data.filter(a => {
+            if (!a.alias || !a.alias.includes(' - ')) return false;
+            return a.alias.split(' - ')[1] === sensorAlias;
+        });
     }
 
     filteredalertasData = data;
@@ -310,7 +373,7 @@ function renderAlertasPagination(totalPages) {
         e.preventDefault();
         if (currentPage > 1) {
             currentPage--;
-            renderAlertasTable(filtroFechaActivo ? filteredalertasData : alertasData);
+            renderAlertasTable(filteredalertasData);
         }
     });
     pagination.appendChild(prevItem);
@@ -328,7 +391,7 @@ function renderAlertasPagination(totalPages) {
             e.preventDefault();
             if (currentPage !== i) {
                 currentPage = i;
-                renderAlertasTable(filtroFechaActivo ? filteredalertasData : alertasData);
+                renderAlertasTable(filteredalertasData);
             }
         });
         pagination.appendChild(li);
@@ -342,7 +405,7 @@ function renderAlertasPagination(totalPages) {
         e.preventDefault();
         if (currentPage < totalPages) {
             currentPage++;
-            renderAlertasTable(filtroFechaActivo ? filteredalertasData : alertasData);
+            renderAlertasTable(filteredalertasData);
         }
     });
     pagination.appendChild(nextItem);
