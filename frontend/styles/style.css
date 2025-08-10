@@ -1434,10 +1434,22 @@ button[disabled] {
     background-color: #78b698;
     border-left: 6px solid #4d8151;
 }
-
+/*
 .kpi-card.preventiva {
     background-color: #9fbabd;
     border-left: 6px solid #457B9D;
+}*/
+
+.kpi-card.preventiva {
+    background-color: #7F8C8D   ;
+    border-left: 6px solid #34495E  ;
+    color: #FDEDEC;
+}
+
+.kpi-card.seguridad {
+    background-color: #457B9D     ;
+    border-left: 6px solid #2C3E50   ;
+    color: #FDEDEC;
 }
 
 .kpi-card.offline {
@@ -1546,6 +1558,9 @@ button[disabled] {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
 }
 
 .chart-container {
