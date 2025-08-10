@@ -1382,6 +1382,15 @@ button[disabled] {
     margin: 20px auto;
 }
 
+.kpi-cards.alertas {
+    margin-left: 75px;
+    max-width: 800px;
+}
+
+.sidebar-collapsed .kpi-cards.alertas {
+    margin-left: 160px;
+}
+
 /*
 .kpi-card {
     flex: 1;
@@ -1397,7 +1406,7 @@ button[disabled] {
 
 .kpi-card {
     flex: 1;
-    margin: 0 15px;
+    margin: 0 5px;
     border-radius: 1rem;
     padding: 10px;
     text-align: center;
@@ -1435,6 +1444,95 @@ button[disabled] {
   background-color: #be5f5d;
   border-left: 6px solid #912D2B;
   color: #FDEDEC;
+}
+
+/* Dashboard ALERTAS : kpis cards */
+/* Estilo para el contenedor general de la tarjeta de alerta */
+.kpi-card.kpi-alertas {
+    display: flex;
+    flex-direction: column; /* Apila los elementos verticalmente */
+    justify-content: center; /* Centra el contenido verticalmente */
+    align-items: center; /* Centra el contenido horizontalmente */
+    height: 80px;
+}
+
+/* Estilo para el número grande de alertas */
+.kpi-alerta-numero {
+    margin-top: 0;
+    margin-bottom: 5px; /* Pequeño espacio debajo del número */
+    font-size: 2.5rem; /* Tamaño de letra grande */
+    font-weight: 600;
+    line-height: 1; /* Elimina el espacio extra de la línea */
+}
+
+/* Contenedor para el texto y el porcentaje */
+.kpi-alerta-texto {
+    display: flex;
+    align-items: baseline; /* Alinea los elementos en la misma línea base */
+    gap: 5px; /* Espacio entre el texto y el porcentaje */
+}
+
+/* Estilo para el texto de la alerta (ej. "Críticas") */
+.kpi-alerta-texto h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Estilo para el porcentaje */
+.kpi-alerta-texto span {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* HOME: estilos de kpi cards */
+/* Estilos para la tarjeta de resumen */
+.kpi-card.kpi-resumen {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 200px;
+    padding: 10px;
+}
+
+/* Estilo para el número principal y el texto que lo acompaña */
+.kpi-principal {
+    text-align: center;
+}
+
+.kpi-resumen .kpi-numero {
+    margin: 0;
+    font-size: 2.7rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.kpi-resumen .kpi-texto {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Estilos para la lista de detalles (porcentajes) */
+.kpi-detalles {
+    width: 100%;
+    margin-top: auto;
+    font-size: 1rem;
+}
+
+.kpi-detalle {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+}
+
+.kpi-card.kpi-home {
+    display: flex;
+    flex-direction: column; /* Apila los elementos verticalmente */
+    justify-content: center; /* Centra el contenido verticalmente */
+    align-items: center; /* Centra el contenido horizontalmente */
+    height: 100px;
 }
 
 /* Charts Section */
@@ -1785,6 +1883,46 @@ canvas {
     font-size: 0.9rem;
     font-weight: 500;
     color:var(--text-color);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.header-section {
+    display: flex;
+    align-items: center;
+    /* Centra el título y el contenedor de KPIs como un grupo */
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.centered-title {
+    /* El título debe estar a la izquierda y las tarjetas centradas */
+    /* Para ello, el título debe tener un ancho definido o ser un flex item con 'flex: none' */
+    flex-shrink: 0;
+    margin-right: 10px; /* Un margen para separar del grupo de KPIs */
+}
+
+#kpi-cards-container {
+    display: flex;
+    flex-grow: 1; /* Permite que el contenedor de KPIs crezca */
+    justify-content: space-around; /* Distribuye el espacio entre las tarjetas */
+    max-width: 800px; /* Mantiene el ancho máximo de los KPIs */
+}
+
+/* Estado cuando la barra lateral está expandida */
+#kpi-cards-container.sidebar-expanded-kpi {
+    margin-left: 65px;
+}
+
+/* Estado cuando la barra lateral está colapsada */
+#kpi-cards-container.sidebar-collapsed-kpi {
+    margin-left: 100px;
 }
 
 .datepicker {

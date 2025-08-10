@@ -36,19 +36,21 @@
                 <h5 class="mb-3">KPIs Operativos</h5>
                 
                 <div class="kpi-cards">
-                    <div class="kpi-card">
-                        <h3 id="total-sensores"></h3>
-                        <p>Total Sensores Instalados</p>
-                        <div class="mt-4">
-                            <div class="d-flex justify-content-between" id="%fuera-rango">
+                      <div class="kpi-card kpi-resumen">
+                        <div class="kpi-principal">
+                            <p id="total-sensores" class="kpi-numero"></p>
+                            <p class="kpi-texto">Total Sensores Instalados</p>
+                        </div>
+                        <div class="kpi-detalles">
+                            <div class="kpi-detalle">
                                 <span>% Sensores Fuera de Rango</span>
                                 <span><strong id="porcentaje-fuera-rango">--%</strong></span>
                             </div>
-                            <div class="d-flex justify-content-between" id="%activos">
+                            <div class="kpi-detalle">
                                 <span>% Sensores Activos</span>
                                 <span><strong id="porcentaje-activos">--%</strong></span>
                             </div>
-                            <div class="d-flex justify-content-between" id="%retraso-envio">
+                            <div class="kpi-detalle">
                                 <span>% Sensores con Retraso en Envío de datos</span>
                                 <span><strong id="porcentaje-retraso-envio">--%</strong></span>
                             </div>
@@ -56,26 +58,33 @@
                     </div>
                 </div>
 
-                <div class="kpi-cards">
-                    <div class="kpi-card success">
-                        <h3 id="sensores-en-rango"></h3>
-                        <p>Sensores en Rango</p>
+                <div class="kpi-cards" style="max-width: 1000px;">
+                      <div class="kpi-card success kpi-home">
+                        <p id="sensores-en-rango" class="kpi-alerta-numero"></p>
+                        <div class="kpi-alerta-texto">
+                            <h3>Sensores en Rango</h3>
+                        </div>
                     </div>
-                    <div class="kpi-card warning">
-                        <h3 id="sensores-fuera-rango"></h3>
-                        <p>Sensores Fuera de Rango</p>
-                    </div>
-                    <div class="kpi-card offline">
-                        <h3 id="sensores-fallo"></h3>
-                        <p>Sensores sin Señal (offline)</p>
-                    </div>
+                    <div class="kpi-card warning kpi-home">
+                      <p id="sensores-fuera-rango" class="kpi-alerta-numero"></p>
+                      <div class="kpi-alerta-texto">
+                          <h3>Sensores Fuera de Rango</h3>
+                      </div>
+                  </div>
+                  <div class="kpi-card offline kpi-home">
+                      <p id="sensores-fallo" class="kpi-alerta-numero"></p>
+                      <div class="kpi-alerta-texto">
+                          <h3>Sensores sin Señal (offline)</h3>
+                      </div>
+                  </div>
                 </div>
                 <div class="kpi-cards">
-                    
-                    <div class="kpi-card">
-                        <h3 id="frecuencia-aperturas"></h3>
-                        <p>Frecuencia de Aperturas</p>
-                    </div>
+                    <div class="kpi-card kpi-home">
+                      <p id="frecuencia-aperturas" class="kpi-alerta-numero"></p>
+                      <div class="kpi-alerta-texto">
+                          <h3>Frecuencia de Aperturas</h3>
+                      </div>
+                  </div>
                 </div>
 
                 <h5 class="mb-3">KPIs Predictivos</h5>

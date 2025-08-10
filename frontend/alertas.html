@@ -14,51 +14,80 @@
     <div id="top-banner-container"></div>
 
     <div class="main-content">
-        <!-- Filtros -->
+        <div class="header-section">
+            <h1 class="centered-title" style="margin-left: 20px;">Alertas</h1>
+
+            <div class="kpi-cards alertas" id="kpi-cards-container">
+                <div class="kpi-card offline kpi-alertas" id="criticalCard" onclick="filterByType('crítica')">
+                    <p id="criticaCount" class="kpi-alerta-numero"></p>
+                    <div class="kpi-alerta-texto">
+                        <h3>Críticas</h3>
+                        <span>(%)</span>
+                    </div>
+                </div>
+                <div class="kpi-card warning kpi-alertas" id="infoCard" onclick="filterByType('informativa')">
+                    <p id="informativaCount" class="kpi-alerta-numero"></p>
+                    <div class="kpi-alerta-texto">
+                        <h3>Informativas</h3>
+                        <span>(%)</span>
+                    </div>
+                </div>
+                <div class="kpi-card success kpi-alertas" id="securityCard" onclick="filterByType('seguridad')">
+                    <p id="seguridadCount" class="kpi-alerta-numero"></p>
+                    <div class="kpi-alerta-texto">
+                        <h3>Seguridad</h3>
+                        <span>(%)</span>
+                    </div>
+                </div>
+                <div class="kpi-card preventiva kpi-alertas" id="preventivaCard" onclick="filterByType('preventiva')">
+                    <p id="preventivaCount" class="kpi-alerta-numero"></p>
+                    <div class="kpi-alerta-texto">
+                        <h3>Preventivas</h3>
+                        <span>(%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="filterContainer">
-            <h1 class="centered-title">Alertas</h1>
-            <select id="periodSelect">
-                <option value="24hs">Últimas 24 hs</option>
-                <option value="7days">Últimos 7 días</option>
-                <option value="1month">1 mes</option>
-                <option value="6months">6 meses</option>
-                <option value="todos" selected>Todos</option>
-            </select>
-            <select id="criticidadSelect">
-                <option value="todas">Todas las criticidades</option>
-                <option value="crítica">Críticas</option>
-                <option value="informativa">Informativas</option>
-                <option value="preventiva">Preventivas</option>
-                <option value="seguridad">Seguridad</option>
-            </select>
-            <select id="sucursalSelect">
-                <option value="todas">Todas las sucursales</option>
-                <!-- Las opciones se llenan dinámicamente desde JS -->
-            </select>
+            <div class="filter-group">
+                <label for="periodSelect">Fecha</label>
+                <select id="periodSelect">
+                    <option value="24hs">Últimas 24 hs</option>
+                    <option value="7days">Últimos 7 días</option>
+                    <option value="1month">1 mes</option>
+                    <option value="6months">6 meses</option>
+                    <option value="todos" selected>Todos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="criticidadSelect">Tipo</label>
+                <select id="criticidadSelect">
+                    <option value="todas">Todas las criticidades</option>
+                    <option value="crítica">Críticas</option>
+                    <option value="informativa">Informativas</option>
+                    <option value="preventiva">Preventivas</option>
+                    <option value="seguridad">Seguridad</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sucursalSelect">Sucursal</label>
+                <select id="sucursalSelect">
+                    <option value="todas">Todas las sucursales</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sensorSelect">Sensor</label>
+                <select id="sensorSelect">
+                    <option value="todos">Todos los sensores</option>
+                </select>
+            </div>
             <span id="refreshIcon" title="Refrescar" style="cursor: pointer; font-size: 1.5em; margin-left: 6px; color: #457B9D; display: flex; align-items: center;">
                 🔄
             </span>
         </div>
 
-        <!-- KPI Cards -->
-        <div class="kpi-cards">
-            <div class="kpi-card offline" id="criticalCard" onclick="filterByType('crítica')">
-                <h3>Críticas</h3>
-                <p id="criticaCount"></p>
-            </div>
-            <div class="kpi-card warning" id="infoCard" onclick="filterByType('informativa')">
-                <h3>Informativas</h3>
-                <p id="informativaCount"></p>
-            </div>
-            <div class="kpi-card success" id="securityCard" onclick="filterByType('seguridad')">
-                <h3>Seguridad</h3>
-                <p id="seguridadCount"></p>
-            </div>
-            <div class="kpi-card preventiva" id="preventivaCard" onclick="filterByType('preventiva')">
-                <h3>Preventivas</h3>
-                <p id="preventivaCount"></p>
-            </div>
-        </div>
+        
 
         <!-- Tabla: ALERTAS -->
         <div class="recent-activity" style="margin-top: 20px; margin-bottom: 20px;">
