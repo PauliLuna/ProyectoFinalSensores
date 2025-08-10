@@ -1456,6 +1456,12 @@ button[disabled] {
     height: 80px;
 }
 
+/* Anulamos los estilos de hover para las tarjetas de alertas */
+.kpi-alertas:hover {
+    transform: none; /* Deshabilita la animación de escala */
+    box-shadow: none; /* Deshabilita la sombra */
+}
+
 /* Estilo para el número grande de alertas */
 .kpi-alerta-numero {
     margin-top: 0;
@@ -1483,7 +1489,7 @@ button[disabled] {
 .kpi-alerta-texto span {
     font-size: 0.8rem;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(15, 15, 15, 0.8);
 }
 
 /* HOME: estilos de kpi cards */
@@ -1881,7 +1887,7 @@ canvas {
 
 .filterContainer label {
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 800;
     color:var(--text-color);
 }
 
