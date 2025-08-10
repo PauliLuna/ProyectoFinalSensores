@@ -47,7 +47,45 @@ document.addEventListener("DOMContentLoaded", async () => {
         cargarSensoresPorSucursal(alertasData);
         filteredalertasData = [...alertasData];
         renderAll(filteredalertasData);
-        renderPieChart(alertasData);
+
+        // Agrega listeners solo una vez
+        ['periodSelect', 'criticidadSelect', 'sucursalSelect', 'sensorSelect'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', aplicarFiltrosGlobales);
+        });
+        document.getElementById('sucursalSelect').addEventListener('change', () => {
+            cargarSensoresPorSucursal(filteredalertasData);
+            aplicarFiltrosGlobales();
+        });
+
+        
+        // Agregar evento al botón de refrescar alertas
+        document.getElementById('refreshIcon').addEventListener('click', async () => {
+            try {
+                const res = await fetch('/reanalizar_alertas', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error("Error al reanalizar alertas");
+                const result = await res.json();
+                await cargarAlertas();
+                // Resetear filtros globales
+                document.getElementById('periodSelect').value = 'todos';
+                document.getElementById('criticidadSelect').value = 'todas';
+                document.getElementById('sucursalSelect').value = 'todas';
+                document.getElementById('sensorSelect').value = 'todos';
+                // Vuelve a mostrar toda la data
+                filteredalertasData = [...alertasData];
+                currentPage = 1;
+                renderAll(filteredalertasData);
+                alert(result.message || "Alertas reanalizadas correctamente.");
+            } catch (error) {
+                alert("No se pudieron reanalizar las alertas.");
+                console.error(error);
+            }
+        });
+
+        renderPieChart(filteredalertasData);
         renderLineChart(alertasData);
         updateKPICards(alertasData);
     } catch (error) {
@@ -76,39 +114,8 @@ function updateKPICards(data) {
     document.getElementById('informativaCount').innerText = counts.informativa;
     document.getElementById('preventivaCount').innerText = counts.preventiva;
     document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
-    // Agregar eventos a los selectores de filtros, filtra automáticamente al cambiar cualquier select
-    ['periodSelect', 'criticidadSelect', 'sucursalSelect', 'sensorSelect'].forEach(id => {
-    document.getElementById(id).addEventListener('change', aplicarFiltrosGlobales);
-    });
-    document.getElementById('sucursalSelect').addEventListener('change', () => {
-        cargarSensoresPorSucursal(filteredalertasData);
-        aplicarFiltrosGlobales();
-    });
-    // Agregar evento al botón de refrescar alertas
-    document.getElementById('refreshIcon').addEventListener('click', async () => {
-        try {
-            const res = await fetch('/reanalizar_alertas', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (!res.ok) throw new Error("Error al reanalizar alertas");
-            const result = await res.json();
-            await cargarAlertas();
-            // Resetear filtros globales
-            document.getElementById('periodSelect').value = 'todos';
-            document.getElementById('criticidadSelect').value = 'todas';
-            document.getElementById('sucursalSelect').value = 'todas';
-            document.getElementById('sensorSelect').value = 'todos';
-            // Vuelve a mostrar toda la data
-            filteredalertasData = [...alertasData];
-            currentPage = 1;
-            renderAll(filteredalertasData);
-            alert(result.message || "Alertas reanalizadas correctamente.");
-        } catch (error) {
-            alert("No se pudieron reanalizar las alertas.");
-            console.error(error);
-        }
-    });
+
+
 }
 
 function cargarSucursales(alertas) {
@@ -217,24 +224,91 @@ function renderAll(data) {
 }
 
 function renderPieChart(data) {
-    const counts = data.reduce((acc, a) => {
-        acc[a.tipoAlerta] = (acc[a.tipoAlerta] || 0) + 1;
-        return acc;
-    }, {});
+    // Agrupa por tipoAlerta
+    const counts = {};
+    data.forEach(a => {
+        if (!a.tipoAlerta) return;
+        counts[a.tipoAlerta] = (counts[a.tipoAlerta] || 0) + 1;
+    });
+
+    // Determina criticidad activa para la paleta
+    let criticidadActiva = document.getElementById('criticidadSelect').value;
+    if (criticidadActiva === 'todas') criticidadActiva = null;
+
+    // Paleta de colores por tipoAlerta y criticidad
+    const colorMap = {
+        critica: ["#ef4444", "#b91c1c", "#f87171", "#f43f5e"],
+        informativa: ["#facc15", "#fde68a", "#fbbf24", "#f59e42"],
+        seguridad: ["#3b82f6", "#60a5fa", "#2563eb", "#1e40af"],
+        preventiva: ["#6b7280", "#d1d5db", "#9ca3af", "#374151"]
+    };
+
+    // Asigna colores según criticidad de cada tipoAlerta
+    const tipoAlertaCriticidad = {
+        "Temperatura fuera de rango": "critica",
+        "Sensor offline": "critica",
+        "Caida energia electrica": "preventiva",
+        "Fluctuacion de temperatura excesiva": "preventiva",
+        "Inicio de ciclo de descongelamieno": "informativa",
+        "Fin de ciclo de descongelamiento": "informativa",
+        "Puerta abierta prologada": "critica",
+        "Puerta abierta recurrente": "preventiva",
+        "Ciclo de refrigeramiento asincronico": "critica"
+    };
+
+    // Filtra tipoAlerta por criticidad si corresponde
+    let labels = Object.keys(counts);
+    if (criticidadActiva) {
+        labels = labels.filter(t => tipoAlertaCriticidad[t] === criticidadActiva);
+    }
+
+    // Asigna colores
+    const colorList = [];
+    let colorIdx = 0;
+    labels.forEach(t => {
+        const crit = tipoAlertaCriticidad[t] || "informativa";
+        const palette = colorMap[crit];
+        colorList.push(palette[colorIdx % palette.length]);
+        colorIdx++;
+    });
+
+    // Si ya existe una instancia del gráfico, la destruimos para evitar duplicados
+    if (window.alertsPieChart && typeof window.alertsPieChart.destroy === 'function') {
+        window.alertsPieChart.destroy();
+    }
+
+    // Responsive: ensancha el gráfico si la sidebar está colapsada
+    const chartContainer = document.querySelector('.chart-container');
+    if (document.body.classList.contains('sidebar-collapsed')) {
+        chartContainer.style.maxWidth = "900px";
+    } else {
+        chartContainer.style.maxWidth = "600px";
+    }
 
     const ctx = document.getElementById("alertsPieChart").getContext("2d");
-    new Chart(ctx, {
+    window.alertsPieChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(counts),
+            labels: labels,
             datasets: [{
-                data: Object.values(counts),
-                backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981']
+                data: labels.map(l => counts[l]),
+                backgroundColor: colorList,
+                borderColor: "#fff",
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'bottom' } }
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#1D3557',
+                        font: { size: 13 },
+                        boxWidth: 15
+                    }
+                }
+            }
         }
     });
 }
