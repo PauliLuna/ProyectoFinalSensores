@@ -14,73 +14,80 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="form-container">
-            <div class="form-card">
+        <div class="form-container" style="margin-top: 0;">
+            <div class="form-card profile">
                 <h1>Mi Perfil</h1>
                 <form id="profileForm" class="form">
-                    <div class="form-row">
-                        <div class="form-group" style="flex:2;">
-                            <label for="mail">Mail</label>
-                            <input type="email" id="mail" name="mail" readonly disabled>
-                        </div>
-                        <div class="form-group" style="flex:1;">
-                            <label for="role">Rol</label>
-                            <input type="text" id="role" name="role" readonly disabled style="margin-top: 0px;">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="userName">Nombre de usuario</label>
-                            <input type="text" id="userName" name="userName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="numCel">Número de celular</label>
-                            <input type="text" id="numCel" name="numCel">
-                        </div>
-                    </div>
-                    <label>Deseo recibir las siguientes Alertas por mail:</label>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <div class="checkbox-container">
-                                <label><input type="checkbox" id="notifCritica" name="notifCritica"> Críticas</label>
-                                <label><input type="checkbox" id="notifInformativa" name="notifInformativa"> Informativas</label>
+                    <div style="display: flex; gap: 20px;">
+                        <div style="flex: 1;">
+                            <div class="form-row" style="margin-bottom: 30px;">
+                                <div class="form-group" style="flex:2;">
+                                    <label for="mail">Mail</label>
+                                    <input type="email" id="mail" name="mail" readonly disabled>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label for="role">Rol</label>
+                                    <input type="text" id="role" name="role" readonly disabled style="margin-top: 0px;">
+                                </div>
+                            </div>
+                            <div class="form-row" style="margin-bottom: 45px;">
+                                <div class="form-group">
+                                    <label for="userName">Nombre de usuario</label>
+                                    <input type="text" id="userName" name="userName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="numCel">Número de celular</label>
+                                    <input type="text" id="numCel" name="numCel">
+                                </div>
+                            </div>
+                            <label>Deseo recibir las siguientes Alertas por mail:</label>
+                            <div class="form-row" style="margin-top: 15px;">
+                                <div class="form-group">
+                                    <div class="checkbox-container">
+                                        <label><input type="checkbox" id="notifCritica" name="notifCritica"> Críticas</label>
+                                        <label><input type="checkbox" id="notifInformativa" name="notifInformativa"> Informativas</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="checkbox-container">
+                                        <label><input type="checkbox" id="notifPreventiva" name="notifPreventiva"> Preventivas</label>
+                                        <label><input type="checkbox" id="notifSeguridad" name="notifSeguridad"> Seguridad</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <div class="checkbox-container">
-                                <label><input type="checkbox" id="notifPreventiva" name="notifPreventiva"> Preventivas</label>
-                                <label><input type="checkbox" id="notifSeguridad" name="notifSeguridad"> Seguridad</label>
+
+                        <div style="flex: 1;">
+                            <div class="form-group password-wrapper" style="margin-bottom: 20px;">
+                                <label for="currentPassword">Contraseña actual</label>
+                                <input type="password" id="currentPassword" name="currentPassword" placeholder="Contraseña actual">
+                                <button type="button" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña" onclick="togglePassword('currentPassword','eyeIconCurrent')">
+                                    <span id="eyeIconCurrent">🙈</span>
+                                </button>
+                            </div>
+                            <p class="text-muted" style="margin-top: 0px; font-size: 0.85em; text-align: center;">
+                                Si desea cambiar su contraseña, primero debe ingresar la contraseña actual.
+                            </p>
+                            <div class="form-group password-wrapper" style="margin-bottom: 20px;">
+                                <label for="newPassword">Nueva contraseña</label>
+                                <input type="password" id="newPassword" name="newPassword" placeholder="Nueva contraseña">
+                                <button type="button" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña" onclick="togglePassword('newPassword','eyeIconNew')">
+                                    <span id="eyeIconNew">🙈</span>
+                                </button>
+                            </div>
+                            <small class="text-muted" style="display:block;margin-bottom:0px; text-align: center;">
+                                La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.
+                            </small>
+                            <div class="form-group password-wrapper" style="margin-bottom: 20px;">
+                                <label for="repeatPassword">Repetir nueva contraseña</label>
+                                <input type="password" id="repeatPassword" name="repeatPassword" placeholder="Repetir nueva contraseña">
+                                <button type="button" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña" onclick="togglePassword('repeatPassword','eyeIconRepeat')">
+                                    <span id="eyeIconRepeat">🙈</span>
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group password-wrapper" style="margin-bottom: 20px;">
-                        <label for="currentPassword">Contraseña actual</label>
-                        <input type="password" id="currentPassword" name="currentPassword" placeholder="Contraseña actual">
-                        <button type="button" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña" onclick="togglePassword('currentPassword','eyeIconCurrent')">
-                            <span id="eyeIconCurrent">🙈</span>
-                        </button>
-                    </div>
-                    <p class="text-muted" style="margin-top: 0px; font-size: 0.95em; text-align: center;">
-                        Si desea cambiar su contraseña, primero debe ingresar la contraseña actual.
-                    </p>
-                    <div class="form-group password-wrapper" style="margin-bottom: 20px;">
-                        <label for="newPassword">Nueva contraseña</label>
-                        <input type="password" id="newPassword" name="newPassword" placeholder="Nueva contraseña">
-                        <button type="button" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña" onclick="togglePassword('newPassword','eyeIconNew')">
-                            <span id="eyeIconNew">🙈</span>
-                        </button>
-                    </div>
-                    <small class="text-muted" style="display:block;margin-bottom:0px; text-align: center;">
-                        La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.
-                    </small>
-                    <div class="form-group password-wrapper" style="margin-bottom: 20px;">
-                        <label for="repeatPassword">Repetir nueva contraseña</label>
-                        <input type="password" id="repeatPassword" name="repeatPassword" placeholder="Repetir nueva contraseña">
-                        <button type="button" class="toggle-password" tabindex="-1" aria-label="Mostrar/Ocultar contraseña" onclick="togglePassword('repeatPassword','eyeIconRepeat')">
-                            <span id="eyeIconRepeat">🙈</span>
-                        </button>
-                    </div>
-                    <button type="submit" class="btn-primary">Guardar</button>
+                    <button type="submit" class="btn-primary submit-btn">Guardar</button>
                 </form>
             </div>
             <!-- Modal de éxito -->
