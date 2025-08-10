@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         renderPieChart(filteredalertasData);
-        renderLineChart(alertasData);
+        renderLineChart(filteredalertasData);
         updateKPICards(alertasData);
     } catch (error) {
         document.body.classList.remove('body-loading');
@@ -330,14 +330,30 @@ function renderPieChart(data) {
 }
 
 function renderLineChart(data) {
-    const countsByDay = {};
-    data.forEach(alerta => {
-        const date = new Date(alerta.fechaHoraAlerta).toLocaleDateString("es-AR");
-        countsByDay[date] = (countsByDay[date] || 0) + 1;
-    });
+    // Detecta el filtro de fecha
+    const period = document.getElementById('periodSelect').value;
+    let counts = {};
+    let labels = [];
 
-    const fechas = Object.keys(countsByDay).sort((a, b) => new Date(a) - new Date(b));
-
+    if (period === '24hs') {
+        // Agrupa por hora
+        data.forEach(alerta => {
+            const fecha = parseFecha(alerta.fechaHoraAlerta);
+            const hora = fecha.getHours();
+            const label = `${hora}:00`;
+            counts[label] = (counts[label] || 0) + 1;
+        });
+        // Ordena las horas
+        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+    } else {
+        // Agrupa por día
+        data.forEach(alerta => {
+            const fecha = parseFecha(alerta.fechaHoraAlerta);
+            const dia = fecha.toLocaleDateString("es-AR");
+            counts[dia] = (counts[dia] || 0) + 1;
+        });
+        labels = Object.keys(counts).sort((a, b) => new Date(a) - new Date(b));
+    }
      // Destruye el gráfico anterior si existe
     if (window.alertsLineChart && typeof window.alertsLineChart.destroy === 'function') {
         window.alertsLineChart.destroy();
@@ -345,22 +361,22 @@ function renderLineChart(data) {
 
     const ctx = document.getElementById("alertsLineChart").getContext("2d");
     window.alertsLineChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: fechas,
-            datasets: [{
-                label: "Alertas por día",
-                data: fechas.map(f => countsByDay[f]),
-                borderColor: "#3b82f6",
-                backgroundColor: "rgba(59, 130, 246, 0.2)",
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: period === '24hs' ? "Alertas por hora" : "Alertas por día",
+                    data: labels.map(l => counts[l] || 0),
+                    borderColor: "#3b82f6",
+                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
 }
 
 
