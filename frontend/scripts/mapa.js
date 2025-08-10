@@ -36,7 +36,9 @@ function crearIcono(color) {
 }
 
 const blueIcon = crearIcono('blue');
+const yellowIcon = crearIcono('yellow');
 const redIcon = crearIcono('red');
+
 
 async function cargarSensores() {
     try {
@@ -62,8 +64,11 @@ async function cargarSensores() {
         const markers = L.markerClusterGroup({
             iconCreateFunction: function(cluster) {
                 const childMarkers = cluster.getAllChildMarkers();
-                const anyOutOfRange = childMarkers.some(marker => marker.options.icon.options.iconUrl.includes('red'));
-                const clusterClass = anyOutOfRange ? 'marker-cluster-red' : 'marker-cluster-blue';
+                const anyOffline = childMarkers.some(marker => marker.options.icon === redIcon);
+                const anyOutOfRange = childMarkers.some(marker => marker.options.icon === yellowIcon);
+                let clusterClass = 'marker-cluster-blue';
+                if (anyOffline) clusterClass = 'marker-cluster-red';
+                else if (anyOutOfRange) clusterClass = 'marker-cluster-yellow';
                 return L.divIcon({
                     html: `<div><span>${cluster.getChildCount()}</span></div>`,
                     className: `marker-cluster ${clusterClass}`,
@@ -74,7 +79,16 @@ async function cargarSensores() {
 
         sensores.forEach(sensor => {
             if (sensor.latitud && sensor.longitud) {
-                const icon = sensor.enRango ? blueIcon : redIcon;
+                let icon;
+                if (sensor.estado === "OFFLINE") {
+                    icon = redIcon;
+                } else if (sensor.estado === "ONLINE" && sensor.enRango === true) {
+                    icon = blueIcon;
+                } else if (sensor.estado === "ONLINE" && sensor.enRango === false) {
+                    icon = yellowIcon;
+                } else {
+                    icon = blueIcon; // fallback
+                }
                 const marker = L.marker([sensor.latitud, sensor.longitud], { icon });
                 marker.bindPopup(
                     `<b>${sensor.alias || 'Sensor ' + sensor.nroSensor}</b><br>

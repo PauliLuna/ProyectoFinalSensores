@@ -1,7 +1,7 @@
 from flask import request, jsonify, session
 from models.sensor import insert_sensor, get_sensor_with_assignments, get_mediciones_model, get_last_change_door, obtain_current_state_duration, get_ultima_medicion, count_aperturas, get_last_open_duration
 from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 from controllers.asignaciones_controller import register_assignment, update_assignment
 import json
 from datetime import datetime
@@ -10,15 +10,15 @@ import os
 
 
 def get_coordinates_from_address(address):
-    # Convierte una dirección en coordenadas (latitud, longitud) usando Nominatim.
-    geolocator = Nominatim(user_agent="sensor_app")
+    geolocator = Nominatim(user_agent="sensia-app")
     try:
-        location = geolocator.geocode(address)
+        location = geolocator.geocode(address, timeout=5)
         if location:
             return location.latitude, location.longitude
         else:
             return None, None
-    except GeocoderTimedOut:
+    except (GeocoderUnavailable, GeocoderTimedOut, Exception) as e:
+        print(f"Error geocoding address '{address}': {e}")
         return None, None
 
 

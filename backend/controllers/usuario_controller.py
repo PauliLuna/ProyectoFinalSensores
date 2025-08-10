@@ -6,6 +6,7 @@ from controllers.alerta_controller import chequear_alertas_criticas, chequear_al
 from flask_mail import Message
 import datetime, secrets, random, string, re, jwt, os
 
+
 SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
 
 def get_usuarios_controller(mongo):
@@ -24,7 +25,7 @@ def usuario_actual_controller(mongo):
         return jsonify({"error": "Usuario no encontrado"}), 404
     if request.method == 'GET':
         return jsonify({
-            "email": usuario.get("email", ""),
+            "email": usuario.get("email", "").strip().lower(),
             "username": usuario.get("username", ""),
             "phone": usuario.get("phone", ""),
             "roles": usuario.get("roles", ""),
@@ -62,7 +63,7 @@ def register_usuario_controller(mongo):
     now = datetime.datetime.now()
     usuario_data = {
         "codeInvitation": request.form.get('codeInvitation'),
-        "email": request.form.get('email'),
+        "email": request.form.get('email').strip().lower(),
         "idEmpresa": idEmpresa,
         "phone": request.form.get('phone'),
         "username": request.form.get('username'),
@@ -82,7 +83,7 @@ def register_usuario_controller(mongo):
     return jsonify({"message": "Usuario registrado correctamente", "user_email": usuario_data.get("email")}), 201
 
 def invite_user_controller(mongo):
-    email = request.form.get('mail')
+    email = request.form.get('mail').strip().lower()
     idEmpresa = session.get('idEmpresa')
     if not idEmpresa:
         return jsonify({"error": "No autorizado"}), 401
@@ -170,7 +171,7 @@ def invite_user_controller(mongo):
     return jsonify({"message": f"Se mandó un correo de invitación a {email}"}), 200
 
 def complete_registration_controller(mongo):
-    email = request.form.get('email')
+    email = request.form.get('email').strip().lower()
     username = request.form.get('username')
     phone = request.form.get('phone')
     password = request.form.get('password')
@@ -203,30 +204,63 @@ def complete_registration_controller(mongo):
     }), 200
 
 def login_usuario_controller(mongo):
-    email = request.form.get('email')
+    email = request.form.get('email').strip().lower()
     password = request.form.get('password')
     usuario = get_usuario_by_email(mongo, email)
-    if usuario and check_password_hash(usuario['password'], password):
-        session['user_id'] = str(usuario['_id'])
-        session['idEmpresa'] = usuario.get('idEmpresa')
-        mongo.db.usuarios.update_one(
-            {"_id": usuario['_id']},
-            {"$set": {"fechaUltimoAcceso": datetime.datetime.now()}}
-        )
-        # CHEQUEO DE ALERTAS CRÍTICAS
-        chequear_alertas_criticas(mongo, usuario.get('idEmpresa'))
-        chequear_alertas_preventivas(mongo, usuario.get('idEmpresa'))
-        chequear_alertas_informativas(mongo, usuario.get('idEmpresa'))
+    now = datetime.datetime.utcnow()
 
-        payload = {
-            "user_id": str(usuario['_id']),
-            "idEmpresa": usuario.get('idEmpresa'),
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1) # Sesion de una hora
-        }
-        token = jwt.encode(payload, SECRET_KEY_TOKEN, algorithm="HS256")
-        return jsonify({"message": "Login exitoso", "token": token}), 200
+    if usuario:
+        # Verifica si está bloqueado
+        lock_until = usuario.get('lockUntil')
+        if lock_until and lock_until > now:
+            return jsonify({"error": "Usuario bloqueado por intentos fallidos. Intenta nuevamente 30 minutos más tarde."}), 403
+
+        # Si lockUntil ya pasó, resetea loginAttempts y lockUntil
+        if lock_until and lock_until <= now:
+            mongo.db.usuarios.update_one(
+                {"_id": usuario["_id"]},
+                {"$set": {"loginAttempts": 0, "lockUntil": None}}
+            )
+            usuario['loginAttempts'] = 0
+            usuario['lockUntil'] = None
+
+        # Verifica la contraseña
+        if check_password_hash(usuario['password'], password):
+            # Login exitoso: resetea intentos y lock
+            session['user_id'] = str(usuario['_id'])
+            session['idEmpresa'] = usuario.get('idEmpresa')
+            mongo.db.usuarios.update_one(
+                {"_id": usuario['_id']},
+                {"$set": {"fechaUltimoAcceso": datetime.datetime.now(),"loginAttempts": 0, "lockUntil": None}}
+            )
+            # CHEQUEO DE ALERTAS CRÍTICAS
+            chequear_alertas_criticas(mongo, usuario.get('idEmpresa'))
+            chequear_alertas_preventivas(mongo, usuario.get('idEmpresa'))
+            chequear_alertas_informativas(mongo, usuario.get('idEmpresa'))
+
+            payload = {
+                "user_id": str(usuario['_id']),
+                "idEmpresa": usuario.get('idEmpresa'),
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1) # Sesion de una hora
+            }
+            token = jwt.encode(payload, SECRET_KEY_TOKEN, algorithm="HS256")
+            return jsonify({"message": "Login exitoso", "token": token}), 200
+        else:
+            # Suma intento fallido
+            attempts = usuario.get('loginAttempts', 0) + 1
+            update = {"loginAttempts": attempts}
+            if attempts >= 3:
+                update["lockUntil"] = now + datetime.timedelta(minutes=30)
+            mongo.db.usuarios.update_one(
+                {"_id": usuario["_id"]},
+                {"$set": update}
+            )
+            if attempts >= 3:
+                return jsonify({"error": "Usuario bloqueado por intentos fallidos. Intenta nuevamente en 30 minutos."}), 403
+            else:
+                return jsonify({"error": "Credenciales inválidas"}), 401
     else:
-        return jsonify({"error": "Credenciales inválidas"}), 401 
+        return jsonify({"error": "Credenciales inválidas"}), 401
 
 def get_ultimas_conexiones_controller(mongo):
     idEmpresa = session.get('idEmpresa')
@@ -237,7 +271,7 @@ def get_ultimas_conexiones_controller(mongo):
 
 def solicitar_reset_password_controller(mongo):
     data = request.get_json()
-    email = data.get('email')
+    email = data.get('email').strip().lower()
     usuario = get_usuario_by_email(mongo, email)
     if not usuario:
         return jsonify({"error": "No existe un usuario con ese email"}), 404
