@@ -154,6 +154,11 @@ def invite_user_controller(mongo):
 
         <p>Bienvenido/a a <strong>SensIA</strong> 👋  
         <br>🌐 <a href="https://sensia.onrender.com/">https://sensia.onrender.com/</a></p>
+
+        <!-- Imagen agregada aquí -->
+        <div class="image-footer">
+            <img src="https://sensia.onrender.com/assets/termi-transparente.png" alt="Bienvenido a SensIA">
+        </div>
     </div>
     </body>
     </html>
