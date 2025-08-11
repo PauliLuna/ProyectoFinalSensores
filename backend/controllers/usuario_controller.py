@@ -121,6 +121,8 @@ def invite_user_controller(mongo):
         .label {{ font-weight: bold; }}
         .message {{ margin-top: 15px; padding: 12px; background-color: #e8f0fe; border-left: 5px solid #2a7ae2; border-radius: 4px; }}
         a {{ color: #2a7ae2; text-decoration: none; }}
+        .image-footer {{ text-align: center; margin-top: 20px; }} /* Estilo para centrar la imagen */
+        .image-footer img {{ width: 250px; height: 250px; display: block; margin: 0 auto; }} /* Asegura que la imagen sea responsiva y centrada */
     </style>
     </head>
     <body>
@@ -154,6 +156,11 @@ def invite_user_controller(mongo):
 
         <p>Bienvenido/a a <strong>SensIA</strong> 👋  
         <br>🌐 <a href="https://sensia.onrender.com/">https://sensia.onrender.com/</a></p>
+
+        <!-- Imagen agregada aquí -->
+        <div class="image-footer">
+            <img src="https://sensia.onrender.com/assets/termi-transparente.png" alt="Bienvenido a SensIA">
+        </div>
     </div>
     </body>
     </html>
