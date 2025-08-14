@@ -1159,6 +1159,7 @@ button[disabled] {
   .alert-kpi-card h5 {
     font-weight: 600;
     color: #1e3a8a;
+    font-size: 1.25rem;
   }
 
   .alert-kpi-card .bar {
