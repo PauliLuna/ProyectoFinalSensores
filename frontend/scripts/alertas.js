@@ -1,3 +1,5 @@
+window.alertsLineChart = null;
+
 // Verificar si el usuario está autenticado y el token no está expirado
 function isTokenExpired(token) {
     if (!token) return true;
@@ -47,15 +49,53 @@ document.addEventListener("DOMContentLoaded", async () => {
         cargarSensoresPorSucursal(alertasData);
         filteredalertasData = [...alertasData];
         renderAll(filteredalertasData);
-        renderPieChart(alertasData);
-        renderLineChart(alertasData);
+
+        // Agrega listeners solo una vez
+        ['periodSelect', 'criticidadSelect', 'sucursalSelect', 'sensorSelect'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', aplicarFiltrosGlobales);
+        });
+        document.getElementById('sucursalSelect').addEventListener('change', () => {
+            cargarSensoresPorSucursal(filteredalertasData);
+            aplicarFiltrosGlobales();
+        });
+
+        
+        // Agregar evento al botón de refrescar alertas
+        document.getElementById('refreshIcon').addEventListener('click', async () => {
+            try {
+                const res = await fetch('/reanalizar_alertas', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error("Error al reanalizar alertas");
+                const result = await res.json();
+                await cargarAlertas();
+                // Resetear filtros globales
+                document.getElementById('periodSelect').value = 'todos';
+                document.getElementById('criticidadSelect').value = 'todas';
+                document.getElementById('sucursalSelect').value = 'todas';
+                document.getElementById('sensorSelect').value = 'todos';
+                // Vuelve a mostrar toda la data
+                filteredalertasData = [...alertasData];
+                currentPage = 1;
+                renderAll(filteredalertasData);
+                alert(result.message || "Alertas reanalizadas correctamente.");
+            } catch (error) {
+                alert("No se pudieron reanalizar las alertas.");
+                console.error(error);
+            }
+        });
+
+        renderPieChart(filteredalertasData);
+        renderLineChart(filteredalertasData);
         updateKPICards(alertasData);
     } catch (error) {
         document.body.classList.remove('body-loading');
         // Solo muestra el mensaje si realmente hay un error de red/backend
         setTimeout(() => {
             alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
-        }, 500); // Opcional: pequeño delay para evitar que aparezca instantáneamente
+        }, 1000); // Opcional: pequeño delay para evitar que aparezca instantáneamente
         console.error("Error al cargar alertas:", error);
     }
 });
@@ -72,43 +112,26 @@ function updateKPICards(data) {
         else if (crit === 'seguridad') counts.seguridad++;
     });
 
+    const total = counts.crítica + counts.informativa + counts.preventiva + counts.seguridad;
+    // Calcula porcentajes, evita división por cero
+    const pct = {
+        crítica: total ? (counts.crítica / total * 100).toFixed(1) : 0,
+        informativa: total ? (counts.informativa / total * 100).toFixed(1) : 0,
+        preventiva: total ? (counts.preventiva / total * 100).toFixed(1) : 0,
+        seguridad: total ? (counts.seguridad / total * 100).toFixed(1) : 0
+    };
+
     document.getElementById('criticaCount').innerText = counts.crítica;
+    document.querySelector('#criticalCard .kpi-alerta-texto span').innerText = `(${pct.crítica}%)`;
+
     document.getElementById('informativaCount').innerText = counts.informativa;
+    document.querySelector('#infoCard .kpi-alerta-texto span').innerText = `(${pct.informativa}%)`;
+
     document.getElementById('preventivaCount').innerText = counts.preventiva;
+    document.querySelector('#preventivaCard .kpi-alerta-texto span').innerText = `(${pct.preventiva}%)`;
+
     document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
-    // Agregar eventos a los selectores de filtros, filtra automáticamente al cambiar cualquier select
-    ['periodSelect', 'criticidadSelect', 'sucursalSelect', 'sensorSelect'].forEach(id => {
-    document.getElementById(id).addEventListener('change', aplicarFiltrosGlobales);
-    });
-    document.getElementById('sucursalSelect').addEventListener('change', () => {
-        cargarSensoresPorSucursal(filteredalertasData);
-        aplicarFiltrosGlobales();
-    });
-    // Agregar evento al botón de refrescar alertas
-    document.getElementById('refreshIcon').addEventListener('click', async () => {
-        try {
-            const res = await fetch('/reanalizar_alertas', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (!res.ok) throw new Error("Error al reanalizar alertas");
-            const result = await res.json();
-            await cargarAlertas();
-            // Resetear filtros globales
-            document.getElementById('periodSelect').value = 'todos';
-            document.getElementById('criticidadSelect').value = 'todas';
-            document.getElementById('sucursalSelect').value = 'todas';
-            document.getElementById('sensorSelect').value = 'todos';
-            // Vuelve a mostrar toda la data
-            filteredalertasData = [...alertasData];
-            currentPage = 1;
-            renderAll(filteredalertasData);
-            alert(result.message || "Alertas reanalizadas correctamente.");
-        } catch (error) {
-            alert("No se pudieron reanalizar las alertas.");
-            console.error(error);
-        }
-    });
+        document.querySelector('#securityCard .kpi-alerta-texto span').innerText = `(${pct.seguridad}%)`;
 }
 
 function cargarSucursales(alertas) {
@@ -217,55 +240,143 @@ function renderAll(data) {
 }
 
 function renderPieChart(data) {
-    const counts = data.reduce((acc, a) => {
-        acc[a.tipoAlerta] = (acc[a.tipoAlerta] || 0) + 1;
-        return acc;
-    }, {});
+    // Agrupa por tipoAlerta
+    const counts = {};
+    data.forEach(a => {
+        if (!a.tipoAlerta) return;
+        counts[a.tipoAlerta] = (counts[a.tipoAlerta] || 0) + 1;
+    });
+
+    // Determina criticidad activa para la paleta
+    let criticidadActiva = document.getElementById('criticidadSelect').value;
+    if (criticidadActiva === 'todas') criticidadActiva = null;
+
+    // Paleta de colores por tipoAlerta y criticidad
+    const colorMap = {
+        critica: ["#ef4444", "#b91c1c", "#f87171", "#f43f5e"],
+        informativa: ["#facc15", "#fde68a", "#fbbf24", "#f59e42"],
+        seguridad: ["#3b82f6", "#60a5fa", "#2563eb", "#1e40af"],
+        preventiva: ["#6b7280", "#d1d5db", "#9ca3af", "#374151"]
+    };
+
+    // Asigna colores según criticidad de cada tipoAlerta
+    const tipoAlertaCriticidad = {
+        "Temperatura fuera de rango": "critica",
+        "Sensor offline": "critica",
+        "Caida energia electrica": "preventiva",
+        "Fluctuacion de temperatura excesiva": "preventiva",
+        "Inicio de ciclo de descongelamieno": "informativa",
+        "Fin de ciclo de descongelamiento": "informativa",
+        "Puerta abierta prologada": "critica",
+        "Puerta abierta recurrente": "preventiva",
+        "Ciclo de refrigeramiento asincronico": "critica"
+    };
+
+    // Filtra tipoAlerta por criticidad si corresponde
+    let labels = Object.keys(counts);
+    if (criticidadActiva) {
+        labels = labels.filter(t => tipoAlertaCriticidad[t] === criticidadActiva);
+    }
+
+    // Asigna colores
+    const colorList = [];
+    let colorIdx = 0;
+    labels.forEach(t => {
+        const crit = tipoAlertaCriticidad[t] || "informativa";
+        const palette = colorMap[crit];
+        colorList.push(palette[colorIdx % palette.length]);
+        colorIdx++;
+    });
+
+    // Si ya existe una instancia del gráfico, la destruimos para evitar duplicados
+    if (window.alertsPieChart && typeof window.alertsPieChart.destroy === 'function') {
+        window.alertsPieChart.destroy();
+    }
+
+    // Responsive: ensancha el gráfico si la sidebar está colapsada
+    const chartContainer = document.querySelector('.chart-container');
+    if (document.body.classList.contains('sidebar-collapsed')) {
+        chartContainer.style.maxWidth = "900px";
+    } else {
+        chartContainer.style.maxWidth = "600px";
+    }
 
     const ctx = document.getElementById("alertsPieChart").getContext("2d");
-    new Chart(ctx, {
+    window.alertsPieChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(counts),
+            labels: labels,
             datasets: [{
-                data: Object.values(counts),
-                backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981']
+                data: labels.map(l => counts[l]),
+                backgroundColor: colorList,
+                borderColor: "#fff",
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'bottom' } }
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#1D3557',
+                        font: { size: 13 },
+                        boxWidth: 15
+                    }
+                }
+            }
         }
     });
 }
 
 function renderLineChart(data) {
-    const countsByDay = {};
-    data.forEach(alerta => {
-        const date = new Date(alerta.fechaHoraAlerta).toLocaleDateString("es-AR");
-        countsByDay[date] = (countsByDay[date] || 0) + 1;
-    });
+    // Detecta el filtro de fecha
+    const period = document.getElementById('periodSelect').value;
+    let counts = {};
+    let labels = [];
 
-    const fechas = Object.keys(countsByDay).sort((a, b) => new Date(a) - new Date(b));
+    if (period === '24hs') {
+        // Agrupa por hora
+        data.forEach(alerta => {
+            const fecha = parseFecha(alerta.fechaHoraAlerta);
+            const hora = fecha.getHours();
+            const label = `${hora}:00`;
+            counts[label] = (counts[label] || 0) + 1;
+        });
+        // Ordena las horas
+        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+    } else {
+        // Agrupa por día
+        data.forEach(alerta => {
+            const fecha = parseFecha(alerta.fechaHoraAlerta);
+            const dia = fecha.toLocaleDateString("es-AR");
+            counts[dia] = (counts[dia] || 0) + 1;
+        });
+        labels = Object.keys(counts).sort((a, b) => new Date(a) - new Date(b));
+    }
+     // Destruye el gráfico anterior si existe
+    if (window.alertsLineChart && typeof window.alertsLineChart.destroy === 'function') {
+        window.alertsLineChart.destroy();
+    }
 
     const ctx = document.getElementById("alertsLineChart").getContext("2d");
-    new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: fechas,
-            datasets: [{
-                label: "Alertas por día",
-                data: fechas.map(f => countsByDay[f]),
-                borderColor: "#3b82f6",
-                backgroundColor: "rgba(59, 130, 246, 0.2)",
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+    window.alertsLineChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: period === '24hs' ? "Alertas por hora" : "Alertas por día",
+                    data: labels.map(l => counts[l] || 0),
+                    borderColor: "#3b82f6",
+                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
 }
 
 
@@ -421,6 +532,7 @@ function renderAlertasPagination(totalPages) {
 }
 
 // Ordenamiento por fecha
+
 let fechaAsc = true;
 document.getElementById('fecha-sort-label').addEventListener('click', () => {
     let sorted;

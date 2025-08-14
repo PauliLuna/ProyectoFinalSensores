@@ -22,7 +22,7 @@
                     <p id="criticaCount" class="kpi-alerta-numero"></p>
                     <div class="kpi-alerta-texto">
                         <h3>Críticas</h3>
-                        <span>(%)</span>
+                        <span style="color: #FDEDEC">(%)</span>
                     </div>
                 </div>
                 <div class="kpi-card warning kpi-alertas" id="infoCard" onclick="filterByType('informativa')">
@@ -32,18 +32,18 @@
                         <span>(%)</span>
                     </div>
                 </div>
-                <div class="kpi-card success kpi-alertas" id="securityCard" onclick="filterByType('seguridad')">
-                    <p id="seguridadCount" class="kpi-alerta-numero"></p>
-                    <div class="kpi-alerta-texto">
-                        <h3>Seguridad</h3>
-                        <span>(%)</span>
-                    </div>
-                </div>
                 <div class="kpi-card preventiva kpi-alertas" id="preventivaCard" onclick="filterByType('preventiva')">
                     <p id="preventivaCount" class="kpi-alerta-numero"></p>
                     <div class="kpi-alerta-texto">
                         <h3>Preventivas</h3>
-                        <span>(%)</span>
+                        <span style="color: #FDEDEC">(%)</span>
+                    </div>
+                </div>
+                                <div class="kpi-card seguridad kpi-alertas" id="securityCard" onclick="filterByType('seguridad')">
+                    <p id="seguridadCount" class="kpi-alerta-numero"></p>
+                    <div class="kpi-alerta-texto">
+                        <h3>Seguridad</h3>
+                        <span style="color: #FDEDEC">(%)</span>
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@
 
         <div class="filterContainer">
             <div class="filter-group">
-                <label for="periodSelect">Fecha</label>
+                <label for="periodSelect" style="font-size: 1.05rem;">Fecha</label>
                 <select id="periodSelect">
                     <option value="24hs">Últimas 24 hs</option>
                     <option value="7days">Últimos 7 días</option>
@@ -61,7 +61,7 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label for="criticidadSelect">Tipo</label>
+                <label for="criticidadSelect" style="font-size: 1.05rem;">Tipo</label>
                 <select id="criticidadSelect">
                     <option value="todas">Todas</option>
                     <option value="crítica">Críticas</option>
@@ -71,13 +71,13 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label for="sucursalSelect">Sucursal</label>
+                <label for="sucursalSelect" style="font-size: 1.05rem;">Sucursal</label>
                 <select id="sucursalSelect">
                     <option value="todas">Todas</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label for="sensorSelect">Sensor</label>
+                <label for="sensorSelect" style="font-size: 1.05rem;">Sensor</label>
                 <select id="sensorSelect">
                     <option value="todos">Todos</option>
                 </select>
@@ -120,13 +120,13 @@
 
         <!-- Gráficos -->
         <div class="charts-section">
-            <div class="chart-container">
-                <h3>Tipos de Alertas</h3>
+            <div class="chart-container" style="max-height: fit-content;">
+                <h3>Cantidad detectada por Tipos de Alertas</h3>
                 <canvas id="alertsPieChart"></canvas>
             </div>
 
-            <div class="chart-container">
-                <h3>Alertas por Día</h3>
+            <div class="chart-container" style="max-height: fit-content;">
+                <h3>Cantidad de Alertas detectadas</h3>
                 <canvas id="alertsLineChart"></canvas>
             </div>
         </div>
