@@ -1387,12 +1387,18 @@ button[disabled] {
 }
 
 .kpi-cards.alertas {
-    margin-left: 75px;
-    max-width: 800px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto 0 auto;
+    max-width: 100%;
 }
 
-.sidebar-collapsed .kpi-cards.alertas {
-    margin-left: 160px;
+.sidebar-collapsed .kpi-cards.alertas,
+.sidebar-collapsed #kpi-cards-container {
+
+    justify-content: center;
 }
 
 /*
@@ -1470,12 +1476,21 @@ button[disabled] {
     justify-content: center; /* Centra el contenido verticalmente */
     align-items: center; /* Centra el contenido horizontalmente */
     height: 80px;
+    cursor: default !important;
 }
 
 /* Anulamos los estilos de hover para las tarjetas de alertas */
 .kpi-alertas:hover {
     transform: none; /* Deshabilita la animación de escala */
     box-shadow: none; /* Deshabilita la sombra */
+}
+
+.kpi-card:hover,
+.kpi-card.kpi-alertas:hover {
+    cursor: default !important;
+    /* Si tenés otros efectos de hover, podés deshabilitarlos acá */
+    box-shadow: none;
+    transform: none;
 }
 
 /* Estilo para el número grande de alertas */
