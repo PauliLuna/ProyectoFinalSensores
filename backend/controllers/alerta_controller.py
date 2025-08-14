@@ -155,7 +155,7 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
                 emails.append(usuario["email"])
     return emails
 
-def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha):
+def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha, termi):
     mail = current_app.mail
     subject = f"[ALERTA] {tipo_alerta} - Sensor {sensor['nroSensor']}"
     html_template = f"""
@@ -170,6 +170,8 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
         .info {{ margin-bottom: 10px; }}
         .label {{ font-weight: bold; }}
         .message {{ margin-top: 15px; padding: 12px; background-color: #fee2e2; border-left: 5px solid #ef4444; border-radius: 4px; }}
+        .image-footer {{ text-align: center; margin-top: 20px; }} /* Estilo para centrar la imagen */
+        .image-footer img {{ width: 200px; height: 200px; display: block; margin: 0 auto; }} /* Asegura que la imagen sea responsiva y centrada */
     </style>
     </head>
     <body>
@@ -198,6 +200,10 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
 
         <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
         📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
+         <!-- Imagen agregada aquí -->
+        <div class="image-footer">
+            <img src="https://sensia.onrender.com/assets/{termi}.png">
+        </div>
     </div>
     </body>
     </html>
@@ -249,7 +255,8 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
                 "Crítica", 
                 sensor, 
                 alerta_data["mensajeAlerta"], 
-                fecha_actual
+                fecha_actual,
+                "termi-alerta"
             )
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
@@ -277,7 +284,8 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
                 "Crítica", 
                 sensor, 
                 alerta_data["mensajeAlerta"], 
-                fecha_actual
+                fecha_actual,
+                "termi-alerta"
             )
     # Si no se disparó alerta, actualizamos el estado según puerta actual
     return puerta_estado == 1
@@ -316,7 +324,8 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
                 "Crítica", 
                 sensor, 
                 mensaje, 
-                fecha_actual
+                fecha_actual,
+                "termi-alerta"
             )
 
 
@@ -344,7 +353,8 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
                 "Crítica", 
                 sensor, 
                 alerta_data["mensajeAlerta"], 
-                fecha_actual
+                fecha_actual,
+                "termi-alerta"
             )
         return False, None  # reset ciclo
     return en_ciclo, inicio_ciclo
@@ -444,7 +454,8 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
                 criticidad="Preventiva",
                 sensor=sensor,
                 mensaje="Oscilaciones de temperatura detectadas",
-                fecha=mediciones[-1]["fechaHoraMed"]
+                fecha=mediciones[-1]["fechaHoraMed"],
+                termi="termi-inteligente"
             )
 
 def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
@@ -485,7 +496,8 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
                 criticidad="Preventiva",
                 sensor=sensor,
                 mensaje="Patrón recurrente de puerta abierta",
-                fecha=alerta_data["fechaHoraAlerta"]
+                fecha=alerta_data["fechaHoraAlerta"],
+                termi="termi-inteligente"
             )
 
 def _alerta_caida_energia(mongo, sensor, id_empresa):
@@ -541,7 +553,8 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
                 criticidad="Preventiva",
                 sensor=sensor,
                 mensaje="Caída de energía eléctrica en la sucursal",
-                fecha=alerta_data["fechaHoraAlerta"]
+                fecha=alerta_data["fechaHoraAlerta"],
+                termi="termi-inteligente"
             )
 
 
@@ -664,7 +677,8 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 criticidad="Informativa",
                 sensor=sensor,
                 mensaje="Inicio de ciclo",
-                fecha=fecha_inicio_ciclo
+                fecha=fecha_inicio_ciclo,
+                termi="termi-inteligente"
             )
 
             descripcion_fin = (
@@ -695,7 +709,8 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 criticidad="Informativa",
                 sensor=sensor,
                 mensaje="Fin de ciclo" + (" ⚠️ ANORMAL" if anormal else ""),
-                fecha=fecha_actual
+                fecha=fecha_actual,
+                termi="termi-inteligente"
             )
 
         # Resetear variables

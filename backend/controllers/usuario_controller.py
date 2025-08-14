@@ -122,7 +122,7 @@ def invite_user_controller(mongo):
         .message {{ margin-top: 15px; padding: 12px; background-color: #e8f0fe; border-left: 5px solid #2a7ae2; border-radius: 4px; }}
         a {{ color: #2a7ae2; text-decoration: none; }}
         .image-footer {{ text-align: center; margin-top: 20px; }} /* Estilo para centrar la imagen */
-        .image-footer img {{ width: 250px; height: 250px; display: block; margin: 0 auto; }} /* Asegura que la imagen sea responsiva y centrada */
+        .image-footer img {{ width: 200px; height: 200px; display: block; margin: 0 auto; }} /* Asegura que la imagen sea responsiva y centrada */
     </style>
     </head>
     <body>
