@@ -30,8 +30,25 @@
                                         <input type="text" id="nroSensor" name="nroSensor" placeholder="Ingrese número" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="alias">Alias</label>
-                                        <input type="text" id="alias" name="alias" placeholder="Ingrese alias" required>
+                                        <label for="alias" style="display: flex; align-items: center; gap: 6px;">
+                                            Alias
+                                            <span 
+                                                class="alias-tooltip-icon" 
+                                                tabindex="0" 
+                                                style="cursor: pointer; color: #457B9D; font-size: 1.1em; display: inline-flex; align-items: center; position: relative;">
+                                                <img src="assets/informacion.png" alt="info" style="width: 18px; height: 18px; margin-left: 2px;">
+                                                <span class="alias-tooltip-text" >
+                                                    <span class="alias-tooltip-arrow"></span>
+                                                    Ejemplo: <b>Sucursal Centro - Carnes</b>
+                                                    o <b>Sucursal Norte - Congelados</b><br>
+                                                    <span style="color:#888; font-size: 12px;">(Debe tener el formato: nombre general de sucursal - tipo de cámara)</span>
+                                                </span>
+                                            </span>
+                                        </label>
+                                        <input type="text" id="alias" name="alias" placeholder="Ej: Sucursal Centro - Carnes" required>
+                                        <small id="aliasHelp" style="color:#e63946; display:none;">
+                                            El alias debe tener el formato: "Sucursal - Tipo de cámara"
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -57,7 +74,7 @@
                                         <label for="ciudad">Ciudad</label>
                                         <input type="text" id="ciudad" name="ciudad" placeholder="Ciudad" required>
                                     </div>
-                                    
+
                                 </div>
                             </div>
                             <!-- Row 4:  País | Provincia | Código Postal -->
@@ -75,6 +92,10 @@
                                         <label for="cp">Código Postal</label>
                                         <input type="text" id="cp" name="cp" placeholder="Código Postal" required style="max-width: 240px;">
                                     </div>
+
+                                    <small id="direccionHelp" style="color:#e63946; display:none;">
+                                    </small>
+                                    
                                 </div>
                             </div>
                             <!-- Row 5: Valor Mínimo | Valor Máximo | Estado -->
@@ -83,6 +104,9 @@
                                     <div class="form-group">
                                         <label for="valorMin">Valor Mínimo</label>
                                         <input type="number" id="valorMin" name="valorMin" placeholder="Valor mínimo" required>
+                                        <small id="minMaxHelp" style="color:#e63946; display:none;">
+                                            El valor mínimo debe ser menor que el valor máximo.
+                                        </small>
                                     </div>
                                     <div class="form-group">
                                         <label for="valorMax">Valor Máximo</label>

@@ -1,9 +1,8 @@
 from flask import jsonify, request, session, current_app
-from models.alerta import get_alertas_by_empresa,get_alertas_filtradas,  insert_alerta, get_alertas_caida_de_energia, get_alertas_puerta_abierta
+from models.alerta import get_alertas_filtradas,  insert_alerta, get_alertas_caida_de_energia, get_alertas_puerta_abierta
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
-from models.usuario import get_usuario_by_id
 from controllers.sensor_controller import get_all_sensors
 
 # Tabla de referencia de parámetros por tipo de cámara
@@ -34,6 +33,21 @@ def obtener_alertas(mongo):
         except Exception:
             alerta["alias"] = ""
             alerta["direccion"] = ""
+    return jsonify(alertas), 200
+
+
+def obtener_alertas_por_sensor(mongo, sensor_id):
+    id_empresa = session.get("idEmpresa")
+    if not id_empresa:
+        return jsonify({"error": "Empresa no encontrada"}), 401
+
+    # Busca solo las alertas de ese sensor y empresa
+    alertas = list(mongo.db.alertas.find({
+        "idEmpresa": id_empresa,
+        "idSensor": str(sensor_id)
+    }).sort("fechaHoraAlerta", -1))
+    for alerta in alertas:
+        alerta["_id"] = str(alerta["_id"])
     return jsonify(alertas), 200
 
 

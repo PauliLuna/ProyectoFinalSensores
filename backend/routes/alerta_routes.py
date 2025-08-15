@@ -1,11 +1,12 @@
-from flask import Blueprint, session, current_app, jsonify
+from flask import Blueprint, request, session, current_app, jsonify
 from controllers.usuario_controller import get_usuario_by_id
 from controllers.alerta_controller import (
     obtener_alertas, 
     nueva_alerta, 
     chequear_alertas_criticas,
     chequear_alertas_preventivas,
-    chequear_alertas_informativas
+    chequear_alertas_informativas,
+    obtener_alertas_por_sensor
 )
 
 from utils.auth import token_required
@@ -17,7 +18,11 @@ alerta_bp = Blueprint('alertas', __name__)
 @token_required
 def get_alertas():
     mongo = current_app.mongo
-    return obtener_alertas(mongo)
+    sensor_id = request.args.get('sensor_id')
+    if sensor_id:
+        return obtener_alertas_por_sensor(mongo, sensor_id)
+    else:
+        return obtener_alertas(mongo)
 
 @alerta_bp.route('/alertas', methods=['POST'])
 @token_required

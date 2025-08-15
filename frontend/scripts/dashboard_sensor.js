@@ -207,6 +207,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sensor = await getSensorByAlias(alias, token);
     await cargarCards(sensor);
 
+    await cargarAlertasParaBarra(sensor.nroSensor);
+
     if (!sensor) {
         alert('No se encontró el sensor.');
         return;
@@ -596,6 +598,8 @@ document.getElementById('refreshIcon').addEventListener('click', async() => {
     
     const sensor = await getSensorByAlias(alias, token);
     await cargarCards(sensor);
+
+    await cargarAlertasParaBarra(sensor.nroSensor);
     
     // Simular el clic en el botón "Graficar"
     document.getElementById('btnGraficar').click();
@@ -948,3 +952,41 @@ document.getElementById('btnExportExcel').addEventListener('click', async () => 
         document.getElementById('loading-overlay').style.display = 'none';
     }
 });
+
+
+//Barra de alertas
+async function cargarAlertasParaBarra(nroSensor) {
+    try {
+        const res = await fetch(`/alertas?sensor_id=${nroSensor}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const alertas = await res.json();
+
+       // Contar por criticidad
+        const counts = { critica: 0, informativa: 0, preventiva: 0 };
+        alertas.forEach(a => {
+            let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (crit === 'critica') counts.critica++;
+            else if (crit === 'informativa') counts.informativa++;
+            else if (crit === 'preventiva') counts.preventiva++;
+        });
+
+        // Calcular porcentajes
+        const total = counts.critica + counts.informativa + counts.preventiva;
+        const pctCritica = total ? (counts.critica / total) * 100 : 0;
+        const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
+        const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
+
+        // Actualizar la barra
+        document.querySelector('.bar .critica').style.width = pctCritica + "%";
+        document.querySelector('.bar .informativa').style.width = pctInformativa + "%";
+        document.querySelector('.bar .preventiva').style.width = pctPreventiva + "%";
+
+        // Mostrar porcentajes en la leyenda
+        document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
+        document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
+        document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
+    } catch (error) {
+        console.error("Error al cargar alertas para la barra:", error);
+    }
+}

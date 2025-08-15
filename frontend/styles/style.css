@@ -1159,6 +1159,7 @@ button[disabled] {
   .alert-kpi-card h5 {
     font-weight: 600;
     color: #1e3a8a;
+    font-size: 1.25rem;
   }
 
   .alert-kpi-card .bar {
@@ -2083,9 +2084,9 @@ canvas {
 }
 
 .modal-success-icon {
-    width: 60px;
-    height: 60px;
-    margin: 24px auto 16px auto;
+    width: 150px;
+    height: 150px;
+    margin: 10px auto 10px auto;
     display: block;
 }
 
@@ -2228,4 +2229,49 @@ select {
     align-items: center; /* Alinea el checkbox y el texto */
     gap: 5px; /* Espacio de 5px entre el checkbox y la palabra */
     margin-bottom: 5px; /* Espacio entre cada línea de checkbox */
+}
+
+.alias-tooltip-text {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: 36px;
+    transform: translateX(-50%);
+    background: #f6f8fa;
+    color: #222;
+    border: 1px solid #bcd;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    min-width: 250px;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    z-index: 10;
+    line-height: 1.3;
+    text-align: left;
+    white-space: normal;
+}
+.alias-tooltip-arrow {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 8px;
+    overflow: hidden;
+}
+.alias-tooltip-arrow::after {
+    content: "";
+    display: block;
+    margin: auto;
+    width: 12px;
+    height: 12px;
+    background: #f6f8fa;
+    border-left: 1px solid #bcd;
+    border-bottom: 1px solid #bcd;
+    transform: rotate(45deg) translateY(-6px);
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+.alias-tooltip-icon:hover .alias-tooltip-text,
+.alias-tooltip-icon:focus .alias-tooltip-text {
+    display: block;
 }

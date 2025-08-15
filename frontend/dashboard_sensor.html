@@ -42,8 +42,26 @@
                     <p><strong>Aperturas: </strong><span id="sensor-aperturas"></span></p>
                 </div>
             </div>
-            
         </div>
+
+        <div class="alert-kpi-card" style="margin: 20px 90px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Total de alertas del Sensor</h5>
+            </div>
+
+            <div class="bar">
+                <div class="critica"></div>
+                <div class="informativa"></div>
+                <div class="preventiva"></div>
+            </div>
+
+            <div class="legend-alerts">
+                <span class="critica">Críticas <span id="pct-critica" class="legend-pct"></span></span>
+                <span class="informativa">Informativas <span id="pct-informativa" class="legend-pct"></span></span>
+                <span class="preventiva">Preventivas <span id="pct-preventiva" class="legend-pct"></span></span>
+            </div>
+        </div>
+
         <div id="filterDate" class="filterContainer">
             <label for="desde">Desde</label>
             <input type="date" id="desde" class="datepicker">
@@ -70,6 +88,7 @@
                 <img src="assets/exportar-excel.png" alt="Exportar a Excel" style="width: 1.5em; height: 1.5em; vertical-align: middle;">
             </span>
         </div>
+
         <div id="analisisResultado"
             style="margin-top:20px; font-family: Poppins, sans-serif; border-bottom: 1px solid #e0e0e0 ;padding-bottom: 20px;">
         </div>
@@ -80,6 +99,7 @@
             <div id="averageTemperatureExt" style="margin-top: 20px; text-align: center; font-family: 'Poppins', sans-serif;"></div>
             <canvas id="aperturasChart" style="margin-top: 40px;"></canvas>
         </div>
+
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
