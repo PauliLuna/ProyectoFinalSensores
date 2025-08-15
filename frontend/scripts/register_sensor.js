@@ -117,12 +117,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            let hasError = false;
+
             // Validación: valor mínimo < valor máximo
             const valorMin = parseFloat(document.getElementById('valorMin').value);
             const valorMax = parseFloat(document.getElementById('valorMax').value);
             if (!isNaN(valorMin) && !isNaN(valorMax) && valorMin >= valorMax) {
-                alert("El valor mínimo debe ser menor que el valor máximo.");
-                return;
+                minMaxHelp.style.display = 'block';
+                hasError = true;
+            } else if (minMaxHelp) {
+                minMaxHelp.style.display = 'none';
+            }
+
+            // Validación: alias debe tener formato "algo - algo"
+            const alias = document.getElementById('alias').value.trim();
+            const aliasRegex = /^.+\s*-\s*.+$/;
+            if (!aliasRegex.test(alias)) {
+                aliasHelp.style.display = 'block';
+                hasError = true;
+            } else {
+                aliasHelp.style.display = 'none';
+            }
+
+            if (hasError) {
+                alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+                return; // NO se envía nada al backend si hay errores
             }
 
             // Recopilar asignaciones
@@ -150,10 +169,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert(result.message);
                 const tbody = document.querySelector('.user-assignment-table tbody');
                 if (tbody) tbody.innerHTML = '';
+                if (aliasHelp) aliasHelp.style.display = 'none';
+                if (minMaxHelp) minMaxHelp.style.display = 'none';
+                if (direccionHelp) direccionHelp.style.display = 'none';
                 this.reset();
             } else {
-                alert(result.message);
+                // Validación de error de dirección
+                if (
+                    result.message &&
+                    result.message.includes("La dirección ingresada no es válida")
+                ) {
+                    direccionHelp.textContent = result.message;
+                    direccionHelp.style.display = 'block';
+                    hasError = true;
+                }
+                else if (direccionHelp) {
+                    direccionHelp.style.display = 'none';
+                }
             }
+
+            if (hasError) {
+                alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+                return;
+            }
+
         });
     }
 });
+
+// Oculto por defecto los mensajes de error
+const aliasInput = document.getElementById('alias');
+const aliasHelp = document.getElementById('aliasHelp');
+if (aliasInput && aliasHelp) {
+    aliasHelp.style.display = 'none';
+}
+
+const valorMinInput = document.getElementById('valorMin');
+const valorMaxInput = document.getElementById('valorMax');
+let minMaxHelp = document.getElementById('minMaxHelp');
+if (!minMaxHelp && valorMaxInput) {
+    minMaxHelp.style.display = 'none';
+}
+
+// Dirección: oculto por defecto el mensaje de error
+const direccionInput = document.getElementById('direccion');
+let direccionHelp = document.getElementById('direccionHelp');
+if (!direccionHelp && direccionInput) {
+    direccionHelp.style.display = 'none';
+}
