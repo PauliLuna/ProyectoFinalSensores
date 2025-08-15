@@ -1,13 +1,14 @@
-from flask import Flask, send_from_directory, render_template
+from flask import Flask, send_from_directory, render_template, request, jsonify
 from flask_mail import Mail
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import os
 #from apscheduler.schedulers.background import BackgroundScheduler
-from controllers.alerta_controller import chequear_alertas_criticas
+from controllers.alerta_controller import evaluar_alertas
 
 print("Cargando variables de entorno...")
 load_dotenv()
+ALERT_SECRET_TOKEN = os.getenv("ALERT_SECRET_TOKEN")
 
 print("Cargando Flask...")
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
@@ -31,6 +32,34 @@ print("Configurando MongoDB...")
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 mongo = PyMongo(app)
 app.mongo = mongo
+
+# ------------------------------
+# Endpoint protegido para cron job
+# ------------------------------
+@app.route("/evaluar-alertas", methods=["POST"])
+def evaluar_alertas_endpoint():
+    token = request.headers.get("Authorization")
+    if token != f"Bearer {ALERT_SECRET_TOKEN}":
+        return jsonify({"error": "No autorizado"}), 401
+
+    try:
+        print("🔍 Ejecutando análisis de alertas...")
+
+        empresas = mongo.db.empresas.find({})
+        total_alertas = 0
+
+        for empresa in empresas:
+            id_empresa = empresa["_id"]
+            total_alertas += evaluar_alertas(mongo, id_empresa)
+        
+        print("✅ Análisis completo.")
+        print(f"Total de alertas generadas: {total_alertas}")
+
+        return jsonify({"mensaje": f"Análisis completo. Total de alertas generadas: {total_alertas}"}), 200
+
+    except Exception as e:
+        print(f"❌ Error en evaluar_alertas: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 # Configuración de Flask-Mail
 print("Configurando Mail...")
@@ -76,9 +105,6 @@ app.register_blueprint(alerta_bp)
 
 
 if __name__ == '__main__':
-     # Solo arrancar scheduler en el proceso principal
-    #if not os.environ.get("WERKZEUG_RUN_MAIN"):
-    #    start_scheduler(mongo)
-
+    # Iniciar la aplicación Flask
     print("🚀 Iniciando la aplicación Flask...")
     app.run(debug=True)

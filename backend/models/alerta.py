@@ -42,5 +42,5 @@ def get_alertas_puerta_abierta(mongo, nro_sensor, id_empresa, hoy_inicio):
         "tipoAlerta": "Puerta abierta prolongada",
         "fechaHoraAlerta": {"$gte": hoy_inicio}
     }
-    return list(mongo.db.alertas.count_documents(filtro))
+    return mongo.db.alertas.count_documents(filtro)
 

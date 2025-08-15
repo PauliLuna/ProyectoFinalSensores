@@ -43,10 +43,17 @@ def nueva_alerta(mongo):
     alerta_id = insert_alerta(mongo, data)
     return jsonify({"message": "Alerta creada", "id": str(alerta_id)}), 201
 
-
+def evaluar_alertas(mongo, id_empresa):
+    total = 0
+    total += chequear_alertas_criticas(mongo, id_empresa)
+    total += chequear_alertas_preventivas(mongo, id_empresa)
+    total += chequear_alertas_informativas(mongo, id_empresa)
+    # total += chequear_alertas_seguridad(mongo, id_empresa)
+    return total
 
 
 def chequear_alertas_criticas(mongo, id_empresa):
+    total_alertas_generadas = 0
     sensores = get_all_sensors(mongo)
 
     for sensor in sensores:
@@ -92,13 +99,15 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
             # --- ALERTA OFFLINE ---
             if prev_med:
-                 _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
+                total_alertas_generadas += _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
 
             # --- ALERTA PUERTA ---
             puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
-            puerta_abierta_previa = _alerta_puerta(
+            puerta_abierta_previa, alertas_puerta= _alerta_puerta(
                 mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
             )
+            total_alertas_generadas += alertas_puerta
+
 
             
            # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
@@ -117,15 +126,15 @@ def chequear_alertas_criticas(mongo, id_empresa):
                     en_ciclo = False
                     inicio_ciclo = None
                 else:
-                    en_ciclo, inicio_ciclo = _alerta_ciclo_asincronico(
+                    en_ciclo, inicio_ciclo,  alertas_generadas_ciclo= _alerta_ciclo_asincronico(
                         mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa
                     )
+                    total_alertas_generadas += alertas_generadas_ciclo
 
                 # Alerta temp fuera de rango
-                _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
+                total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
 
-           
-            prev_med = med      
+            prev_med = med    
 
         # 6️⃣ Actualizar checkpoint con la última medición analizada
         last_med = mediciones[-1]
@@ -134,7 +143,8 @@ def chequear_alertas_criticas(mongo, id_empresa):
             {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
             upsert=True
         )
-        return len(mediciones)  # Retorna la cantidad de mediciones analizadas
+
+    return total_alertas_generadas  # Retorna la cantidad de alertas agregadas
 
 
 def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
@@ -228,7 +238,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         print(f"⚠️ ALERTA: sensor {sensor['nroSensor']} sin mediciones por {gap}")
 
         alerta_data = {
-            "idSensor": str(sensor["nroSensor"]),
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Crítica",
             "tipoAlerta": "Sensor offline",
@@ -238,7 +248,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         }
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
-
+        
           # 🔹 Actualizar estado del sensor a inactive
         mongo.db.sensors.update_one(
             {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
@@ -258,13 +268,17 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
                 fecha_actual,
                 "termi-alerta"
             )
+        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+
+    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
     """Detecta puerta abierta prolongada"""
+    alertas_generadas = 0
     if puerta_estado == 1 and puerta_abierta_previa:
         print(f"⚠️ ALERTA: puerta abierta prolongada en sensor {sensor['nroSensor']}")
         alerta_data = {
-            "idSensor": str(sensor["nroSensor"]),
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Crítica",
             "tipoAlerta": "Puerta abierta prolongada",
@@ -274,7 +288,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
         }
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
-
+        alertas_generadas = 1
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
@@ -288,7 +302,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
                 "termi-alerta"
             )
     # Si no se disparó alerta, actualizamos el estado según puerta actual
-    return puerta_estado == 1
+    return puerta_estado == 1, alertas_generadas  # ⚠️ Devuelve el estado y el contador
 
 
 def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa):
@@ -304,7 +318,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {sensor['nroSensor']}."
 
         alerta_data = {
-            "idSensor": str(sensor["nroSensor"]),
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Crítica",
             "tipoAlerta": "Temperatura fuera de rango",
@@ -314,7 +328,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
         }
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
-
+        
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
         if emails:
             _enviar_mail_alerta(
@@ -327,13 +341,16 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
                 fecha_actual,
                 "termi-alerta"
             )
+        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+
+    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 
 def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa):
     """Detecta ciclo de refrigeramiento asincrónico"""
     if en_ciclo and (fecha_actual - inicio_ciclo) >= timedelta(minutes=15):
         alerta_data = {
-            "idSensor": str(sensor["nroSensor"]),
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Crítica",
             "tipoAlerta": "Ciclo de refrigeramiento asincrónico",
@@ -356,19 +373,20 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
                 fecha_actual,
                 "termi-alerta"
             )
-        return False, None  # reset ciclo
-    return en_ciclo, inicio_ciclo
+        return False, None, 1  # reset ciclo, ⚠️ Devuelve el estado, inicio y el contador
+    return en_ciclo, inicio_ciclo, 0 #⚠️ Devuelve el estado, inicio y el contador
 
 
 def chequear_alertas_preventivas(mongo, id_empresa):
     """
     Función principal para analizar las alertas preventivas
     """
+    total_alertas_generadas = 0
     sensores = get_all_sensors(mongo)
 
     for sensor in sensores:
         #Validación de caida de energía
-        _alerta_caida_energia(mongo, sensor, id_empresa)
+        total_alertas_generadas += _alerta_caida_energia(mongo, sensor, id_empresa)
 
         nro_sensor = sensor["nroSensor"]
         valor_min = sensor.get("valorMin")
@@ -396,10 +414,10 @@ def chequear_alertas_preventivas(mongo, id_empresa):
             continue  # Necesitamos varias mediciones para detectar fluctuaciones
 
         # 2️⃣ Analizar fluctuaciones
-        _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
+        total_alertas_generadas += _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
 
         # 3️⃣ Alerta de puerta abierta recurrente
-        _alerta_puerta_recurrente(mongo, sensor, id_empresa)
+        total_alertas_generadas += _alerta_puerta_recurrente(mongo, sensor, id_empresa)
 
         # 3️⃣ Actualizar checkpoint
         mongo.db.alerta_checkpoint.update_one(
@@ -407,7 +425,8 @@ def chequear_alertas_preventivas(mongo, id_empresa):
             {"$set": {"fechaUltimaAnalizada": mediciones[-1]["fechaHoraMed"]}},
             upsert=True
         )
-        return len(mediciones)  # Retorna la cantidad de mediciones analizadas
+    
+    return total_alertas_generadas # Retorna la cantidad de mediciones analizadas
 
 
 
@@ -433,7 +452,7 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
 
         # 2️⃣ Insertar alerta
         alerta_data = {
-            "idSensor": str(nro_sensor),
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Preventiva",
             "tipoAlerta": "Fluctuación de temperatura excesiva",
@@ -457,6 +476,8 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
                 fecha=mediciones[-1]["fechaHoraMed"],
                 termi="termi-inteligente"
             )
+        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
     """
@@ -473,7 +494,7 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
         print(f"⚠️ ALERTA PREVENTIVA: puerta abierta recurrente (sensor {nro_sensor})")
 
         alerta_data = {
-            "idSensor": str(nro_sensor),
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Preventiva",
             "tipoAlerta": "Puerta abierta recurrente",
@@ -499,6 +520,8 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
                 fecha=alerta_data["fechaHoraAlerta"],
                 termi="termi-inteligente"
             )
+        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 def _alerta_caida_energia(mongo, sensor, id_empresa):
     """
@@ -527,7 +550,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
         print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
 
         alerta_data = {
-            "idSensor": str(sensor["nroSensor"]),  # Usamos uno como referencia
+            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
             "criticidad": "Preventiva",
             "tipoAlerta": "Caída de energía eléctrica",
@@ -556,9 +579,12 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
                 fecha=alerta_data["fechaHoraAlerta"],
                 termi="termi-inteligente"
             )
+        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 
 def chequear_alertas_informativas(mongo, id_empresa):
+    total_alertas_generadas = 0
     sensores = get_all_sensors(mongo)
 
     for sensor in sensores:
@@ -605,12 +631,12 @@ def chequear_alertas_informativas(mongo, id_empresa):
             valor_min = sensor.get("valorMin")
             valor_max = sensor.get("valorMax")
 
-            en_ciclo, fecha_inicio_ciclo, temp_max_ciclo = _alerta_inicio_fin_ciclo(
+            en_ciclo, fecha_inicio_ciclo, temp_max_ciclo,alertas_generadas  = _alerta_inicio_fin_ciclo(
                 mongo, sensor, id_empresa, temp, valor_min, valor_max,
                 parametros, en_ciclo, fecha_inicio_ciclo, temp_max_ciclo,
                 fecha_actual, last_date
             )
-
+            total_alertas_generadas += alertas_generadas
             last_date = fecha_actual
 
         # 5️⃣ Actualizar checkpoint
@@ -625,7 +651,8 @@ def chequear_alertas_informativas(mongo, id_empresa):
             }},
             upsert=True
         )
-        return len(mediciones)  # Retorna la cantidad de mediciones analizadas
+        
+    return total_alertas_generadas  # Retorna la cantidad de mediciones analizadas
 
 
 def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_max,
@@ -636,12 +663,14 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
     duracion_max = parametros["duracion_max"]
     incremento_max = parametros["incremento_max"]
 
+    alertas_generadas = 0
+
        # Si ya está en ciclo, verificar interrupciones
     if en_ciclo and last_date and fecha_actual - last_date > timedelta(minutes=10):
         en_ciclo = False
         fecha_inicio_ciclo = None
         temp_max_ciclo = None
-        return en_ciclo, fecha_inicio_ciclo, temp_max_ciclo
+        return en_ciclo, fecha_inicio_ciclo, temp_max_ciclo, alertas_generadas
 
     # Inicio potencial
     if not en_ciclo and temp > valor_max:
@@ -659,7 +688,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
             # Alertas de inicio y fin
 
             alerta_data = {
-                "idSensor": str(sensor["nroSensor"]),
+                "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
                 "idEmpresa": id_empresa,
                 "criticidad": "Informativa",
                 "tipoAlerta": "Inicio de ciclo de descongelamiento",
@@ -681,6 +710,8 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 termi="termi-inteligente"
             )
 
+            alertas_generadas += 1
+
             descripcion_fin = (
                 f"El sensor {sensor['nroSensor']} finalizó el ciclo de descongelamiento. "
                 f"Duración: {duracion:.1f} min."
@@ -691,7 +722,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
 
             # Insertar alerta de fin de ciclo
             alerta_data = {
-                "idSensor": str(sensor["nroSensor"]),
+                "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
                 "idEmpresa": id_empresa,
                 "criticidad": "Informativa",
                 "tipoAlerta": "Fin de ciclo de descongelamiento",
@@ -712,13 +743,14 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 fecha=fecha_actual,
                 termi="termi-inteligente"
             )
+            alertas_generadas += 1
 
         # Resetear variables
         en_ciclo = False
         fecha_inicio_ciclo = None
         temp_max_ciclo = None
 
-    return en_ciclo, fecha_inicio_ciclo, temp_max_ciclo
+    return en_ciclo, fecha_inicio_ciclo, temp_max_ciclo, alertas_generadas
 
 def _obtener_parametros_ciclo(notas):
     if "congelados" in notas:
