@@ -183,7 +183,9 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
         "estadoAsignacion": "Activo"
     })
     emails = []
+    print(f"[DEBUG] Asignaciones encontradas: {asignaciones.count()} para sensor {nro_sensor} con criticidad {criticidad}")
     for a in asignaciones:
+        print(f"[DEBUG] Asignación encontrada: {a}")
         usuario = mongo.db.usuarios.find_one({"_id": ObjectId(a["idUsuario"])})
         if usuario and usuario.get("email"):
             prefs = usuario.get("notificacionesAlertas", {})
@@ -286,7 +288,9 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
 
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+        print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
+            print(f"[DEBUG] Enviando mail de alerta a: {emails}")
             _enviar_mail_alerta(
                 emails,
                 "Sensor offline",
@@ -320,6 +324,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
         print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
         alertas_generadas = 1
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+        print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
                 emails, 
@@ -361,6 +366,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
         print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
         
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+        print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
                 emails, 
@@ -394,6 +400,7 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
         print(f"✅ Alerta ciclo asincrónico en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
         emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+        print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
                 emails, 
@@ -500,6 +507,7 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
 
         # 3️⃣ Notificar
         emails = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
+        print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
                 emails=emails,
@@ -545,6 +553,7 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
 
         # Notificar por mail
         emails = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
+        print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
                 emails=emails,
