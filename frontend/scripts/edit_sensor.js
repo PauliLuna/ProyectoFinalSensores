@@ -237,6 +237,7 @@ async function submitEditSensorForm(e) {
             headers: { 'Authorization': 'Bearer ' + token }
         });
         const result = await response.json();
+        
         if (response.ok) {
             alert("Sensor actualizado correctamente");
             window.location.href = "sensores.html";

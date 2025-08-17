@@ -48,8 +48,11 @@ def evaluar_alertas_endpoint():
         empresas = mongo.db.empresas.find({})
         total_alertas = 0
 
+        print("👥 Empresas encontradas:", empresas.count())
+
         for empresa in empresas:
             id_empresa = empresa["_id"]
+            print(f"Evaluando alertas para empresa: {id_empresa}")
             total_alertas += evaluar_alertas(mongo, id_empresa)
         
         print("✅ Análisis completo.")
