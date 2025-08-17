@@ -54,6 +54,7 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
 def nueva_alerta(mongo):
     data = request.get_json()
     data["idEmpresa"] = session.get("idEmpresa")
+    print(f"[DEBUG] Insertando alerta: {data}")
     alerta_id = insert_alerta(mongo, data)
     return jsonify({"message": "Alerta creada", "id": str(alerta_id)}), 201
 
@@ -69,14 +70,15 @@ def evaluar_alertas(mongo, id_empresa):
 def chequear_alertas_criticas(mongo, id_empresa):
     total_alertas_generadas = 0
     sensores = get_all_sensors_empresa(mongo,id_empresa) # Bug
-    print(f"🔍 Evaluando alertas críticas para empresa: {id_empresa} con {len(sensores)} sensores")
-    
+    print(f"[DEBUG] Empresa {id_empresa} - Sensores encontrados: {len(sensores)}")
+
     if not sensores:
+        print("[DEBUG] No hay sensores para esta empresa.")
         return 0
 
     for sensor in sensores:
         nro_sensor = sensor["nroSensor"]
-
+        print(f"[DEBUG] Procesando sensor: {sensor['nroSensor']}")
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
@@ -94,8 +96,10 @@ def chequear_alertas_criticas(mongo, id_empresa):
             filtro["fechaHoraMed"] = {"$gt": last_date}
 
         mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+        print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
         if not mediciones:
+            print(f"[DEBUG] No hay mediciones nuevas para sensor {sensor['nroSensor']}")
             continue
 
         # Mantener un flag de puerta abierta previa
@@ -106,6 +110,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
         # 3️⃣ Analizar mediciones
         for med in mediciones:
+            print(f"[DEBUG] Medición: {med}")
             fecha_actual = med["fechaHoraMed"]
 
               # 🔹 Actualizar estado del sensor a active
@@ -117,13 +122,16 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
             # --- ALERTA OFFLINE ---
             if prev_med:
-                total_alertas_generadas += _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
+                offline_alertas = _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
+                print(f"[DEBUG] Alertas offline generadas: {offline_alertas}")
+                total_alertas_generadas += offline_alertas
 
             # --- ALERTA PUERTA ---
             puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
             puerta_abierta_previa, alertas_puerta= _alerta_puerta(
                 mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
             )
+            print(f"[DEBUG] Alertas puerta generadas: {alertas_puerta}")
             total_alertas_generadas += alertas_puerta
 
 
@@ -131,7 +139,9 @@ def chequear_alertas_criticas(mongo, id_empresa):
            # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
             try:
                 temp = float(med.get("valorTempInt"))
+                print(f"[DEBUG] Temperatura interna: {temp}")
             except (TypeError, ValueError):
+                print("[DEBUG] Medición sin temperatura válida, se salta.")
                 prev_med = med
                 continue
 
@@ -264,6 +274,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             "mensajeAlerta": "Sensor offline (sin mediciones)",
             "fechaHoraAlerta": fecha_actual
         }
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
         
@@ -304,6 +315,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
             "mensajeAlerta": "Puerta abierta prolongada",
             "fechaHoraAlerta": fecha_actual
         }
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
         alertas_generadas = 1
@@ -344,6 +356,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             "mensajeAlerta": mensaje,
             "fechaHoraAlerta": fecha_actual
         }
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
         
@@ -376,6 +389,7 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
             "mensajeAlerta": "Ciclo asincrónico detectado",
             "fechaHoraAlerta": fecha_actual
         }
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta ciclo asincrónico en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
@@ -480,6 +494,7 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
             "mensajeAlerta": "Fluctuación de temperatura excesiva",
             "fechaHoraAlerta": mediciones[-1]["fechaHoraMed"]
         }
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta preventiva insertada para sensor {nro_sensor} -> ID {alerta_id}")
 
@@ -524,6 +539,7 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
         }
 
         # Insertar alerta
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta preventiva (puerta recurrente) insertada -> ID {alerta_id}")
 
@@ -578,7 +594,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             "mensajeAlerta": "Caída de energía eléctrica",
             "fechaHoraAlerta": datetime.utcnow()
         }
-
+        print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta preventiva (caída energía) insertada -> ID {alerta_id}")
 
@@ -718,6 +734,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 "mensajeAlerta": "Inicio de ciclo de descongelamiento",
                 "fechaHoraAlerta": fecha_inicio_ciclo
             }
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"⚠️Alerta inicio ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_inicio_ciclo}")
 
@@ -752,6 +769,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 "mensajeAlerta": "Fin de ciclo de descongelamiento",
                 "fechaHoraAlerta": fecha_actual
             }
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"⚠️ Alerta fin ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_actual}")
 
