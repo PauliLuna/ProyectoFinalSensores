@@ -178,10 +178,10 @@ def chequear_alertas_criticas(mongo, id_empresa):
 def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
     """Obtiene los emails de los usuarios asignados a un sensor
     y que desean recibir ese tipo de alerta"""
-    asignaciones = mongo.db.asignaciones.find({
+    asignaciones = list(mongo.db.asignaciones.find({
         "idSensor": nro_sensor,
         "estadoAsignacion": "Activo"
-    })
+    }))
     emails = []
     print(f"[DEBUG] Asignaciones encontradas: {len(asignaciones)} para sensor {nro_sensor} con criticidad {criticidad}")
     for a in asignaciones:
