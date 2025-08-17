@@ -109,6 +109,86 @@ async function getDuracionUltimaApertura(sensorId) {
     }
 }
 
+// --- Lógica para termómetros y escala dinámica ---
+function updateThermometers(tempInt, tempExt, notas) {
+    let minRangeInt, maxRangeInt;
+
+    // Obtener el rango de temperatura del campo de notas
+    const regex = /(-?\d+)\s*°C\s*a\s*(-?\d+)\s*°C/;
+    const match = notas.match(regex);
+
+    if (match) {
+        minTemp = parseInt(match[1]);
+        maxTemp = parseInt(match[2]);
+        [minRangeInt, maxRangeInt] = minTemp < maxTemp ? [minTemp, maxTemp] : [maxTemp, minTemp];
+    } else {
+        // Rangos por defecto para temperatura interna
+        minRangeInt = -30;
+        maxRangeInt = 10;
+    }
+
+    // Rangos fijos para temperatura externa
+    const minRangeExt = 5;
+    const maxRangeExt = 40;
+
+    // Función para generar y mostrar la escala del termómetro
+    function setScale(wrapperId, min, max) {
+        const wrapper = document.getElementById(wrapperId);
+        let scaleHtml = '';
+        let numTicks = 4; // Número de marcas de escala
+
+        // Generar las etiquetas de la escala
+        for (let i = 0; i <= numTicks; i++) {
+            const tempValue = min + (max - min) * (i / numTicks);
+            // Usa una altura relativa para cada etiqueta para que se adapte
+            scaleHtml = `<span class="scale-label" style="bottom: ${i * (100 / numTicks)}%">${Math.round(tempValue)}°</span>` + scaleHtml;
+        }
+
+        const scaleContainer = wrapper.querySelector('.thermometer-scale');
+        if (scaleContainer) {
+            scaleContainer.innerHTML = scaleHtml;
+        }
+    }
+
+    // Función auxiliar para actualizar un termómetro individual
+    function setTemperature(elementId, temp, min, max, isInternal) {
+        const mercuryElement = document.getElementById(elementId);
+        if (!mercuryElement) return;
+
+        // Calcular la altura relativa de la barra de mercurio
+        const totalRange = max - min;
+        const normalizedTemp = temp - min;
+        const heightPct = (normalizedTemp / totalRange) * 100;
+        
+        mercuryElement.style.height = `${Math.max(0, Math.min(100, heightPct))}%`;
+        mercuryElement.dataset.value = `${temp}°C`;
+
+        // Lógica de color condicional
+        mercuryElement.classList.remove('normal', 'warning', 'critical', 'external');
+
+        if (isInternal) {
+            let colorClass;
+            if (temp >= minRangeInt && temp <= maxRangeInt) {
+                colorClass = 'normal';
+            } else if ((temp < minRangeInt && temp >= minRangeInt - 2) || (temp > maxRangeInt && temp <= maxRangeInt + 2)) {
+                colorClass = 'warning';
+            } else {
+                colorClass = 'critical';
+            }
+            mercuryElement.classList.add(colorClass);
+        } else {
+            // La temperatura externa siempre es azul
+            mercuryElement.classList.add('external');
+        }
+    }
+    
+    // Llamar a las funciones para cada termómetro con sus propias escalas
+    setScale('termometer-int-wrapper', minRangeInt, maxRangeInt);
+    setScale('termometer-ext-wrapper', minRangeExt, maxRangeExt);
+    setTemperature('temp-int', parseFloat(tempInt), minRangeInt, maxRangeInt, true);
+    setTemperature('temp-ext', parseFloat(tempExt), minRangeExt, maxRangeExt, false);
+}
+
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
@@ -145,7 +225,14 @@ async function cargarCards(sensor){
             document.getElementById('sensor-tempDif').textContent = 
                 difTemp !== 'N/A' ? `${difTemp}°C` : 'N/A';
             document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
+        
+              // Llamar a la función para actualizar los termómetros
+            updateThermometers(intTemp, extTemp, sensor.notas || '');
+        
         } else {
+            // Si no hay mediciones, los termómetros deben reflejarlo.
+            updateThermometers(null, null, '');
+
             document.getElementById('sensor-tempInt').textContent = 'N/A';
             document.getElementById('sensor-tempExt').textContent = 'N/A';
             document.getElementById('sensor-tempDif').textContent = 'N/A';
