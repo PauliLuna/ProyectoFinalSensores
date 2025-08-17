@@ -3,7 +3,7 @@ from models.alerta import get_alertas_filtradas,  insert_alerta, get_alertas_cai
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
-from controllers.sensor_controller import get_all_sensors
+from controllers.sensor_controller import get_all_sensors_all
 
 # Tabla de referencia de parámetros por tipo de cámara
 TIPOS_CAMARA = {
@@ -68,7 +68,7 @@ def evaluar_alertas(mongo, id_empresa):
 
 def chequear_alertas_criticas(mongo, id_empresa):
     total_alertas_generadas = 0
-    sensores = get_all_sensors(mongo)
+    sensores = get_all_sensors_all(mongo) # Bug 
 
     for sensor in sensores:
         nro_sensor = sensor["nroSensor"]
@@ -396,7 +396,7 @@ def chequear_alertas_preventivas(mongo, id_empresa):
     Función principal para analizar las alertas preventivas
     """
     total_alertas_generadas = 0
-    sensores = get_all_sensors(mongo)
+    sensores = get_all_sensors_all(mongo)
 
     for sensor in sensores:
         #Validación de caida de energía
@@ -599,7 +599,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
 
 def chequear_alertas_informativas(mongo, id_empresa):
     total_alertas_generadas = 0
-    sensores = get_all_sensors(mongo)
+    sensores = get_all_sensors_all(mongo)
 
     for sensor in sensores:
         nro_sensor = sensor["nroSensor"]

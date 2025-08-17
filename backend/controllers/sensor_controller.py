@@ -199,6 +199,47 @@ def get_all_sensors(mongo):
         })
     return result
 
+# ALL EMPRESAS
+def get_all_sensors_all(mongo):
+    # Traer todos los sensores, sin filtrar por empresa
+    sensores = list(mongo.db.sensors.find({}))
+    result = []
+    for sensor in sensores:
+        nro_sensor = sensor.get('nroSensor')
+        last_med = mongo.db.mediciones.find_one(
+            {"idSensor": nro_sensor},
+            sort=[("fechaHoraMed", -1)]
+        )
+        alias = sensor.get('alias', '')
+        notas = sensor.get('notas')
+        estado = "ONLINE" if sensor.get('estado') == "active" else "OFFLINE"
+        temp_interna = last_med.get('valorTempInt') if last_med else None
+        temp_externa = last_med.get('valorTempExt') if last_med else None
+        valor_min = sensor.get('valorMin')
+        valor_max = sensor.get('valorMax')
+        latitud = sensor.get('latitud')
+        longitud = sensor.get('longitud')
+        en_rango = (
+            temp_interna is not None and valor_min is not None and valor_max is not None
+            and valor_min <= temp_interna <= valor_max
+        )
+        result.append({
+            "nroSensor": nro_sensor,
+            "alias": alias,
+            "notas": notas,
+            "estado": estado,
+            "temperaturaInterna": temp_interna,
+            "temperaturaExterna": temp_externa,
+            "enRango": en_rango,
+            "latitud": latitud,
+            "longitud": longitud,
+            "valorMin": valor_min,
+            "valorMax": valor_max,
+            "direccion": sensor.get('direccion'),
+            "idEmpresa": sensor.get('idEmpresa')
+        })
+    return result
+
 def get_sensor(mongo, sensor_id):
     try:
         sensor = get_sensor_with_assignments(mongo, sensor_id)
