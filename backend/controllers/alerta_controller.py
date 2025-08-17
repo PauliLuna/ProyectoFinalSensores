@@ -183,7 +183,7 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
         "estadoAsignacion": "Activo"
     })
     emails = []
-    print(f"[DEBUG] Asignaciones encontradas: {asignaciones.count_documents({})} para sensor {nro_sensor} con criticidad {criticidad}")
+    print(f"[DEBUG] Asignaciones encontradas: {len(asignaciones)} para sensor {nro_sensor} con criticidad {criticidad}")
     for a in asignaciones:
         print(f"[DEBUG] Asignación encontrada: {a}")
         usuario = mongo.db.usuarios.find_one({"_id": ObjectId(a["idUsuario"])})
