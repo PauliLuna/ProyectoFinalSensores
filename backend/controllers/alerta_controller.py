@@ -69,6 +69,8 @@ def evaluar_alertas(mongo, id_empresa):
 def chequear_alertas_criticas(mongo, id_empresa):
     total_alertas_generadas = 0
     sensores = get_all_sensors_empresa(mongo,id_empresa) # Bug
+    print(f"🔍 Evaluando alertas críticas para empresa: {id_empresa} con {len(sensores)} sensores")
+    
     if not sensores:
         return 0
 
