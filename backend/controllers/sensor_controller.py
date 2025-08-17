@@ -200,9 +200,9 @@ def get_all_sensors(mongo):
     return result
 
 # ALL EMPRESAS
-def get_all_sensors_all(mongo):
-    # Traer todos los sensores, sin filtrar por empresa
-    sensores = list(mongo.db.sensors.find({}))
+def get_all_sensors_empresa(mongo, id_empresa):
+    # Traer todos los sensores de la empresa
+    sensores = list(mongo.db.sensors.find({"idEmpresa": id_empresa}))
     result = []
     for sensor in sensores:
         nro_sensor = sensor.get('nroSensor')

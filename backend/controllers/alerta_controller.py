@@ -3,7 +3,7 @@ from models.alerta import get_alertas_filtradas,  insert_alerta, get_alertas_cai
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
-from controllers.sensor_controller import get_all_sensors_all
+from controllers.sensor_controller import get_all_sensors_empresa
 
 # Tabla de referencia de parámetros por tipo de cámara
 TIPOS_CAMARA = {
@@ -68,7 +68,9 @@ def evaluar_alertas(mongo, id_empresa):
 
 def chequear_alertas_criticas(mongo, id_empresa):
     total_alertas_generadas = 0
-    sensores = get_all_sensors_all(mongo) # Bug 
+    sensores = get_all_sensors_empresa(mongo,id_empresa) # Bug
+    if not sensores:
+        return 0
 
     for sensor in sensores:
         nro_sensor = sensor["nroSensor"]
@@ -396,7 +398,9 @@ def chequear_alertas_preventivas(mongo, id_empresa):
     Función principal para analizar las alertas preventivas
     """
     total_alertas_generadas = 0
-    sensores = get_all_sensors_all(mongo)
+    sensores = get_all_sensors_empresa(mongo,id_empresa)
+    if not sensores:
+        return 0
 
     for sensor in sensores:
         #Validación de caida de energía
@@ -452,7 +456,7 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
     # Calcular min y max de las últimas mediciones
     temps = [float(m["valorTempInt"]) for m in mediciones if m.get("valorTempInt") is not None]
     if not temps:
-        return
+        return 0
 
     temp_max = max(temps)
     temp_min = min(temps)
@@ -544,7 +548,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     """
     direccion = sensor.get("direccion")
     if not direccion:
-        return
+        return 0
 
     # Buscar sensores de la misma dirección
     sensores_misma_dir = list(mongo.db.sensors.find({
@@ -553,13 +557,13 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     }))
 
     if not sensores_misma_dir:
-        return
+        return 0
 
     # Verificar si todos están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
         existe = get_alertas_caida_de_energia(mongo, id_empresa, direccion)
         if existe:
-            return
+            return 0
     
         print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
 
@@ -599,7 +603,9 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
 
 def chequear_alertas_informativas(mongo, id_empresa):
     total_alertas_generadas = 0
-    sensores = get_all_sensors_all(mongo)
+    sensores = get_all_sensors_empresa(mongo,id_empresa)
+    if not sensores:
+        return 0
 
     for sensor in sensores:
         nro_sensor = sensor["nroSensor"]
