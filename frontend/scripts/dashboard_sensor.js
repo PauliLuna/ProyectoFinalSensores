@@ -118,29 +118,32 @@ function updateThermometers(tempInt, tempExt, notas) {
     const match = notas.match(regex);
 
     if (match) {
-        minTemp = parseInt(match[1]);
-        maxTemp = parseInt(match[2]);
+        let minTemp = parseInt(match[1]);
+        let maxTemp = parseInt(match[2]);
         [minRangeInt, maxRangeInt] = minTemp < maxTemp ? [minTemp, maxTemp] : [maxTemp, minTemp];
+        
+        // ⚠️ Aplicar tu lógica: expandir el rango en 5 grados
+        minRangeInt -= 5;
+        maxRangeInt += 5;
     } else {
-        // Rangos por defecto para temperatura interna
+        // Rangos por defecto para temperatura interna si no hay notas
         minRangeInt = -30;
         maxRangeInt = 10;
     }
 
-    // Rangos fijos para temperatura externa
-    const minRangeExt = 5;
-    const maxRangeExt = 40;
+    // Rangos fijos para temperatura externa, también expandidos para mejor visualización
+    const minRangeExt = 0;
+    const maxRangeExt = 45;
 
     // Función para generar y mostrar la escala del termómetro
     function setScale(wrapperId, min, max) {
         const wrapper = document.getElementById(wrapperId);
         let scaleHtml = '';
-        let numTicks = 4; // Número de marcas de escala
+        const numTicks = 4; // Número de marcas de escala
+        const step = (max - min) / numTicks;
 
-        // Generar las etiquetas de la escala
         for (let i = 0; i <= numTicks; i++) {
-            const tempValue = min + (max - min) * (i / numTicks);
-            // Usa una altura relativa para cada etiqueta para que se adapte
+            const tempValue = min + step * i;
             scaleHtml = `<span class="scale-label" style="bottom: ${i * (100 / numTicks)}%">${Math.round(tempValue)}°</span>` + scaleHtml;
         }
 
@@ -158,7 +161,10 @@ function updateThermometers(tempInt, tempExt, notas) {
         // Calcular la altura relativa de la barra de mercurio
         const totalRange = max - min;
         const normalizedTemp = temp - min;
-        const heightPct = (normalizedTemp / totalRange) * 100;
+
+        // ⚠️ Ajuste de la fórmula para que el llenado sea más visual
+
+        const heightPct = ((normalizedTemp / totalRange) * 100) ;
         
         mercuryElement.style.height = `${Math.max(0, Math.min(100, heightPct))}%`;
         mercuryElement.dataset.value = `${temp}°C`;
@@ -168,9 +174,13 @@ function updateThermometers(tempInt, tempExt, notas) {
 
         if (isInternal) {
             let colorClass;
-            if (temp >= minRangeInt && temp <= maxRangeInt) {
+            // La lógica de color usa el rango de las notas
+            const minNota = min + 5;
+            const maxNota = max - 5;
+
+            if (temp >= minNota && temp <= maxNota) {
                 colorClass = 'normal';
-            } else if ((temp < minRangeInt && temp >= minRangeInt - 2) || (temp > maxRangeInt && temp <= maxRangeInt + 2)) {
+            } else if ((temp >= minNota - 2 && temp < minNota) || (temp > maxNota && temp <= maxNota + 2)) {
                 colorClass = 'warning';
             } else {
                 colorClass = 'critical';
