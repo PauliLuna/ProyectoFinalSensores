@@ -63,13 +63,12 @@ def evaluar_alertas(mongo, id_empresa):
     total += chequear_alertas_criticas(mongo, id_empresa)
     total += chequear_alertas_preventivas(mongo, id_empresa)
     total += chequear_alertas_informativas(mongo, id_empresa)
-    # total += chequear_alertas_seguridad(mongo, id_empresa)
     return total
 
 
 def chequear_alertas_criticas(mongo, id_empresa):
     total_alertas_generadas = 0
-    sensores = get_all_sensors_empresa(mongo,id_empresa) # Bug
+    sensores = get_all_sensors_empresa(mongo,id_empresa)
     print(f"[DEBUG] Empresa {id_empresa} - Sensores encontrados: {len(sensores)}")
 
     if not sensores:
@@ -133,8 +132,6 @@ def chequear_alertas_criticas(mongo, id_empresa):
             )
             print(f"[DEBUG] Alertas puerta generadas: {alertas_puerta}")
             total_alertas_generadas += alertas_puerta
-
-
             
            # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
             try:
@@ -187,8 +184,10 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
     for a in asignaciones:
         print(f"[DEBUG] Asignación encontrada: {a}")
         usuario = mongo.db.usuarios.find_one({"_id": ObjectId(a["idUsuario"])})
+        print(f"[DEBUG] Usuario encontrado: {usuario}")
         if usuario and usuario.get("email"):
             prefs = usuario.get("notificacionesAlertas", {})
+            print(f"[DEBUG] Preferencias de notificación: {prefs}")
             # criticidad puede ser "Crítica", "Preventiva", etc.
             crit_key = criticidad.lower().replace("í", "i").replace("á", "a")
             if prefs.get(crit_key, False):
