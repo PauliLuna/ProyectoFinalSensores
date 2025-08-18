@@ -219,6 +219,8 @@ async function cargarCards(sensor){
             getCantidadAperturas(sensorId)
         ]);
 
+
+
         // Última medición
         if (ultimaMed && Object.keys(ultimaMed).length > 0) {
             const intTemp = ultimaMed.valorTempInt ?? null;
@@ -238,6 +240,17 @@ async function cargarCards(sensor){
         
               // Llamar a la función para actualizar los termómetros
             updateThermometers(intTemp, extTemp, sensor.notas || '');
+
+                    // ⚠️ Lógica para la fecha y hora. Se ejecuta siempre.
+            if (ultimaMed && ultimaMed.fechaMedicion) {
+                const fechaHora = new Date(ultimaMed.fechaMedicion);
+                const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
+                const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
+                document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+            } else {
+                // Se muestra N/A si no hay datos de última medición
+                document.getElementById('last-measurement-time').textContent = 'N/A';
+            }
         
         } else {
             // Si no hay mediciones, los termómetros deben reflejarlo.

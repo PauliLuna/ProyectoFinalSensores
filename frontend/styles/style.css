@@ -2249,7 +2249,41 @@ select {
     font-size: 0.95rem;
 }
 
+/* Contenedor principal para los detalles de la cámara */
+.camera-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea todos los elementos hijos a la izquierda */
+    gap: 15px; /* Espacio vertical entre los renglones */
+    width: 100%;
+}
 
+/* Estilo para los títulos en negrita dentro de la sección de la cámara */
+.camera-details strong {
+    font-weight: 600;
+    color: #4a4a4a;
+    font-size: 0.95rem;
+}
+
+/* Estilo para los párrafos de datos dentro de la sección de la cámara */
+.camera-details p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Estilo para el renglón de la última medición (destacado) */
+.last-measurement {
+    font-weight: bold;
+    color: #007bff; /* Un color azul para que destaque */
+    background-color: #f0f8ff; /* Un fondo sutil para que se vea diferente */
+    padding: 8px 10px;
+    border-radius: 5px;
+    margin-top: 40px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: calc(100% - 20px); /* Ajuste para el padding */
+}
 
 .data-grid-container {
     display: flex;
