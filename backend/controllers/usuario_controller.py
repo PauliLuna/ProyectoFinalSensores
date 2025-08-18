@@ -2,9 +2,9 @@ from flask import request, jsonify, session, current_app
 from models.usuario import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.codigo_invitacion import verificar_codigo_invitacion
-from controllers.alerta_controller import chequear_alertas_criticas, chequear_alertas_preventivas, chequear_alertas_informativas
 from flask_mail import Message
 import datetime, secrets, random, string, re, jwt, os
+from controllers.alerta_controller import insert_alerta
 
 
 SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
@@ -210,11 +210,133 @@ def complete_registration_controller(mongo):
         "user_email": email
     }), 200
 
+def _obtener_emails_admins(mongo, empresa, criticidad):
+    """Obtiene los emails de los usuarios asignados a un sensor
+    y que desean recibir ese tipo de alerta"""
+    usuarios = list(mongo.db.usuarios.find({
+        "idEmpresa": empresa,
+        "roles": "superAdmin",
+        "estado": "Active"
+    }))
+    emails = []
+    print(f"[DEBUG] Usuarios encontrados: {len(usuarios)} para empresa {empresa} con criticidad {criticidad}")
+    for u in usuarios:
+        print(f"[DEBUG] Usuario encontrada: {u}")
+        prefs = u.get("notificacionesAlertas", {})
+        print(f"[DEBUG] Preferencias de notificación: {prefs}")
+        crit_key = criticidad.lower()
+        if prefs.get(crit_key, False):
+            emails.append(u["email"])
+    return emails
+
+def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, usuario, mensaje, fecha, termi):
+    mail = current_app.mail
+    subject = f"[ALERTA] {tipo_alerta} - Usuario: {usuario}"
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; max-width: 600px; margin: auto; }}
+        h2 {{ color: #ef4444; }}
+        .info {{ margin-bottom: 10px; }}
+        .label {{ font-weight: bold; }}
+        .message {{ margin-top: 15px; padding: 12px; background-color: #fee2e2; border-left: 5px solid #ef4444; border-radius: 4px; }}
+        .image-footer {{ text-align: center; margin-top: 20px; }} /* Estilo para centrar la imagen */
+        .image-footer img {{ width: 200px; height: 200px; display: block; margin: 0 auto; }} /* Asegura que la imagen sea responsiva y centrada */
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <h2>⚠️ Alerta en SensIA</h2>
+        <div class="info">
+            <span class="label">Usuario:</span> {usuario}
+        </div>
+        <div class="info">
+            <span class="label">Tipo:</span> {tipo_alerta}
+        </div>
+        <div class="info">
+            <span class="label">Descripción:</span> {descripcion}
+        </div>
+        <div class="info">
+            <span class="label">Fecha y hora:</span> {fecha}
+        </div>
+        <div class="info">
+            <span class="label">Criticidad:</span> {criticidad}
+        </div>
+        <div class="message">
+            {mensaje}
+        </div>
+        <p>Por favor, revise la situación lo antes posible.</p>
+        <p>Gracias por usar <strong>SensIA</strong>.</p>
+
+        <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
+        📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
+         <!-- Imagen agregada aquí -->
+        <div class="image-footer">
+            <img src="https://sensia.onrender.com/assets/{termi}.png">
+        </div>
+    </div>
+    </body>
+    </html>
+    """
+    msg = Message(
+        subject=subject, 
+        sender=current_app.config['MAIL_USERNAME'], 
+        recipients=emails,
+        html=html_template
+    )
+    try:
+        mail.send(msg)
+        print(f"✅ Mail enviado a {emails}")
+    except Exception as e:
+        print(f"❌ Error enviando mail de alerta: {e}")
+
+
 def login_usuario_controller(mongo):
     email = request.form.get('email').strip().lower()
     password = request.form.get('password')
     usuario = get_usuario_by_email(mongo, email)
     now = datetime.datetime.utcnow()
+
+    # --- ALERTA DE INICIO DE SESIÓN NOCTURNO ---
+    # Si la hora UTC-3 (Argentina) está entre 22 y 6, genera alerta y manda mail
+    hora_local_dt = now - datetime.timedelta(hours=3) # Obtiene el objeto datetime local
+    
+    # Extrae solo la hora para la condición de nocturnidad
+    hora_solo = hora_local_dt.hour
+    if 0 <= hora_solo < 6 or hora_solo >= 22:
+        
+        # ALERTA DE ACCESO NOCTURNO
+        alerta_data = {
+            "tipoAlerta": "Acceso Nocturno",
+            "criticidad": "Seguridad",
+            "descripcion": f"Inicio de sesión nocturno detectado para el usuario {email} a las {hora_local_dt.strftime('%H:%M')}:00.",
+            "fecha": now,
+            "idUsuario": str(usuario['_id']) if usuario else None,
+            "idEmpresa": usuario.get('idEmpresa') if usuario else None
+        }
+        # Insertar alerta en la base
+        insert_alerta(mongo, alerta_data)
+        # Obtener emails de admins de la empresa
+        emails_admins = []
+        if usuario and usuario.get('idEmpresa'):
+            emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa') ,"seguridad")
+
+        # Enviar mail
+        if emails_admins:
+            _enviar_mail_alerta_seguridad(
+                emails_admins,
+                tipo_alerta="Inicio de sesión nocturno",
+                descripcion=alerta_data["descripcion"],
+                criticidad="Seguridad",
+                usuario= email,
+                mensaje=alerta_data["descripcion"],
+                fecha=hora_local_dt.strftime('%H:%M'),
+                termi="termi-alerta"
+            )
 
     if usuario:
         # Verifica si está bloqueado
@@ -240,10 +362,6 @@ def login_usuario_controller(mongo):
                 {"_id": usuario['_id']},
                 {"$set": {"fechaUltimoAcceso": datetime.datetime.now(),"loginAttempts": 0, "lockUntil": None}}
             )
-            # CHEQUEO DE ALERTAS CRÍTICAS
-            chequear_alertas_criticas(mongo, usuario.get('idEmpresa'))
-            chequear_alertas_preventivas(mongo, usuario.get('idEmpresa'))
-            chequear_alertas_informativas(mongo, usuario.get('idEmpresa'))
 
             payload = {
                 "user_id": str(usuario['_id']),
@@ -258,10 +376,40 @@ def login_usuario_controller(mongo):
             update = {"loginAttempts": attempts}
             if attempts >= 3:
                 update["lockUntil"] = now + datetime.timedelta(minutes=30)
+                
+                # ALERTA DE BLOQUEO DE USUARIO 
+                alerta_data = {
+                    "tipoAlerta": "Bloqueo de Usuario",
+                    "criticidad": "Seguridad",
+                    "descripcion": f"El usuario {email} ha sido bloqueado por 3 intentos fallidos de inicio de sesión.",
+                    "fecha": now,
+                    "idUsuario": str(usuario['_id']),
+                    "idEmpresa": usuario.get('idEmpresa')
+                }
+                insert_alerta(mongo, alerta_data) # Inserta la alerta
+
+                # Obtener emails de admins para notificar el bloqueo
+                emails_admins = []
+                if usuario and usuario.get('idEmpresa'):
+                    emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa'), "seguridad")
+
+                hora_local_dt = now - datetime.timedelta(hours=3)  # Ajusta a tu zona
+                if emails_admins:
+                    _enviar_mail_alerta_seguridad(
+                        emails_admins,
+                        tipo_alerta="Bloqueo de usuario",
+                        descripcion=alerta_data["descripcion"],
+                        criticidad="Seguridad",
+                        usuario=email,
+                        mensaje=alerta_data["descripcion"],
+                        fecha=hora_local_dt.strftime('%H:%M'),  # Ajusta a tu zona,
+                        termi="termi-alerta"
+                    )
             mongo.db.usuarios.update_one(
                 {"_id": usuario["_id"]},
                 {"$set": update}
             )
+    
             if attempts >= 3:
                 return jsonify({"error": "Usuario bloqueado por intentos fallidos. Intenta nuevamente en 30 minutos."}), 403
             else:

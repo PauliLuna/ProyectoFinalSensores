@@ -49,7 +49,7 @@ def evaluar_alertas_endpoint():
         total_alertas = 0
 
         for empresa in empresas:
-            id_empresa = empresa["_id"]
+            id_empresa = str(empresa["_id"])
             total_alertas += evaluar_alertas(mongo, id_empresa)
         
         print("✅ Análisis completo.")
