@@ -66,19 +66,23 @@
             <div class="half-width-container left-half">
                 <div class="data-block condition-block" style="max-height: 215px;" >
                     <h5 class="block-title">Condición Actual</h5>
-                    <div class="data-group">
+                    <div class="sensor-details">
                         <p><strong>Número de Sensor:</strong> <span id="sensor-nro"></span></p>
-                        <p><strong>Condición:</strong> <span id="sensor-alerta"></span></p>
+
+                        <div class="status-row">
+                            <p><strong>Condición:</strong> <span id="sensor-alerta" style="font-size: 1.10rem;"></span></p>
+                            <p><strong>Estado:</strong> <span id="sensor-estado"></span></p>
+                        </div>
+
                         <p><strong>Notas:</strong> <span id="sensor-notas"></span></p>
-                        <p><strong>Estado:</strong> <span id="sensor-estado"></span></p>
                     </div>
                 </div>
 
                 <div class="alert-kpi-card">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Total de alertas del Sensor</h5>
+                        <h5 class="mb-0" style="margin-bottom: 10px;">Total de alertas del Sensor</h5>
                     </div>
-                    <div class="bar">
+                    <div class="bar" style="margin-bottom: 20px;">
                         <div class="critica"></div>
                         <div class="informativa"></div>
                         <div class="preventiva"></div>

@@ -2216,7 +2216,41 @@ select {
 
 /* Estilos para el DASHBOARD_SENSOR */
 /* --- Nuevo estilo para el contenedor principal de datos --- */
-/* Nuevo contenedor principal para todo el dashboard */
+
+/* Estilo para el contenedor principal de los detalles */
+.sensor-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea todos los elementos hijos a la izquierda */
+    gap: 15px; /* Espacio vertical entre los renglones principales */
+    width: 100%;
+}
+
+/* Estilo para el renglón de Condición y Estado */
+.status-row {
+    display: flex;
+    gap: 90px; /* Ajusta este valor para controlar el espacio entre Condición y Estado */
+    align-items: center; /* Alinea los elementos verticalmente */
+    width: 100%;
+}
+
+/* Estilo para todos los párrafos dentro de .sensor-details */
+.sensor-details p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Estilo para los títulos en negrita */
+.sensor-details strong {
+    font-weight: 600;
+    color: #4a4a4a;
+    font-size: 0.95rem;
+}
+
+
+
 .data-grid-container {
     display: flex;
     justify-content: space-between;
