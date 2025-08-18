@@ -415,6 +415,41 @@ async function cargarPiePermisosUsuarios() {
     });
 }
 
+function addBarTooltips(counts) {
+    const bar = document.querySelector('.bar');
+    if (!bar) return;
+
+    // Elimina tooltips previos
+    document.querySelectorAll('.bar-tooltip').forEach(t => t.remove());
+
+    ['critica', 'informativa', 'preventiva'].forEach(tipo => {
+        const el = bar.querySelector('.' + tipo);
+        if (!el) return;
+
+        el.addEventListener('mouseenter', function(e) {
+            let tooltip = document.createElement('div');
+            tooltip.className = 'bar-tooltip';
+            tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
+            document.body.appendChild(tooltip);
+
+            // Posiciona el tooltip cerca del mouse
+            const rect = el.getBoundingClientRect();
+            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = (rect.top - 32) + 'px';
+            tooltip.style.opacity = 1;
+            el._barTooltip = tooltip;
+        });
+
+        el.addEventListener('mouseleave', function(e) {
+            if (el._barTooltip) {
+                el._barTooltip.remove();
+                el._barTooltip = null;
+            }
+        });
+    });
+}
+
+
 async function cargarAlertasParaBarra() {
     try {
         const res = await fetch('/alertas', {
@@ -446,6 +481,10 @@ async function cargarAlertasParaBarra() {
         document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
         document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
         document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
+   
+        // Agregar tooltips
+        addBarTooltips(counts);
+   
     } catch (error) {
         console.error("Error al cargar alertas para la barra:", error);
     }

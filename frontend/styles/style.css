@@ -1185,6 +1185,23 @@ button[disabled] {
     width: 30%;
   }
 
+  .bar-tooltip {
+    position: absolute;
+    background: #1D3557;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.bar .critica, .bar .informativa, .bar .preventiva {
+    position: relative;
+}
+
   .legend-alerts {
     display: flex;
     justify-content: space-between;
