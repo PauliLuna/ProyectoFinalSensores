@@ -303,13 +303,17 @@ def login_usuario_controller(mongo):
 
     # --- ALERTA DE INICIO DE SESIÓN NOCTURNO ---
     # Si la hora UTC-3 (Argentina) está entre 22 y 6, genera alerta y manda mail
-    hora_local = (now - datetime.timedelta(hours=3)).hour  # Ajusta a tu zona
-    if 0 <= hora_local < 6 or hora_local >= 22:
-        # Armar datos de alerta
+    hora_local_dt = now - datetime.timedelta(hours=3) # Obtiene el objeto datetime local
+    
+    # Extrae solo la hora para la condición de nocturnidad
+    hora_solo = hora_local_dt.hour
+    if 0 <= hora_solo < 6 or hora_solo >= 22:
+        
+        # ALERTA DE ACCESO NOCTURNO
         alerta_data = {
             "tipoAlerta": "Acceso Nocturno",
             "criticidad": "Seguridad",
-            "descripcion": f"Inicio de sesión nocturno detectado para el usuario {email} a las {hora_local:02d}:00.",
+            "descripcion": f"Inicio de sesión nocturno detectado para el usuario {email} a las {hora_local_dt.strftime('%H:%M')}:00.",
             "fecha": now,
             "idUsuario": str(usuario['_id']) if usuario else None,
             "idEmpresa": usuario.get('idEmpresa') if usuario else None
@@ -317,20 +321,20 @@ def login_usuario_controller(mongo):
         # Insertar alerta en la base
         insert_alerta(mongo, alerta_data)
         # Obtener emails de admins de la empresa
-        emails = []
+        emails_admins = []
         if usuario and usuario.get('idEmpresa'):
-            emails = _obtener_emails_admins(mongo, usuario.get('idEmpresa') ,"seguridad")
+            emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa') ,"seguridad")
 
         # Enviar mail
-        if emails:
+        if emails_admins:
             _enviar_mail_alerta_seguridad(
-                emails,
+                emails_admins,
                 tipo_alerta="Inicio de sesión nocturno",
                 descripcion=alerta_data["descripcion"],
                 criticidad="Seguridad",
                 usuario= email,
                 mensaje=alerta_data["descripcion"],
-                fecha=hora_local,
+                fecha=hora_local_dt.strftime('%H:%M'),
                 termi="termi-alerta"
             )
 
@@ -372,10 +376,40 @@ def login_usuario_controller(mongo):
             update = {"loginAttempts": attempts}
             if attempts >= 3:
                 update["lockUntil"] = now + datetime.timedelta(minutes=30)
+                
+                # ALERTA DE BLOQUEO DE USUARIO 
+                alerta_data = {
+                    "tipoAlerta": "Bloqueo de Usuario",
+                    "criticidad": "Seguridad",
+                    "descripcion": f"El usuario {email} ha sido bloqueado por 3 intentos fallidos de inicio de sesión.",
+                    "fecha": now,
+                    "idUsuario": str(usuario['_id']),
+                    "idEmpresa": usuario.get('idEmpresa')
+                }
+                insert_alerta(mongo, alerta_data) # Inserta la alerta
+
+                # Obtener emails de admins para notificar el bloqueo
+                emails_admins = []
+                if usuario and usuario.get('idEmpresa'):
+                    emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa'), "seguridad")
+
+                hora_local_dt = now - datetime.timedelta(hours=3)  # Ajusta a tu zona
+                if emails_admins:
+                    _enviar_mail_alerta_seguridad(
+                        emails_admins,
+                        tipo_alerta="Bloqueo de usuario",
+                        descripcion=alerta_data["descripcion"],
+                        criticidad="Seguridad",
+                        usuario=email,
+                        mensaje=alerta_data["descripcion"],
+                        fecha=hora_local_dt.strftime('%H:%M'),  # Ajusta a tu zona,
+                        termi="termi-alerta"
+                    )
             mongo.db.usuarios.update_one(
                 {"_id": usuario["_id"]},
                 {"$set": update}
             )
+    
             if attempts >= 3:
                 return jsonify({"error": "Usuario bloqueado por intentos fallidos. Intenta nuevamente en 30 minutos."}), 403
             else:
