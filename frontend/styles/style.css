@@ -2287,7 +2287,7 @@ select {
 .thermometer {
     position: relative;
     width: 30px;
-    height: 150px; /* Mantienes la altura de 150px que te funciona */
+    height: 180px; /* Mantienes la altura de 150px que te funciona */
     background: linear-gradient(to bottom, #f1f1f1 50%, #e0e0e0 100%);
     border-radius: 50% 50% 50px 50px;
     border: 2px solid #adb5bd;
@@ -2303,8 +2303,9 @@ select {
     top: 0;
     left: -25px; /* Ajustar posición para que la escala no esté tan pegada */
     width: 25px;
-    height: 100%; /* La altura del 100% es clave para que se ajuste al termómetro */
+    height: 60%; /* La altura del 100% es clave para que se ajuste al termómetro */
     z-index: 1;
+    transform: translateY(35px);
 }
 
 .scale-label {
