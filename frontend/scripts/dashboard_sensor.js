@@ -248,13 +248,15 @@ async function cargarCards(sensor){
             document.getElementById('sensor-tempDif').textContent = 
                 difTemp !== 'N/A' ? `${difTemp}°C` : 'N/A';
             document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
-        
+            
+            console.log('Actualizando termómetros con:',ultimaMed);
+
               // Llamar a la función para actualizar los termómetros
             updateThermometers(intTemp, extTemp, sensor.notas || '');
 
                     // ⚠️ Lógica para la fecha y hora. Se ejecuta siempre.
-            if (ultimaMed && ultimaMed.fechaMedicion) {
-                const fechaHora = parseFecha(ultimaMed.fechaMedicion);
+            if (ultimaMed && ultimaMed.fechaHoraMed) {
+                const fechaHora = parseFecha(ultimaMed.fechaHoraMed);
                 if (fechaHora && !isNaN(fechaHora)) {
                     const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
                     const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
@@ -731,7 +733,7 @@ document.getElementById('refreshIcon').addEventListener('click', async() => {
 
         // Chequear si hay nuevas mediciones
         const ultimaMed = await getUltimaMedicion(sensor.nroSensor);
-        if (!ultimaMed || Object.keys(ultimaMed).length === 0) {
+        if (!ultimaMed || !ultimaMed.fechaHoraMed) {
             alert('No hay nuevas mediciones para este sensor.');
         } else {
             alert('Datos actualizados correctamente.');
