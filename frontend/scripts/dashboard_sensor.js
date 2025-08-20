@@ -199,6 +199,17 @@ function updateThermometers(tempInt, tempExt, notas) {
     setTemperature('temp-ext', parseFloat(tempExt), minRangeExt, maxRangeExt, false);
 }
 
+function parseFecha(fecha) {
+    if (!fecha) return null;
+    if (typeof fecha === 'string') {
+        if (fecha.includes('T')) return new Date(fecha);
+        if (!isNaN(fecha)) return new Date(Number(fecha));
+    }
+    if (fecha instanceof Date) return fecha;
+    if (fecha.$date) return new Date(fecha.$date);
+    return new Date(fecha);
+}
+
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
@@ -243,12 +254,15 @@ async function cargarCards(sensor){
 
                     // ⚠️ Lógica para la fecha y hora. Se ejecuta siempre.
             if (ultimaMed && ultimaMed.fechaMedicion) {
-                const fechaHora = new Date(ultimaMed.fechaMedicion);
-                const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
-                const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
-                document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+                const fechaHora = parseFecha(ultimaMed.fechaMedicion);
+                if (fechaHora && !isNaN(fechaHora)) {
+                    const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
+                    const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
+                    document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+                } else {
+                    document.getElementById('last-measurement-time').textContent = 'N/A';
+                }
             } else {
-                // Se muestra N/A si no hay datos de última medición
                 document.getElementById('last-measurement-time').textContent = 'N/A';
             }
         
@@ -705,14 +719,29 @@ document.getElementById('hasta').addEventListener('change', () => {
 
 // Botón Refrescar
 document.getElementById('refreshIcon').addEventListener('click', async() => {
-    
-    const sensor = await getSensorByAlias(alias, token);
-    await cargarCards(sensor);
+    document.getElementById('loading-overlay').style.display = 'flex';
+    try {
+        const sensor = await getSensorByAlias(alias, token);
+        await cargarCards(sensor);
 
-    await cargarAlertasParaBarra(sensor.nroSensor);
-    
-    // Simular el clic en el botón "Graficar"
-    document.getElementById('btnGraficar').click();
+        await cargarAlertasParaBarra(sensor.nroSensor);
+
+        // Simular el clic en el botón "Graficar"
+        document.getElementById('btnGraficar').click();
+
+        // Chequear si hay nuevas mediciones
+        const ultimaMed = await getUltimaMedicion(sensor.nroSensor);
+        if (!ultimaMed || Object.keys(ultimaMed).length === 0) {
+            alert('No hay nuevas mediciones para este sensor.');
+        } else {
+            alert('Datos actualizados correctamente.');
+        }
+    } catch (err) {
+        alert('Error al refrescar los datos.');
+        console.error(err);
+    } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
 });
 
 // Botón Volver
