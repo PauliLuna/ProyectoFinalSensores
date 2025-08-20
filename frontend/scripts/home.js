@@ -458,29 +458,33 @@ async function cargarAlertasParaBarra() {
         const alertas = await res.json();
 
        // Contar por criticidad
-        const counts = { critica: 0, informativa: 0, preventiva: 0 };
+        const counts = { critica: 0, informativa: 0, preventiva: 0 , seguridad:0};
         alertas.forEach(a => {
             let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if (crit === 'critica') counts.critica++;
             else if (crit === 'informativa') counts.informativa++;
             else if (crit === 'preventiva') counts.preventiva++;
+            else if (crit === 'seguridad') counts.seguridad++;
         });
 
         // Calcular porcentajes
-        const total = counts.critica + counts.informativa + counts.preventiva;
+        const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
         const pctCritica = total ? (counts.critica / total) * 100 : 0;
         const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
         const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
+        const pctSeguridad = total ? (counts.seguridad / total) * 100 : 0;
 
         // Actualizar la barra
         document.querySelector('.bar .critica').style.width = pctCritica + "%";
         document.querySelector('.bar .informativa').style.width = pctInformativa + "%";
         document.querySelector('.bar .preventiva').style.width = pctPreventiva + "%";
+        document.querySelector('.bar .seguridad').style.width = pctSeguridad + "%";
 
         // Mostrar porcentajes en la leyenda
         document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
         document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
         document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
+        document.getElementById('pct-seguridad').textContent = `(${pctSeguridad.toFixed(1)}%)`;
    
         // Agregar tooltips
         addBarTooltips(counts);
