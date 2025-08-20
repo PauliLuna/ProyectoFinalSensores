@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Solo muestra el mensaje si realmente hay un error de red/backend
         setTimeout(() => {
             alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
-        }, 1000); // Opcional: pequeño delay para evitar que aparezca instantáneamente
+        }, 2500); // Opcional: pequeño delay para evitar que aparezca instantáneamente
         console.error("Error al cargar alertas:", error);
     }
 });
@@ -250,6 +250,24 @@ function renderPieChart(data) {
     // Determina criticidad activa para la paleta
     let criticidadActiva = document.getElementById('criticidadSelect').value;
     if (criticidadActiva === 'todas') criticidadActiva = null;
+    if (criticidadActiva) {
+        criticidadActiva = criticidadActiva
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace('í', 'i').replace('á', 'a');
+    }
+
+    
+
+    // Normaliza el nombre para comparar
+    function normalizarTexto(texto) {
+        return (texto || '')
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9 ]/g, '') // quita caracteres especiales
+            .replace(/\s+/g, ' ') // quita espacios dobles
+            .trim();
+    }
 
     // Paleta de colores por tipoAlerta y criticidad
     const colorMap = {
@@ -259,30 +277,39 @@ function renderPieChart(data) {
         preventiva: ["#6b7280", "#d1d5db", "#9ca3af", "#374151"]
     };
 
-    // Asigna colores según criticidad de cada tipoAlerta
+    // Mapeo robusto de tipoAlerta a criticidad
     const tipoAlertaCriticidad = {
-        "Temperatura fuera de rango": "critica",
-        "Sensor offline": "critica",
-        "Caida energia electrica": "preventiva",
-        "Fluctuacion de temperatura excesiva": "preventiva",
-        "Inicio de ciclo de descongelamieno": "informativa",
-        "Fin de ciclo de descongelamiento": "informativa",
-        "Puerta abierta prologada": "critica",
-        "Puerta abierta recurrente": "preventiva",
-        "Ciclo de refrigeramiento asincronico": "critica"
+        "temperatura fuera de rango": "critica",
+        "sensor offline": "critica",
+        "puerta abierta prolongada": "critica",
+        "ciclo de refrigeramiento asincronico": "critica",
+        "caida de energia electrica": "preventiva",
+        "caida energia electrica": "preventiva",
+        "fluctuacion de temperatura excesiva": "preventiva",
+        "puerta abierta recurrente": "preventiva",
+        "inicio de ciclo de descongelamiento": "informativa",
+        "inicio de ciclo de descongelamieno": "informativa",
+        "fin de ciclo de descongelamiento": "informativa"
     };
 
-    // Filtra tipoAlerta por criticidad si corresponde
+    // Filtra los tipos de alerta según la criticidad
     let labels = Object.keys(counts);
     if (criticidadActiva) {
-        labels = labels.filter(t => tipoAlertaCriticidad[t] === criticidadActiva);
+        labels = labels.filter(t => {
+            const key = normalizarTexto(t);
+            let crit = tipoAlertaCriticidad[key];
+            if (!crit) return false;
+            crit = crit.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return crit === criticidadActiva;
+        });
     }
 
     // Asigna colores
     const colorList = [];
     let colorIdx = 0;
     labels.forEach(t => {
-        const crit = tipoAlertaCriticidad[t] || "informativa";
+        const key = normalizarTexto(t);
+        const crit = tipoAlertaCriticidad[key] || "informativa";
         const palette = colorMap[crit];
         colorList.push(palette[colorIdx % palette.length]);
         colorIdx++;
@@ -349,6 +376,7 @@ function renderLineChart(data) {
         // Agrupa por día
         data.forEach(alerta => {
             const fecha = parseFecha(alerta.fechaHoraAlerta);
+            if (!(fecha instanceof Date) || isNaN(fecha)) return;
             const dia = fecha.toLocaleDateString("es-AR");
             counts[dia] = (counts[dia] || 0) + 1;
         });
@@ -430,7 +458,8 @@ async function cargarAlertas() {
 }
 
 function parseFecha(fecha) {
-    if (!fecha) return '';
+    if (!fecha) return new Date(0);
+    //if (!fecha) return '';
     // Si es string tipo ISO
     if (typeof fecha === 'string') {
         // Si es formato ISO (ej: "2024-07-26T20:03:58.262+00:00")
@@ -446,7 +475,7 @@ function parseFecha(fecha) {
     if (fecha instanceof Date) return fecha;
     // Si es objeto tipo { $date: ... }
     if (fecha.$date) return new Date(fecha.$date);
-    return new Date(fecha);
+    return new Date(fecha) || new Date(0);
 }
 
 function renderAlertasTable(data) {
