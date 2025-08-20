@@ -63,6 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         // Agregar evento al botón de refrescar alertas
         document.getElementById('refreshIcon').addEventListener('click', async () => {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
             try {
                 const res = await fetch('/reanalizar_alertas', {
                     method: 'POST',
@@ -84,6 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             } catch (error) {
                 alert("No se pudieron reanalizar las alertas.");
                 console.error(error);
+            } finally {
+                overlay.style.display = 'none';
             }
         });
 
