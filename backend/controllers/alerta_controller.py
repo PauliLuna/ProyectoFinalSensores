@@ -195,6 +195,8 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
     return emails
 
 def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha, termi):
+    fecha_actual_local = fecha - datetime.timedelta(hours=3)
+    fecha_actual = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
     mail = current_app.mail
     subject = f"[ALERTA] {tipo_alerta} - Sensor {sensor['nroSensor']}"
     html_template = f"""
@@ -226,7 +228,7 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
             <span class="label">Descripción:</span> {descripcion}
         </div>
         <div class="info">
-            <span class="label">Fecha y hora:</span> {fecha}
+            <span class="label">Fecha y hora:</span> {fecha_actual}
         </div>
         <div class="info">
             <span class="label">Criticidad:</span> {criticidad}
