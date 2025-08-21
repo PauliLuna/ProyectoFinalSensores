@@ -1172,17 +1172,18 @@ button[disabled] {
 
   .bar .critica {
     background: #ef4444;
-    width: 40%;
   }
 
   .bar .informativa {
     background: #facc15;
-    width: 30%;
   }
 
   .bar .preventiva {
+    background: #7F8C8D;
+  }
+
+  .bar .seguridad {
     background: #3b82f6;
-    width: 30%;
   }
 
   .bar-tooltip {
@@ -1226,8 +1227,12 @@ button[disabled] {
     background-color: #facc15;
   }
 
-  .legend-alerts .preventiva::before {
+  .legend-alerts .seguridad::before {
     background-color: #3b82f6;
+  }
+
+   .legend-alerts .preventiva::before {
+    background-color: #7F8C8D;
   }
  
   .legend-pct {

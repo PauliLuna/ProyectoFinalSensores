@@ -199,6 +199,17 @@ function updateThermometers(tempInt, tempExt, notas) {
     setTemperature('temp-ext', parseFloat(tempExt), minRangeExt, maxRangeExt, false);
 }
 
+function parseFecha(fecha) {
+    if (!fecha) return null;
+    if (typeof fecha === 'string') {
+        if (fecha.includes('T')) return new Date(fecha);
+        if (!isNaN(fecha)) return new Date(Number(fecha));
+    }
+    if (fecha instanceof Date) return fecha;
+    if (fecha.$date) return new Date(fecha.$date);
+    return new Date(fecha);
+}
+
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
@@ -237,18 +248,23 @@ async function cargarCards(sensor){
             document.getElementById('sensor-tempDif').textContent = 
                 difTemp !== 'N/A' ? `${difTemp}°C` : 'N/A';
             document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
-        
+            
+            console.log('Actualizando termómetros con:',ultimaMed);
+
               // Llamar a la función para actualizar los termómetros
             updateThermometers(intTemp, extTemp, sensor.notas || '');
 
                     // ⚠️ Lógica para la fecha y hora. Se ejecuta siempre.
-            if (ultimaMed && ultimaMed.fechaMedicion) {
-                const fechaHora = new Date(ultimaMed.fechaMedicion);
-                const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
-                const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
-                document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+            if (ultimaMed && ultimaMed.fechaHoraMed) {
+                const fechaHora = parseFecha(ultimaMed.fechaHoraMed);
+                if (fechaHora && !isNaN(fechaHora)) {
+                    const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
+                    const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
+                    document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+                } else {
+                    document.getElementById('last-measurement-time').textContent = 'N/A';
+                }
             } else {
-                // Se muestra N/A si no hay datos de última medición
                 document.getElementById('last-measurement-time').textContent = 'N/A';
             }
         
@@ -705,14 +721,29 @@ document.getElementById('hasta').addEventListener('change', () => {
 
 // Botón Refrescar
 document.getElementById('refreshIcon').addEventListener('click', async() => {
-    
-    const sensor = await getSensorByAlias(alias, token);
-    await cargarCards(sensor);
+    document.getElementById('loading-overlay').style.display = 'flex';
+    try {
+        const sensor = await getSensorByAlias(alias, token);
+        await cargarCards(sensor);
 
-    await cargarAlertasParaBarra(sensor.nroSensor);
-    
-    // Simular el clic en el botón "Graficar"
-    document.getElementById('btnGraficar').click();
+        await cargarAlertasParaBarra(sensor.nroSensor);
+
+        // Simular el clic en el botón "Graficar"
+        document.getElementById('btnGraficar').click();
+
+        // Chequear si hay nuevas mediciones
+        const ultimaMed = await getUltimaMedicion(sensor.nroSensor);
+        if (!ultimaMed || !ultimaMed.fechaHoraMed) {
+            alert('No hay nuevas mediciones para este sensor.');
+        } else {
+            alert('Datos actualizados correctamente.');
+        }
+    } catch (err) {
+        alert('Error al refrescar los datos.');
+        console.error(err);
+    } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
 });
 
 // Botón Volver
@@ -1108,29 +1139,33 @@ async function cargarAlertasParaBarra(nroSensor) {
         const alertas = await res.json();
 
        // Contar por criticidad
-        const counts = { critica: 0, informativa: 0, preventiva: 0 };
+        const counts = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
         alertas.forEach(a => {
             let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if (crit === 'critica') counts.critica++;
             else if (crit === 'informativa') counts.informativa++;
             else if (crit === 'preventiva') counts.preventiva++;
+            else if (crit === 'seguridad') counts.seguridad++;
         });
 
         // Calcular porcentajes
-        const total = counts.critica + counts.informativa + counts.preventiva;
+        const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
         const pctCritica = total ? (counts.critica / total) * 100 : 0;
         const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
         const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
+        const pctSeguridad = total ? (counts.seguridad / total) * 100 : 0;
 
         // Actualizar la barra
         document.querySelector('.bar .critica').style.width = pctCritica + "%";
         document.querySelector('.bar .informativa').style.width = pctInformativa + "%";
         document.querySelector('.bar .preventiva').style.width = pctPreventiva + "%";
+        document.querySelector('.bar .seguridad').style.width = pctSeguridad + "%";
 
         // Mostrar porcentajes en la leyenda
         document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
         document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
         document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
+        document.getElementById('pct-seguridad').textContent = `(${pctSeguridad.toFixed(1)}%)`;
     
         // Agregar tooltips
         addBarTooltips(counts);
