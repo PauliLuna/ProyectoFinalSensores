@@ -1185,6 +1185,23 @@ button[disabled] {
     width: 30%;
   }
 
+  .bar-tooltip {
+    position: absolute;
+    background: #1D3557;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.bar .critica, .bar .informativa, .bar .preventiva {
+    position: relative;
+}
+
   .legend-alerts {
     display: flex;
     justify-content: space-between;
@@ -2214,6 +2231,247 @@ select {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Estilos para el DASHBOARD_SENSOR */
+/* --- Nuevo estilo para el contenedor principal de datos --- */
+
+/* Estilo para el contenedor principal de los detalles */
+.sensor-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea todos los elementos hijos a la izquierda */
+    gap: 15px; /* Espacio vertical entre los renglones principales */
+    width: 100%;
+}
+
+/* Estilo para el renglón de Condición y Estado */
+.status-row {
+    display: flex;
+    gap: 90px; /* Ajusta este valor para controlar el espacio entre Condición y Estado */
+    align-items: center; /* Alinea los elementos verticalmente */
+    width: 100%;
+}
+
+/* Estilo para todos los párrafos dentro de .sensor-details */
+.sensor-details p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Estilo para los títulos en negrita */
+.sensor-details strong {
+    font-weight: 600;
+    color: #4a4a4a;
+    font-size: 0.95rem;
+}
+
+/* Contenedor principal para los detalles de la cámara */
+.camera-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea todos los elementos hijos a la izquierda */
+    gap: 15px; /* Espacio vertical entre los renglones */
+    width: 100%;
+}
+
+/* Estilo para los títulos en negrita dentro de la sección de la cámara */
+.camera-details strong {
+    font-weight: 600;
+    color: #4a4a4a;
+    font-size: 0.95rem;
+}
+
+/* Estilo para los párrafos de datos dentro de la sección de la cámara */
+.camera-details p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Estilo para el renglón de la última medición (destacado) */
+.last-measurement {
+    font-weight: bold;
+    color: #007bff; /* Un color azul para que destaque */
+    background-color: #f0f8ff; /* Un fondo sutil para que se vea diferente */
+    padding: 8px 10px;
+    border-radius: 5px;
+    margin-top: 40px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: calc(100% - 20px); /* Ajuste para el padding */
+}
+
+.data-grid-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px; /* Reducir el padding */
+    box-sizing: border-box;
+    gap: 10px; /* Reducir el espacio entre las columnas */
+    max-height: 400px;
+}
+
+/* Contenedores de 50% del ancho */
+.half-width-container {
+    display: flex;
+    flex: 1; /* Ocupa la mitad del espacio disponible */
+    min-width: 0; /* Permite que el contenedor se encoja */
+}
+
+/* Secciones de la mitad izquierda (apiladas verticalmente) */
+.left-half {
+    flex-direction: column;
+    gap: 10px; /* Espacio entre los bloques de arriba y abajo */
+}
+
+/* Secciones de la mitad derecha (alineadas horizontalmente) */
+.right-half {
+    flex-direction: row;
+    gap: 10px;
+    align-items: stretch; /* Estira los bloques para que tengan la misma altura */
+}
+
+/* Estilos de los bloques de datos */
+.data-block {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 15px; /* Reducir el padding interno */
+    flex-grow: 1; /* Permite que los bloques se expandan */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.block-title {
+    font-size: 1.2rem;
+    color: #1D3557;
+    margin-bottom: 10px;
+}
+
+/* Estilo del termómetro - AUMENTADO */
+.thermometer-container {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    align-items: flex-end;
+    margin-bottom: 0px;
+}
+
+.thermometer-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    /* Eliminar el padding-left para que el termómetro esté centrado */
+}
+
+.thermometer {
+    position: relative;
+    width: 30px;
+    height: 180px; /* Mantienes la altura de 150px que te funciona */
+    background: linear-gradient(to bottom, #f1f1f1 50%, #e0e0e0 100%);
+    border-radius: 50% 50% 50px 50px;
+    border: 2px solid #adb5bd;
+    display: flex;
+    flex-direction: column-reverse;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+/* Contenedor de la escala dinámica */
+.thermometer-scale {
+    position: absolute;
+    top: 0;
+    left: -25px; /* Ajustar posición para que la escala no esté tan pegada */
+    width: 25px;
+    height: 60%; /* La altura del 100% es clave para que se ajuste al termómetro */
+    z-index: 1;
+    transform: translateY(35px);
+}
+
+.scale-label {
+    position: absolute;
+    right: 5px;
+    font-size: 0.8rem;
+    color: #555;
+    transform: translateY(50%);
+}
+
+.mercury-fill {
+    width: 100%;
+    transition: height 0.5s ease-in-out, background-color 0.5s ease-in-out;
+    position: absolute;
+    bottom: 0;
+    height: 0%; /* Altura inicial en 0%. JavaScript lo cambiará. */
+}
+
+/* Colores de los termómetros */
+.mercury-fill.normal { background-color: #28a745; }
+.mercury-fill.warning { background-color: #ffc107; }
+.mercury-fill.critical { background-color: #dc3545; }
+.mercury-fill.external { background-color: #007bff; }
+
+/* Ajuste del data-value */
+.mercury-fill::before {
+    content: attr(data-value);
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #333;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.thermometer-wrapper:hover .mercury-fill::before {
+    opacity: 1;
+}
+
+.temp-label {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+/* Posición de la diferencia de temperatura */
+.diff-value {
+    margin-top: 10px;
+}
+
+
+/* Estilos de la barra de alertas */
+.alert-kpi-card {
+    flex-grow: 1; /* Para que ocupe el espacio restante en la columna izquierda */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 15px;
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.alert-kpi-card .d-flex {
+    margin-bottom: 5px;
+}
+.alert-kpi-card .bar {
+    height: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+.legend-alerts {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.8rem;
+}
+
+/* Estilos para el select de alias */
 select {
   font-family: 'Poppins', sans-serif;
 }

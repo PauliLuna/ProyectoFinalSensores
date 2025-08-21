@@ -109,6 +109,96 @@ async function getDuracionUltimaApertura(sensorId) {
     }
 }
 
+// --- Lógica para termómetros y escala dinámica ---
+function updateThermometers(tempInt, tempExt, notas) {
+    let minRangeInt, maxRangeInt;
+
+    // Obtener el rango de temperatura del campo de notas
+    const regex = /(-?\d+)\s*°C\s*a\s*(-?\d+)\s*°C/;
+    const match = notas.match(regex);
+
+    if (match) {
+        let minTemp = parseInt(match[1]);
+        let maxTemp = parseInt(match[2]);
+        [minRangeInt, maxRangeInt] = minTemp < maxTemp ? [minTemp, maxTemp] : [maxTemp, minTemp];
+        
+        // ⚠️ Aplicar tu lógica: expandir el rango en 5 grados
+        minRangeInt -= 5;
+        maxRangeInt += 5;
+    } else {
+        // Rangos por defecto para temperatura interna si no hay notas
+        minRangeInt = -30;
+        maxRangeInt = 10;
+    }
+
+    // Rangos fijos para temperatura externa, también expandidos para mejor visualización
+    const minRangeExt = 0;
+    const maxRangeExt = 45;
+
+    // Función para generar y mostrar la escala del termómetro
+    function setScale(wrapperId, min, max) {
+        const wrapper = document.getElementById(wrapperId);
+        let scaleHtml = '';
+        const numTicks = 4; // Número de marcas de escala
+        const step = (max - min) / numTicks;
+
+        for (let i = 0; i <= numTicks; i++) {
+            const tempValue = min + step * i;
+            scaleHtml = `<span class="scale-label" style="bottom: ${i * (100 / numTicks)}%">${Math.round(tempValue)}°</span>` + scaleHtml;
+        }
+
+        const scaleContainer = wrapper.querySelector('.thermometer-scale');
+        if (scaleContainer) {
+            scaleContainer.innerHTML = scaleHtml;
+        }
+    }
+
+    // Función auxiliar para actualizar un termómetro individual
+    function setTemperature(elementId, temp, min, max, isInternal) {
+        const mercuryElement = document.getElementById(elementId);
+        if (!mercuryElement) return;
+
+        // Calcular la altura relativa de la barra de mercurio
+        const totalRange = max - min;
+        const normalizedTemp = temp - min;
+
+        // ⚠️ Ajuste de la fórmula para que el llenado sea más visual
+
+        const heightPct = ((normalizedTemp / totalRange) * 100) ;
+        
+        mercuryElement.style.height = `${Math.max(0, Math.min(100, heightPct))}%`;
+        mercuryElement.dataset.value = `${temp}°C`;
+
+        // Lógica de color condicional
+        mercuryElement.classList.remove('normal', 'warning', 'critical', 'external');
+
+        if (isInternal) {
+            let colorClass;
+            // La lógica de color usa el rango de las notas
+            const minNota = min + 5;
+            const maxNota = max - 5;
+
+            if (temp >= minNota && temp <= maxNota) {
+                colorClass = 'normal';
+            } else if ((temp >= minNota - 2 && temp < minNota) || (temp > maxNota && temp <= maxNota + 2)) {
+                colorClass = 'warning';
+            } else {
+                colorClass = 'critical';
+            }
+            mercuryElement.classList.add(colorClass);
+        } else {
+            // La temperatura externa siempre es azul
+            mercuryElement.classList.add('external');
+        }
+    }
+    
+    // Llamar a las funciones para cada termómetro con sus propias escalas
+    setScale('termometer-int-wrapper', minRangeInt, maxRangeInt);
+    setScale('termometer-ext-wrapper', minRangeExt, maxRangeExt);
+    setTemperature('temp-int', parseFloat(tempInt), minRangeInt, maxRangeInt, true);
+    setTemperature('temp-ext', parseFloat(tempExt), minRangeExt, maxRangeExt, false);
+}
+
 async function cargarCards(sensor){
     try{
         const sensorId = parseInt(sensor.nroSensor);
@@ -129,6 +219,8 @@ async function cargarCards(sensor){
             getCantidadAperturas(sensorId)
         ]);
 
+
+
         // Última medición
         if (ultimaMed && Object.keys(ultimaMed).length > 0) {
             const intTemp = ultimaMed.valorTempInt ?? null;
@@ -145,7 +237,25 @@ async function cargarCards(sensor){
             document.getElementById('sensor-tempDif').textContent = 
                 difTemp !== 'N/A' ? `${difTemp}°C` : 'N/A';
             document.getElementById('sensor-puerta').textContent = puerta || 'N/A';
+        
+              // Llamar a la función para actualizar los termómetros
+            updateThermometers(intTemp, extTemp, sensor.notas || '');
+
+                    // ⚠️ Lógica para la fecha y hora. Se ejecuta siempre.
+            if (ultimaMed && ultimaMed.fechaMedicion) {
+                const fechaHora = new Date(ultimaMed.fechaMedicion);
+                const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
+                const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
+                document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+            } else {
+                // Se muestra N/A si no hay datos de última medición
+                document.getElementById('last-measurement-time').textContent = 'N/A';
+            }
+        
         } else {
+            // Si no hay mediciones, los termómetros deben reflejarlo.
+            updateThermometers(null, null, '');
+
             document.getElementById('sensor-tempInt').textContent = 'N/A';
             document.getElementById('sensor-tempExt').textContent = 'N/A';
             document.getElementById('sensor-tempDif').textContent = 'N/A';
@@ -955,6 +1065,41 @@ document.getElementById('btnExportExcel').addEventListener('click', async () => 
 
 
 //Barra de alertas
+
+function addBarTooltips(counts) {
+    const bar = document.querySelector('.bar');
+    if (!bar) return;
+
+    // Elimina tooltips previos
+    document.querySelectorAll('.bar-tooltip').forEach(t => t.remove());
+
+    ['critica', 'informativa', 'preventiva'].forEach(tipo => {
+        const el = bar.querySelector('.' + tipo);
+        if (!el) return;
+
+        el.addEventListener('mouseenter', function(e) {
+            let tooltip = document.createElement('div');
+            tooltip.className = 'bar-tooltip';
+            tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
+            document.body.appendChild(tooltip);
+
+            // Posiciona el tooltip cerca del mouse
+            const rect = el.getBoundingClientRect();
+            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = (rect.top - 32) + 'px';
+            tooltip.style.opacity = 1;
+            el._barTooltip = tooltip;
+        });
+
+        el.addEventListener('mouseleave', function(e) {
+            if (el._barTooltip) {
+                el._barTooltip.remove();
+                el._barTooltip = null;
+            }
+        });
+    });
+}
+
 async function cargarAlertasParaBarra(nroSensor) {
     try {
         const res = await fetch(`/alertas?sensor_id=${nroSensor}`, {
@@ -986,6 +1131,10 @@ async function cargarAlertasParaBarra(nroSensor) {
         document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
         document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
         document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
+    
+        // Agregar tooltips
+        addBarTooltips(counts);
+    
     } catch (error) {
         console.error("Error al cargar alertas para la barra:", error);
     }
