@@ -105,13 +105,6 @@
                   </div>
                   <canvas id="chart-tendencia-temp" height="180" style="width:100%;"></canvas>
                 </div>
-
-
-                <!-- KPI de Variabilidad -->
-                <div class="ranking-card">
-                    <h6 class="text-primary">Variabilidad Temp. (Desvío Estándar)</h6>
-                    <p class="h4 mt-2" id="kpi-variabilidad">--</p>
-                </div>
             </div>
 
             <!-- Columna de Alertas -->
@@ -149,26 +142,27 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- Ranking Sensores con Más Alertas -->
                 <div class="ranking-card">
-                <h6>Sensores con Más Alertas</h6>
-                    <table class="ranking-table">
-                        <thead>
-                        <tr>
-                            <th>Sensor</th>
-                            <th>Alertas</th>
-                            <th>%</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Sensor A</td><td>34</td><td>23.4%</td></tr>
-                            <tr><td>Sensor B</td><td>28</td><td>18.9%</td></tr>
-                            <tr><td>Sensor C</td><td>25</td><td>17.2%</td></tr>
-                            <tr><td>Sensor D</td><td>19</td><td>13.1%</td></tr>
-                            <tr><td>Sensor E</td><td>17</td><td>11.5%</td></tr>
-                        </tbody>
-                    </table>
+                  <h6>Sensores con más Alertas</h6>
+                  <table class="ranking-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 20%;">ID Sensor</th>
+                        <th>Críticas</th>
+                        <th>Informativas</th>
+                        <th>Preventivas</th>
+                        <th>Seguridad</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ranking-sensores">
+                      <!-- Se llena dinámicamente con JS -->
+                    </tbody>
+                  </table>
                 </div>
+                
                 <!-- Ranking Sensores con Más Tiempo Fuera de Temp. -->
                 <div class="ranking-card">
                 <h6>Sensores con Más Tiempo Fuera de Temp.</h6>
