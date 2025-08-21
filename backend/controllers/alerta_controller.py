@@ -756,7 +756,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 sensor=sensor,
                 mensaje="Inicio de ciclo",
                 fecha=fecha_inicio_ciclo,
-                termi="termi-inteligente"
+                termi="termi-informativo"
             )
 
             alertas_generadas += 1
@@ -791,7 +791,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 sensor=sensor,
                 mensaje="Fin de ciclo" + (" ⚠️ ANORMAL" if anormal else ""),
                 fecha=fecha_actual,
-                termi="termi-inteligente"
+                termi="termi-informativo"
             )
             alertas_generadas += 1
 
