@@ -469,6 +469,7 @@ async function cargarAlertasParaBarra() {
 
         // Calcular porcentajes
         const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
+        document.getElementById('total_alertas').textContent = total;
         const pctCritica = total ? (counts.critica / total) * 100 : 0;
         const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
         const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
