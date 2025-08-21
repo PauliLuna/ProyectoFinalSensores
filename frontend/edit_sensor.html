@@ -59,8 +59,22 @@
                             <div class="form-section">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="notas">Notas (opcional)</label>
-                                        <input type="text" id="notas" name="notas" placeholder="Ingrese notas adicionales" style="height: 80px;;">
+                                        <label for="notas">
+                                        Notas
+                                        <span 
+                                            class="alias-tooltip-icon" 
+                                            tabindex="0" 
+                                            style="cursor: pointer; color: #457B9D; font-size: 1.1em; display: inline-flex; align-items: center; position: relative;">
+                                            <img src="assets/informacion.png" alt="info" style="width: 18px; height: 18px; margin-left: 2px;">
+                                            <span class="alias-tooltip-text" >
+                                                <span class="alias-tooltip-arrow"></span>
+                                                <b>Productos específicos y sus rangos.</b>
+                                                    Ejemplo: 'Carnes: -1°C a 2°C'<br>
+                                                <span style="color:#888; font-size: 12px;">(Notas adicionales sobre el sensor, como rangos de temperatura recomendados)</span>
+                                            </span>
+                                        </span>
+                                        </label>
+                                        <input type="text" id="notas" name="notas" placeholder="Ingrese notas adicionales" style="height: 80px;;" required>
                     
                                     </div>
                                 </div>
