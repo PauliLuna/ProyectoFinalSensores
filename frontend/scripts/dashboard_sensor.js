@@ -256,11 +256,20 @@ async function cargarCards(sensor){
 
                     // ⚠️ Lógica para la fecha y hora. Se ejecuta siempre.
             if (ultimaMed && ultimaMed.fechaHoraMed) {
-                const fechaHora = parseFecha(ultimaMed.fechaHoraMed);
-                if (fechaHora && !isNaN(fechaHora)) {
-                    const fechaFormateada = fechaHora.toLocaleDateString('es-AR');
-                    const horaFormateada = fechaHora.toLocaleTimeString('es-AR');
-                    document.getElementById('last-measurement-time').textContent = `${fechaFormateada} ${horaFormateada}`;
+                const fechaHoraUTC = parseFecha(ultimaMed.fechaHoraMed);
+                if (fechaHoraUTC && !isNaN(fechaHoraUTC)) {
+                    const options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false, // Asegura el formato de 24 horas
+                        timeZone: 'America/Argentina/Buenos_Aires' // Especifica la zona horaria IANA
+                    };
+                    const fechaHoraFormateada = fechaHoraUTC.toLocaleString('es-AR', options);
+                    document.getElementById('last-measurement-time').textContent = fechaHoraFormateada;
                 } else {
                     document.getElementById('last-measurement-time').textContent = 'N/A';
                 }

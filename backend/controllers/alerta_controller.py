@@ -195,6 +195,8 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
     return emails
 
 def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha, termi):
+    fecha_actual_local = fecha - timedelta(hours=3)
+    fecha_actual = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
     mail = current_app.mail
     subject = f"[ALERTA] {tipo_alerta} - Sensor {sensor['nroSensor']}"
     html_template = f"""
@@ -226,7 +228,7 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
             <span class="label">Descripción:</span> {descripcion}
         </div>
         <div class="info">
-            <span class="label">Fecha y hora:</span> {fecha}
+            <span class="label">Fecha y hora:</span> {fecha_actual}
         </div>
         <div class="info">
             <span class="label">Criticidad:</span> {criticidad}
@@ -754,7 +756,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 sensor=sensor,
                 mensaje="Inicio de ciclo",
                 fecha=fecha_inicio_ciclo,
-                termi="termi-inteligente"
+                termi="termi-informativo"
             )
 
             alertas_generadas += 1
@@ -789,7 +791,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 sensor=sensor,
                 mensaje="Fin de ciclo" + (" ⚠️ ANORMAL" if anormal else ""),
                 fecha=fecha_actual,
-                termi="termi-inteligente"
+                termi="termi-informativo"
             )
             alertas_generadas += 1
 
