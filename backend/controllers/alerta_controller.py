@@ -261,6 +261,71 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
     except Exception as e:
         print(f"❌ Error enviando mail de alerta: {e}")
 
+def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, usuario, mensaje, fecha, termi):
+    mail = current_app.mail
+    subject = f"[ALERTA] {tipo_alerta} - Usuario: {usuario}"
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; max-width: 600px; margin: auto; }}
+        h2 {{ color: #ef4444; }}
+        .info {{ margin-bottom: 10px; }}
+        .label {{ font-weight: bold; }}
+        .message {{ margin-top: 15px; padding: 12px; background-color: #fee2e2; border-left: 5px solid #ef4444; border-radius: 4px; }}
+        .image-footer {{ text-align: center; margin-top: 20px; }} /* Estilo para centrar la imagen */
+        .image-footer img {{ width: 200px; height: 200px; display: block; margin: 0 auto; }} /* Asegura que la imagen sea responsiva y centrada */
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <h2>⚠️ Alerta en SensIA</h2>
+        <div class="info">
+            <span class="label">Usuario:</span> {usuario}
+        </div>
+        <div class="info">
+            <span class="label">Tipo:</span> {tipo_alerta}
+        </div>
+        <div class="info">
+            <span class="label">Descripción:</span> {descripcion}
+        </div>
+        <div class="info">
+            <span class="label">Fecha y hora:</span> {fecha}
+        </div>
+        <div class="info">
+            <span class="label">Criticidad:</span> {criticidad}
+        </div>
+        <div class="message">
+            {mensaje}
+        </div>
+        <p>Por favor, revise la situación lo antes posible.</p>
+        <p>Gracias por usar <strong>SensIA</strong>.</p>
+
+        <p>🌐 <a href="https://sensia.onrender.com">https://sensia.onrender.com</a><br>
+        📩 <a href="mailto:sensiaproyecto@gmail.com">sensiaproyecto@gmail.com</a></p>
+         <!-- Imagen agregada aquí -->
+        <div class="image-footer">
+            <img src="https://sensia.onrender.com/assets/{termi}.png">
+        </div>
+    </div>
+    </body>
+    </html>
+    """
+    msg = Message(
+        subject=subject, 
+        sender=current_app.config['MAIL_USERNAME'], 
+        recipients=emails,
+        html=html_template
+    )
+    try:
+        mail.send(msg)
+        print(f"✅ Mail enviado a {emails}")
+    except Exception as e:
+        print(f"❌ Error enviando mail de alerta: {e}")
+
 
 def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     """Detecta huecos de tiempo sin mediciones"""

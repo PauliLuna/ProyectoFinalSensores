@@ -6,7 +6,8 @@ from controllers.asignaciones_controller import register_assignment, update_assi
 import json
 from datetime import datetime
 import requests
-import os 
+import os
+import pytz
 
 
 def get_coordinates_from_address(address):
@@ -312,9 +313,23 @@ def obtener_ultima_medicion(mongo, sensor_id):
     medicion = get_ultima_medicion(mongo, nro_sensor)
     if not medicion:
         return None
+    
+    # Obtenemos la fechaHora en formato UTC desde la DB.
+    fecha_utc = medicion["fechaHoraMed"]
+
+    # Definimos la zona horaria UTC y la zona de Argentina.
+    zona_utc = pytz.timezone('UTC')
+    zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
+
+    # Convertimos la fecha de UTC a la zona horaria de Argentina.
+    # Primero, se le "asigna" la zona horaria UTC a la fecha.
+    fecha_utc_con_zona = zona_utc.localize(fecha_utc)
+
+    # Luego, se convierte a la zona horaria de Argentina.
+    fecha_argentina = fecha_utc_con_zona.astimezone(zona_argentina)
 
     return {
-        "fechaHoraMed": medicion["fechaHoraMed"].isoformat(),
+        "fechaHoraMed": fecha_argentina.isoformat(), # Convertir a -3hs
         "valorTempInt": medicion.get("valorTempInt"),
         "valorTempExt": medicion.get("valorTempExt"),
         "puerta": medicion.get("puerta")
