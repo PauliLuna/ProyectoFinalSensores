@@ -270,9 +270,17 @@ def get_mediciones(mongo, sensor_id, desde, hasta):
         return jsonify({"error": str(ve)}), 400
 
     result = []
+    # Definimos la zona horaria UTC y la zona de Argentina.
+    zona_utc = pytz.timezone('UTC')
+    zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
+    
     for m in mediciones:
+        fecha_utc = m["fechaHoraMed"]
+        fecha_utc_con_zona = zona_utc.localize(fecha_utc)
+        fecha_argentina = fecha_utc_con_zona.astimezone(zona_argentina)
+
         result.append({
-            "fechaHoraMed": m["fechaHoraMed"].isoformat(),
+            "fechaHoraMed": fecha_argentina.isoformat(),
             "valorTempInt": m.get("valorTempInt"),
             "valorTempExt": m.get("valorTempExt"),
             "puerta": m.get("puerta")
