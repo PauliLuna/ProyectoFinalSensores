@@ -495,6 +495,17 @@ function renderAlertasTable(data) {
     const endIdx = Math.min(startIdx + pageSize, totalResults);
     const pageData = data.slice(startIdx, endIdx);
 
+    const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // Asegura el formato de 24 horas
+        timeZone: 'America/Argentina/Buenos_Aires' // Especifica la zona horaria IANA
+    };
+
     pageData.forEach(a => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -502,7 +513,7 @@ function renderAlertasTable(data) {
             <td>${a.mensajeAlerta || ''}</td>
             <td>${a.idSensor || ''}</td>
             <td>${a.alias || ''}</td>
-            <td>${a.fechaHoraAlerta ? parseFecha(a.fechaHoraAlerta).toLocaleString("es-AR") : ''}</td>
+            <td>${a.fechaHoraAlerta ? parseFecha(a.fechaHoraAlerta).toLocaleString("es-AR", options) : ''}</td>
         `;
         tbody.appendChild(tr);
     });
