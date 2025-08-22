@@ -23,6 +23,17 @@ if (!token || isTokenExpired(token)) {
 
 let alertasData = [];
 
+function normalizarAlerta(alerta) {
+    // Si es de seguridad (no tiene idSensor pero sí idUsuario)
+    if ((!alerta.idSensor || alerta.idSensor === "") && alerta.criticidad && alerta.criticidad.toLowerCase() === "seguridad") {
+        alerta.idSensor = "N/A";
+        alerta.alias = "N/A";
+    }
+    // Si no tiene alias pero sí idSensor, podés dejarlo vacío o buscarlo si tenés el mapeo
+    if (!alerta.alias) alerta.alias = alerta.idSensor ? "" : "N/A";
+    return alerta;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         // Muestra loader
@@ -507,13 +518,14 @@ function renderAlertasTable(data) {
     };
 
     pageData.forEach(a => {
+        const alerta = normalizarAlerta(a);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${a.criticidad || ''}</td>
-            <td>${a.mensajeAlerta || ''}</td>
-            <td>${a.idSensor || ''}</td>
-            <td>${a.alias || ''}</td>
-            <td>${a.fechaHoraAlerta ? parseFecha(a.fechaHoraAlerta).toLocaleString("es-AR", options) : ''}</td>
+            <td>${alerta.criticidad || ''}</td>
+            <td>${alerta.mensajeAlerta || ''}</td>
+            <td>${alerta.idSensor || 'N/A'}</td>
+            <td>${alerta.alias || 'N/A'}</td>
+            <td>${alerta.fechaHoraAlerta ? parseFecha(alerta.fechaHoraAlerta).toLocaleString("es-AR") : ''}</td>
         `;
         tbody.appendChild(tr);
     });

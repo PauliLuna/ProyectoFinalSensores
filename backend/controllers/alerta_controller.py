@@ -373,6 +373,7 @@ def _alerta_acceso_nocturno(mongo, email, hora_local_dt, usuario):
     now = datetime.utcnow()
     alerta_data = {
             "tipoAlerta": "Acceso Nocturno",
+            "mensajeAlerta": "Inicio de sesión nocturno",
             "criticidad": "Seguridad",
             "descripcion": f"Inicio de sesión nocturno detectado para el usuario {email} a las {hora_local_dt.strftime('%H:%M')}:00.",
             "fechaHoraAlerta": now,
@@ -404,6 +405,7 @@ def _alerta_bloqueo_cuenta(mongo, email, usuario):
     now = datetime.utcnow()
     alerta_data = {
             "tipoAlerta": "Bloqueo de Usuario",
+            "mensajeAlerta": "Usuario bloqueado por intentos fallidos",
             "criticidad": "Seguridad",
             "descripcion": f"El usuario {email} ha sido bloqueado por 3 intentos fallidos de inicio de sesión.",
             "fechaHoraAlerta": now,
