@@ -326,6 +326,87 @@ def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, 
     except Exception as e:
         print(f"❌ Error enviando mail de alerta: {e}")
 
+def _obtener_emails_admins(mongo, empresa, criticidad):
+    """Obtiene los emails de los usuarios asignados a un sensor
+    y que desean recibir ese tipo de alerta"""
+    usuarios = list(mongo.db.usuarios.find({
+        "idEmpresa": empresa,
+        "roles": "superAdmin",
+        "estado": "Active"
+    }))
+    emails = []
+    print(f"[DEBUG] Usuarios encontrados: {len(usuarios)} para empresa {empresa} con criticidad {criticidad}")
+    for u in usuarios:
+        print(f"[DEBUG] Usuario encontrada: {u}")
+        prefs = u.get("notificacionesAlertas", {})
+        print(f"[DEBUG] Preferencias de notificación: {prefs}")
+        crit_key = criticidad.lower()
+        if prefs.get(crit_key, False):
+            emails.append(u["email"])
+    return emails
+
+def _alerta_acceso_nocturno(mongo, email, hora_local_dt, usuario):
+    now = datetime.utcnow()
+    alerta_data = {
+            "tipoAlerta": "Acceso Nocturno",
+            "criticidad": "Seguridad",
+            "descripcion": f"Inicio de sesión nocturno detectado para el usuario {email} a las {hora_local_dt.strftime('%H:%M')}:00.",
+            "fecha": now,
+            "idUsuario": str(usuario['_id']) if usuario else None,
+            "idEmpresa": usuario.get('idEmpresa') if usuario else None
+        }
+    # Insertar alerta en la base
+    insert_alerta(mongo, alerta_data)
+    # Obtener emails de admins de la empresa
+    emails_admins = []
+    if usuario and usuario.get('idEmpresa'):
+        emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa') ,"seguridad")
+
+    # Enviar mail
+    if emails_admins:
+        _enviar_mail_alerta_seguridad(
+            emails_admins,
+            tipo_alerta="Inicio de sesión nocturno",
+            descripcion=alerta_data["descripcion"],
+            criticidad="Seguridad",
+            usuario= email,
+            mensaje=alerta_data["descripcion"],
+            fecha=hora_local_dt.strftime('%H:%M'),
+            termi="termi-alerta"
+        )
+    ### Fin de alerta de inicio de sesión nocturno
+
+def _alerta_bloqueo_cuenta(mongo, email, usuario):
+    now = datetime.utcnow()
+    alerta_data = {
+            "tipoAlerta": "Bloqueo de Usuario",
+            "criticidad": "Seguridad",
+            "descripcion": f"El usuario {email} ha sido bloqueado por 3 intentos fallidos de inicio de sesión.",
+            "fecha": now,
+            "idUsuario": str(usuario['_id']),
+            "idEmpresa": usuario.get('idEmpresa')
+        }
+    insert_alerta(mongo, alerta_data) # Inserta la alerta
+
+    # Obtener emails de admins para notificar el bloqueo
+    emails_admins = []
+    if usuario and usuario.get('idEmpresa'):
+        emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa'), "seguridad")
+
+    hora_local_dt = now - timedelta(hours=3)  # Ajusta a tu zona
+    if emails_admins:
+        _enviar_mail_alerta_seguridad(
+            emails_admins,
+            tipo_alerta="Bloqueo de usuario",
+            descripcion=alerta_data["descripcion"],
+            criticidad="Seguridad",
+            usuario=email,
+            mensaje=alerta_data["descripcion"],
+            fecha=hora_local_dt.strftime('%H:%M'),  # Ajusta a tu zona,
+            termi="termi-alerta"
+        )
+    ## Fin de alerta de bloqueo de usuario
+
 
 def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     """Detecta huecos de tiempo sin mediciones"""
