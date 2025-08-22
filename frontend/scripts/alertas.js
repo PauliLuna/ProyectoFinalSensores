@@ -76,12 +76,28 @@ document.addEventListener("DOMContentLoaded", async () => {
             const crit = this.value.toLowerCase();
             const sucursalSelect = document.getElementById('sucursalSelect');
             const sensorSelect = document.getElementById('sensorSelect');
+            
             if (crit === 'seguridad') {
-                sucursalSelect.disabled = true;
-                sensorSelect.disabled = true;
-                sucursalSelect.classList.add('disabled-filter');
-                sensorSelect.classList.add('disabled-filter');
+
+                // Limpiar filtros (resetear a "todas")
+                sucursalSelect.value = 'todas';
+                sensorSelect.value = 'todos';
+
+                // Deshabilitar selects
+               // Esperar al siguiente ciclo del event loop
+                setTimeout(() => {
+                    sucursalSelect.disabled = true;
+                    sensorSelect.disabled = true;
+                    sucursalSelect.classList.add('disabled-filter');
+                    sensorSelect.classList.add('disabled-filter');
+
+                    //Forzar re-render de alertas después de resetear selects
+                    aplicarFiltrosGlobales();
+
+                }, 50);
+
             } else {
+                //  Habilitar nuevamente
                 sucursalSelect.disabled = false;
                 sensorSelect.disabled = false;
                 sucursalSelect.classList.remove('disabled-filter');
