@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
 from controllers.sensor_controller import get_all_sensors_empresa
+import pytz
 
 # Tabla de referencia de parámetros por tipo de cámara
 TIPOS_CAMARA = {
@@ -25,14 +26,27 @@ def obtener_alertas(mongo):
     sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
     sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
     sensor_direccion = {int(s["nroSensor"]): s.get("direccion", "") for s in sensores}
+
+    # Definimos la zona horaria UTC y la zona de Argentina.
+    zona_utc = pytz.timezone('UTC')
+    zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
+
     for alerta in alertas:
         try:
             alerta["_id"] = str(alerta["_id"])
             alerta["alias"] = sensor_alias.get(int(alerta.get("idSensor")), "")
             alerta["direccion"] = sensor_direccion.get(int(alerta.get("idSensor")), "")
-        except Exception:
+
+            # Convertir fechaHoraAlerta a zona local
+            fecha_utc = alerta["fechaHoraAlerta"]
+            fecha_utc_con_zona = zona_utc.localize(fecha_utc)
+            fecha_argentina = fecha_utc_con_zona.astimezone(zona_argentina)
+            alerta["fechaHoraAlerta"] = fecha_argentina.isoformat()
+
+        except Exception as e:
             alerta["alias"] = ""
             alerta["direccion"] = ""
+            print(f"[ERROR] No se pudo procesar la alerta porque la excepción fue: {e}")
     return jsonify(alertas), 200
 
 
@@ -46,8 +60,18 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
         "idEmpresa": id_empresa,
         "idSensor": str(sensor_id)
     }).sort("fechaHoraAlerta", -1))
+    # Definimos la zona horaria UTC y la zona de Argentina.
+    zona_utc = pytz.timezone('UTC')
+    zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
     for alerta in alertas:
         alerta["_id"] = str(alerta["_id"])
+
+        # Convertir fechaHoraAlerta a zona local
+        fecha_utc = alerta["fechaHoraAlerta"]
+        fecha_utc_con_zona = zona_utc.localize(fecha_utc)
+        fecha_argentina = fecha_utc_con_zona.astimezone(zona_argentina)
+        alerta["fechaHoraAlerta"] = fecha_argentina.isoformat()
+
     return jsonify(alertas), 200
 
 
@@ -351,7 +375,7 @@ def _alerta_acceso_nocturno(mongo, email, hora_local_dt, usuario):
             "tipoAlerta": "Acceso Nocturno",
             "criticidad": "Seguridad",
             "descripcion": f"Inicio de sesión nocturno detectado para el usuario {email} a las {hora_local_dt.strftime('%H:%M')}:00.",
-            "fecha": now,
+            "fechaHoraAlerta": now,
             "idUsuario": str(usuario['_id']) if usuario else None,
             "idEmpresa": usuario.get('idEmpresa') if usuario else None
         }
@@ -382,7 +406,7 @@ def _alerta_bloqueo_cuenta(mongo, email, usuario):
             "tipoAlerta": "Bloqueo de Usuario",
             "criticidad": "Seguridad",
             "descripcion": f"El usuario {email} ha sido bloqueado por 3 intentos fallidos de inicio de sesión.",
-            "fecha": now,
+            "fechaHoraAlerta": now,
             "idUsuario": str(usuario['_id']),
             "idEmpresa": usuario.get('idEmpresa')
         }
