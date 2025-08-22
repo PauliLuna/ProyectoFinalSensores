@@ -304,7 +304,9 @@ function renderPieChart(data) {
         "puerta abierta recurrente": "preventiva",
         "inicio de ciclo de descongelamiento": "informativa",
         "inicio de ciclo de descongelamieno": "informativa",
-        "fin de ciclo de descongelamiento": "informativa"
+        "fin de ciclo de descongelamiento": "informativa",
+        "acceso nocturno": "seguridad",
+        "bloqueo de usuario": "seguridad"
     };
 
     // Filtra los tipos de alerta según la criticidad
