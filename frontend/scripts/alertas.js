@@ -71,6 +71,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             aplicarFiltrosGlobales();
         });
 
+        // Lógica específica para deshabilitar filtros cuando se selecciona "Seguridad"
+        document.getElementById('criticidadSelect').addEventListener('change', function() {
+            const crit = this.value.toLowerCase();
+            const sucursalSelect = document.getElementById('sucursalSelect');
+            const sensorSelect = document.getElementById('sensorSelect');
+            if (crit === 'seguridad') {
+                sucursalSelect.disabled = true;
+                sensorSelect.disabled = true;
+                sucursalSelect.classList.add('disabled-filter');
+                sensorSelect.classList.add('disabled-filter');
+            } else {
+                sucursalSelect.disabled = false;
+                sensorSelect.disabled = false;
+                sucursalSelect.classList.remove('disabled-filter');
+                sensorSelect.classList.remove('disabled-filter');
+            }
+        });
+
         
         // Agregar evento al botón de refrescar alertas
         document.getElementById('refreshIcon').addEventListener('click', async () => {
@@ -89,6 +107,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById('criticidadSelect').value = 'todas';
                 document.getElementById('sucursalSelect').value = 'todas';
                 document.getElementById('sensorSelect').value = 'todos';
+
+                // ✅ Rehabilitar los selects (por si quedaron deshabilitados al elegir "seguridad")
+                const sucursalSelect = document.getElementById('sucursalSelect');
+                const sensorSelect = document.getElementById('sensorSelect');
+                sucursalSelect.disabled = false;
+                sensorSelect.disabled = false;
+                sucursalSelect.classList.remove('disabled-filter');
+                sensorSelect.classList.remove('disabled-filter');
+
                 // Vuelve a mostrar toda la data
                 filteredalertasData = [...alertasData];
                 currentPage = 1;
