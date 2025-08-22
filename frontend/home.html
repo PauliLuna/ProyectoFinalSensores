@@ -105,13 +105,6 @@
                   </div>
                   <canvas id="chart-tendencia-temp" height="180" style="width:100%;"></canvas>
                 </div>
-
-
-                <!-- KPI de Variabilidad -->
-                <div class="ranking-card">
-                    <h6 class="text-primary">Variabilidad Temp. (Desvío Estándar)</h6>
-                    <p class="h4 mt-2" id="kpi-variabilidad">--</p>
-                </div>
             </div>
 
             <!-- Columna de Alertas -->
@@ -119,10 +112,10 @@
                 <h5 class="mb-3">Alertas y Seguridad</h5>
                 <div class="alert-kpi-card">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Alertas por Sensor/Cliente</h5>
+                        <h5 class="mb-0">Alertas de la Empresa</h5>
                         <button class="btn btn-sm btn-outline-light">Ver Reporte</button>
                     </div>
-                    <h2 class="mt-3">--%</h2>
+                    <h2 class="mt-3" id="total_alertas"></h2>
                     <p class="text-success mb-2">⬆ 12.5% respecto al mes anterior</p>
 
                     <div class="bar">
@@ -144,35 +137,32 @@
                             <span><strong>-- min</strong></span>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <span>Tiempo Promedio de Respuesta a Alertas</span>
-                            <span><strong>-- min</strong></span>
-                        </div>
-                        <div class="d-flex justify-content-between">
                             <span>Tiempo Promedio desde Última Medición</span>
                             <span><strong>-- min</strong></span>
                         </div>
                     </div>
                 </div>
+
                 <!-- Ranking Sensores con Más Alertas -->
                 <div class="ranking-card">
-                <h6>Sensores con Más Alertas</h6>
-                    <table class="ranking-table">
-                        <thead>
-                        <tr>
-                            <th>Sensor</th>
-                            <th>Alertas</th>
-                            <th>%</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Sensor A</td><td>34</td><td>23.4%</td></tr>
-                            <tr><td>Sensor B</td><td>28</td><td>18.9%</td></tr>
-                            <tr><td>Sensor C</td><td>25</td><td>17.2%</td></tr>
-                            <tr><td>Sensor D</td><td>19</td><td>13.1%</td></tr>
-                            <tr><td>Sensor E</td><td>17</td><td>11.5%</td></tr>
-                        </tbody>
-                    </table>
+                  <h6>Sensores con más Alertas</h6>
+                  <table class="ranking-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 20%;">ID Sensor</th>
+                        <th>Críticas</th>
+                        <th>Informativas</th>
+                        <th>Preventivas</th>
+                        <th>Seguridad</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ranking-sensores">
+                      <!-- Se llena dinámicamente con JS -->
+                    </tbody>
+                  </table>
                 </div>
+                
                 <!-- Ranking Sensores con Más Tiempo Fuera de Temp. -->
                 <div class="ranking-card">
                 <h6>Sensores con Más Tiempo Fuera de Temp.</h6>

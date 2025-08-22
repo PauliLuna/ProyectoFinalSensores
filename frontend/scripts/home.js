@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarRankingUsuariosActivos();
     cargarPiePermisosUsuarios();
     cargarAlertasParaBarra();
+    cargarRankingSensores();
 });
 
 // Cargar últimas conexiones de usuarios desde el backend
@@ -469,6 +470,7 @@ async function cargarAlertasParaBarra() {
 
         // Calcular porcentajes
         const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
+        document.getElementById('total_alertas').textContent = total;
         const pctCritica = total ? (counts.critica / total) * 100 : 0;
         const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
         const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
@@ -492,4 +494,59 @@ async function cargarAlertasParaBarra() {
     } catch (error) {
         console.error("Error al cargar alertas para la barra:", error);
     }
+}
+
+async function cargarRankingSensores() {
+  try {
+    const res = await fetch('/alertas', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+    const alertas = await res.json();
+
+    // Agrupar por sensor
+    const agrupado = {};
+
+    alertas.forEach(alerta => {
+      const idSensor = alerta.idSensor || "Desconocido";
+      const tipo = alerta.criticidad || "otro";
+
+      if (!agrupado[idSensor]) {
+        agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, seguridad: 0, total: 0 };
+      }
+
+      if (tipo === "Critica") agrupado[idSensor].criticas++;
+      if (tipo === "Informativa") agrupado[idSensor].informativas++;
+      if (tipo === "Preventiva") agrupado[idSensor].preventivas++;
+      if (tipo === "Seguridad") agrupado[idSensor].seguridad++;
+
+      agrupado[idSensor].total++;
+    });
+
+    // Convertir a array y ordenar por total
+    const ranking = Object.entries(agrupado)
+      .map(([idSensor, data]) => ({ idSensor, ...data }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 3); // Top 3
+
+    // Renderizar filas
+    const tbody = document.getElementById("ranking-sensores");
+    tbody.innerHTML = "";
+
+    ranking.forEach(sensor => {
+      const row = `
+        <tr>
+          <td>${sensor.idSensor}</td>
+          <td>${sensor.criticas}</td>
+          <td>${sensor.informativas}</td>
+          <td>${sensor.preventivas}</td>
+          <td>${sensor.seguridad}</td>
+          <td><strong>${sensor.total}</strong></td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
+
+  } catch (error) {
+    console.error("Error cargando ranking de sensores:", error);
+  }
 }
