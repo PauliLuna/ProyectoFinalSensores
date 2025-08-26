@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, session, request, jsonify
+from flask import Blueprint, current_app
 from controllers.usuario_controller import (
     get_usuarios_controller,
     usuario_actual_controller,
