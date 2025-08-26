@@ -5,6 +5,7 @@ from models.codigo_invitacion import verificar_codigo_invitacion
 from flask_mail import Message
 import datetime, secrets, random, string, re, jwt, os
 from controllers.alerta_controller import _alerta_acceso_nocturno, _alerta_bloqueo_cuenta
+import pytz
 
 
 SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
@@ -286,6 +287,17 @@ def get_ultimas_conexiones_controller(mongo):
     if not idEmpresa:
         return jsonify({"error": "No autorizado"}), 401
     usuarios = get_ultimas_conexiones(mongo, idEmpresa)
+    
+    # Definimos la zona horaria UTC y la zona de Argentina.
+    zona_utc = pytz.timezone('UTC')
+    zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
+    for u in usuarios:
+        u["_id"] = str(u["_id"])
+        fecha_utc = u.get("fechaUltimoAcceso")
+        if fecha_utc:
+            fecha_utc_con_zona = zona_utc.localize(fecha_utc)
+            fecha_argentina = fecha_utc_con_zona.astimezone(zona_argentina)
+            u["fechaUltimoAcceso"] = fecha_argentina.strftime("%d/%m/%Y %H:%M")
     return jsonify(usuarios)
 
 def solicitar_reset_password_controller(mongo):

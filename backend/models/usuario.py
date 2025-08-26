@@ -64,9 +64,4 @@ def get_ultimas_conexiones(mongo, id_empresa):
             {"username": 1, "email": 1, "fechaUltimoAcceso": 1, "estado": 1}
         ).sort("fechaUltimoAcceso", -1).limit(10)
     )
-    for u in usuarios:
-        u["_id"] = str(u["_id"])
-        fecha = u.get("fechaUltimoAcceso")
-        if fecha:
-            u["fechaUltimoAcceso"] = fecha.strftime("%d/%m/%Y %H:%M")
     return usuarios
