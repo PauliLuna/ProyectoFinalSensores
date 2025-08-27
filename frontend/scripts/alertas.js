@@ -570,7 +570,7 @@ function renderAlertasTable(data) {
             <td>${alerta.mensajeAlerta || ''}</td>
             <td>${alerta.idSensor || 'N/A'}</td>
             <td>${alerta.alias || 'N/A'}</td>
-            <td>${alerta.fechaHoraAlerta ? parseFecha(alerta.fechaHoraAlerta).toLocaleString("es-AR") : ''}</td>
+            <td>${alerta.fechaHoraAlerta ? parseFecha(alerta.fechaHoraAlerta).toLocaleString("es-AR", options): ''}</td>
         `;
         tbody.appendChild(tr);
     });
