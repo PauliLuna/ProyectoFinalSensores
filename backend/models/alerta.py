@@ -2,7 +2,7 @@ def get_alertas_filtradas(mongo, id_empresa, tipo=None):
     filtro = {"idEmpresa": id_empresa}
     if tipo:
         filtro["tipoAlerta"] = tipo
-    return list(mongo.db.alertas.find(filtro))
+    return list(mongo.db.alertas.find(filtro).sort("fechaHoraAlerta", -1))
 
 def insert_alerta(mongo, alerta_data):
     return mongo.db.alertas.insert_one(alerta_data).inserted_id
