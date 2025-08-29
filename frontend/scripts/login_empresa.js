@@ -4,15 +4,26 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
+        let hasError = false;
+
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         if (password !== confirmPassword) {
-            alert('Las contraseñas no coinciden. Por favor, inténtelo de nuevo.');
-            return;
+            noMatchPass.style.display = 'block';
+                hasError = true;
+        } else {
+            noMatchPass.style.display = 'none';
         }
 
-        if (!esPasswordFuerte(password)) {
-            alert('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.');
+        if (esPasswordFuerte(password)) {
+            strongPass.style.color = 'rgb(29, 53, 87)';
+        } else {
+            strongPass.style.color = '#e63946';
+            hasError = true;
+        }
+
+        if (hasError) {
+            alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
             return;
         }
 
