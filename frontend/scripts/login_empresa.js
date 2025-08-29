@@ -1,0 +1,88 @@
+// JavaScript para manejar el envío del formulario
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('initialRegistrationForm');
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (password !== confirmPassword) {
+            alert('Las contraseñas no coinciden. Por favor, inténtelo de nuevo.');
+            return;
+        }
+
+        if (!esPasswordFuerte(password)) {
+            alert('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.');
+            return;
+        }
+
+        const mailUsuario = form.email.value;
+        const codeInvitation = form.codeInvitation.value;
+
+        try {
+            const verifyResponse = await fetch('/verificar-codigo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mailUsuario: mailUsuario, codigo: codeInvitation })
+            });
+
+            const verifyResult = await verifyResponse.json();
+
+            if (!verifyResult.valido) {
+                alert("Código de invitación inválido: " + verifyResult.motivo);
+                return;
+            }
+        } catch (error) {
+            console.error("Error al verificar código:", error);
+            alert("Error al verificar el código de invitación.");
+            return;
+        }
+
+        const companyData = new FormData();
+        companyData.append('codeInvitation', codeInvitation);
+        companyData.append('companyName', form.companyName.value);
+        companyData.append('cuil', form.cuil.value);
+        companyData.append('address', form.address.value);
+        companyData.append('pais', form.pais.value);
+        companyData.append('provincia', form.provincia.value);
+        companyData.append('ciudad', form.ciudad.value);
+        companyData.append('cp', form.cp.value);
+
+        const userData = new FormData();
+        userData.append('codeInvitation', codeInvitation);
+        userData.append('email', mailUsuario);
+        userData.append('phone', form.phone.value);
+        userData.append('username', form.username.value);
+        userData.append('password', password);
+
+        try {
+            const responseEmpresa = await fetch('/empresa', {
+                method: 'POST',
+                body: companyData
+            });
+            const resultEmpresa = await responseEmpresa.json();
+
+            userData.append('idEmpresa', resultEmpresa.empresa_id);
+
+            const responseUsuario = await fetch('/usuario', {
+                method: 'POST',
+                body: userData
+            });
+            const resultUsuario = await responseUsuario.json();
+
+            if (responseEmpresa.ok && responseUsuario.ok) {
+                alert("Registro completado correctamente");
+                form.reset();
+                window.location.href = "signin.html";
+            } else {
+                alert("Error en el registro. " +
+                    (resultEmpresa.error || resultUsuario.error || ""));
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error de conexión con el servidor.");
+        }
+    });
+});
