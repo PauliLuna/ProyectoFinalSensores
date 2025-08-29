@@ -22,7 +22,11 @@
                     <div class="form-group mb-3">
                         <label for="codeInvitation">Código de Identificación</label>
                         <input type="text" id="codeInvitation" class="form-control" name="codeInvitation" placeholder="Ingrese el código de identificación" required>
+                        <small id="noMatchCodigo" style="color:#e63946; display:none;">
+                            El código de invitación es inválido.
+                        </small>
                     </div>
+    
 
                     <!-- Datos de la Empresa -->
                     <h3 class="mb-3" style="color:#1D3557;">Datos de la Empresa</h3>
@@ -84,8 +88,8 @@
                         </button>
                     </div>
                     <small id="noMatchPass" style="color:#e63946; display:none;">
-                            Las contraseñas no coinciden. Por favor, inténtelo de nuevo.
-                        </small>
+                        Las contraseñas no coinciden. Por favor, inténtelo de nuevo.
+                    </small>
                     <small id="strongPass" class="text-muted" style="display:block;margin-bottom:0px;">
                             La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.
                         </small>

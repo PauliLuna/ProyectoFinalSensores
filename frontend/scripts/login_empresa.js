@@ -42,8 +42,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const verifyResult = await verifyResponse.json();
 
             if (!verifyResult.valido) {
-                alert("Código de invitación inválido: " + verifyResult.motivo);
+                noMatchCodigo.style.display = 'block';
+                alert("Código de invitación inválido porque " + verifyResult.motivo);
                 return;
+            }else {
+                noMatchCodigo.style.display = 'none';
             }
         } catch (error) {
             console.error("Error al verificar código:", error);
