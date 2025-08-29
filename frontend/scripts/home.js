@@ -423,7 +423,7 @@ function addBarTooltips(counts) {
     // Elimina tooltips previos
     document.querySelectorAll('.bar-tooltip').forEach(t => t.remove());
 
-    ['critica', 'informativa', 'preventiva'].forEach(tipo => {
+    ['critica', 'informativa', 'preventiva', 'seguridad'].forEach(tipo => {
         const el = bar.querySelector('.' + tipo);
         if (!el) return;
 
@@ -435,7 +435,7 @@ function addBarTooltips(counts) {
 
             // Posiciona el tooltip cerca del mouse
             const rect = el.getBoundingClientRect();
-            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.left = (rect.left + rect.width / 3 - tooltip.offsetWidth / 2) + 'px';
             tooltip.style.top = (rect.top - 32) + 'px';
             tooltip.style.opacity = 1;
             el._barTooltip = tooltip;

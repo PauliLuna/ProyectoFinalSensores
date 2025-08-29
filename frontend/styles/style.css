@@ -1199,7 +1199,7 @@ button[disabled] {
     opacity: 0;
     transition: opacity 0.2s;
 }
-.bar .critica, .bar .informativa, .bar .preventiva {
+.bar .critica, .bar .informativa, .bar .preventiva, .bar .seguridad {
     position: relative;
 }
 
