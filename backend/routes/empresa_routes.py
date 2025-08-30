@@ -5,7 +5,6 @@ from utils.auth import token_required
 empresa_bp = Blueprint('empresa_bp', __name__)
 
 @empresa_bp.route('/empresa', methods=['POST'])
-@token_required
 def register_empresa_route():
     mongo = current_app.mongo
     return register_empresa_controller(mongo)
