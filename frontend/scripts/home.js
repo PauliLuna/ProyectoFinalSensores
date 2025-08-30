@@ -507,7 +507,22 @@ async function cargarPorcentajeAlertasMes() {
     const actual = meses[0].count;
     const anterior = meses[1].count;
     const pct = anterior ? (((actual - anterior) / anterior) * 100).toFixed(1) : 0;
-    document.getElementById('porcentajeAlertasMes').textContent = `⬆ ${pct}% respecto al mes anterior`;
+    const spanPct = document.getElementById('porcentajeAlertasMes');
+
+    // Definir mensaje y color según el valor
+    if (pct > 0) {
+        spanPct.textContent = `⬆ ${pct}% respecto al mes anterior`;
+        spanPct.classList.remove("text-danger");
+        spanPct.classList.add("text-success");
+    } else if (pct < 0) {
+        spanPct.textContent = `⬇ ${Math.abs(pct)}% respecto al mes anterior`;
+        spanPct.classList.remove("text-success");
+        spanPct.classList.add("text-danger");
+    } else {
+        spanPct.textContent = `= ${pct}% respecto al mes anterior`;
+        spanPct.classList.remove("text-success", "text-danger");
+    }
+
 }
 
 async function cargarRankingSensores() {
