@@ -7,6 +7,16 @@ def get_alertas_filtradas(mongo, id_empresa, tipo=None):
 def insert_alerta(mongo, alerta_data):
     return mongo.db.alertas.insert_one(alerta_data).inserted_id
 
+def update_alerta(mongo, sensor, id_empresa, fuera_rango_inicio, duracion):
+    mongo.db.alertas.update_one(
+        {
+            "idSensor": str(sensor["nroSensor"]),
+            "idEmpresa": id_empresa,
+            "tipoAlerta": "Temperatura fuera de rango",
+            "fechaHoraAlerta": fuera_rango_inicio
+        },
+        {"$set": {"duracionMinutos": duracion}}
+    )
 
 def get_alertas_caida_de_energia(mongo, id_empresa, direccion):
     """

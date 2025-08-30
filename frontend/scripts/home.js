@@ -81,6 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarPiePermisosUsuarios();
     cargarAlertasParaBarra();
     cargarPorcentajeAlertasMes();
+    cargarPromedioFueraRango();
+    cargarPromedioOffline();
     cargarRankingSensores();
 });
 
@@ -523,6 +525,22 @@ async function cargarPorcentajeAlertasMes() {
         spanPct.classList.remove("text-success", "text-danger");
     }
 
+}
+
+async function cargarPromedioFueraRango() {
+    const res = await fetch('/promedio_fuera_rango', {
+        headers: { 'Authorization': 'Bearer ' + token } 
+    });
+    const { promedio } = await res.json();
+    document.getElementById('tiempoPromFueraRango').textContent = `${promedio.toFixed(1)} min`;
+}
+
+async function cargarPromedioOffline() {
+    const res = await fetch('/promedio_offline', { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    });
+    const { promedio } = await res.json();
+    document.getElementById('tiempoPromOffline').textContent = `${promedio.toFixed(1)} min`;
 }
 
 async function cargarRankingSensores() {
