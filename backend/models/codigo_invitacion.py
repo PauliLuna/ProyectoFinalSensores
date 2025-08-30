@@ -33,3 +33,14 @@ def verificar_codigo_invitacion(mongo, mailUsuario, codigo_ingresado):
     )
 
     return {"valido": True, "motivo": "Código válido"}
+
+def updateCondigoInvitacionEmpresa(mongo, idmpresa, codInvitacion):
+    """
+    Actualiza el campo idEmpresa en el código de invitación utilizado.
+    """
+    collection = mongo.db.codigoInvitacion
+    result = collection.update_one(
+        {"codigo": codInvitacion},
+        {"$set": {"idEmpresa": idmpresa}}
+    )
+    return result.modified_count > 0

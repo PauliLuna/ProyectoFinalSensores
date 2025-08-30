@@ -1,5 +1,6 @@
 from flask import request, jsonify, session
 from models.empresa import insert_empresa, get_empresa
+from models.codigo_invitacion import updateCondigoInvitacionEmpresa
 from bson import ObjectId
 
 def register_empresa_controller(mongo):
@@ -19,6 +20,7 @@ def register_empresa_controller(mongo):
     }
 
     empresa_id = insert_empresa(mongo, empresa_data)
+    updateCondigoInvitacionEmpresa(mongo, empresa_id, empresa_data["codeInvitation"])
     return jsonify({"message": "empresa registrado correctamente", "empresa_id": empresa_id}), 201
 
 
