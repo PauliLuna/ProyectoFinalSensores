@@ -508,15 +508,18 @@ async function cargarRankingSensores() {
 
     alertas.forEach(alerta => {
       const idSensor = alerta.idSensor || "Desconocido";
-      const tipo = alerta.criticidad || "otro";
+      let crit = (alerta.criticidad || "")
+        .toLowerCase()
+        .normalize("NFD")               // descompone tildes
+        .replace(/[\u0300-\u036f]/g, ""); // elimina tildes
 
       if (!agrupado[idSensor]) {
         agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, total: 0 };
       }
 
-      if (tipo === "Critica") agrupado[idSensor].criticas++;
-      if (tipo === "Informativa") agrupado[idSensor].informativas++;
-      if (tipo === "Preventiva") agrupado[idSensor].preventivas++;
+      if (crit === "critica") agrupado[idSensor].criticas++;
+      else if (crit === "informativa") agrupado[idSensor].informativas++;
+      else if (crit === "preventiva") agrupado[idSensor].preventivas++;
 
       agrupado[idSensor].total++;
     });
