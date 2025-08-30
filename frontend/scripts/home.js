@@ -511,13 +511,12 @@ async function cargarRankingSensores() {
       const tipo = alerta.criticidad || "otro";
 
       if (!agrupado[idSensor]) {
-        agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, seguridad: 0, total: 0 };
+        agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, total: 0 };
       }
 
       if (tipo === "Critica") agrupado[idSensor].criticas++;
       if (tipo === "Informativa") agrupado[idSensor].informativas++;
       if (tipo === "Preventiva") agrupado[idSensor].preventivas++;
-      if (tipo === "Seguridad") agrupado[idSensor].seguridad++;
 
       agrupado[idSensor].total++;
     });
@@ -539,7 +538,6 @@ async function cargarRankingSensores() {
           <td>${sensor.criticas}</td>
           <td>${sensor.informativas}</td>
           <td>${sensor.preventivas}</td>
-          <td>${sensor.seguridad}</td>
           <td><strong>${sensor.total}</strong></td>
         </tr>
       `;
