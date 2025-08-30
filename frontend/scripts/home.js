@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarRankingUsuariosActivos();
     cargarPiePermisosUsuarios();
     cargarAlertasParaBarra();
+    cargarPorcentajeAlertasMes();
     cargarRankingSensores();
 });
 
@@ -494,6 +495,19 @@ async function cargarAlertasParaBarra() {
     } catch (error) {
         console.error("Error al cargar alertas para la barra:", error);
     }
+}
+
+async function cargarPorcentajeAlertasMes() {
+    const res = await fetch('/alertas_por_mes', { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    });
+    const meses = await res.json();
+    if (meses.length < 2) return;
+
+    const actual = meses[0].count;
+    const anterior = meses[1].count;
+    const pct = anterior ? (((actual - anterior) / anterior) * 100).toFixed(1) : 0;
+    document.getElementById('porcentajeAlertasMes').textContent = `⬆ ${pct}% respecto al mes anterior`;
 }
 
 async function cargarRankingSensores() {

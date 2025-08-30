@@ -23,6 +23,22 @@ def get_alertas():
         return obtener_alertas_por_sensor(mongo, sensor_id)
     else:
         return obtener_alertas(mongo)
+    
+@alerta_bp.route('/alertas_por_mes', methods=['GET'])
+@token_required
+def alertas_por_mes():
+    mongo = current_app.mongo
+    id_empresa = session.get("idEmpresa")
+    pipeline = [
+        {"$match": {"idEmpresa": id_empresa}},
+        {"$group": {
+            "_id": {"year": {"$year": "$fechaHoraAlerta"}, "month": {"$month": "$fechaHoraAlerta"}},
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id.year": -1, "_id.month": -1}}
+    ]
+    result = list(mongo.db.alertas.aggregate(pipeline))
+    return jsonify(result), 200
 
 @alerta_bp.route('/alertas', methods=['POST'])
 @token_required
