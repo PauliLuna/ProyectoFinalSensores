@@ -1,5 +1,9 @@
 from flask import jsonify, request, session, current_app
-from models.alerta import get_alertas_filtradas,  insert_alerta, get_alertas_caida_de_energia, get_alertas_puerta_abierta
+from models.alerta import (
+    get_alertas_filtradas,  
+    insert_alerta, 
+    get_alertas_caida_de_energia, 
+    get_alertas_puerta_abierta)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -525,35 +529,71 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             mensaje = "Temperatura interna baja"
             descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {sensor['nroSensor']}."
 
-        alerta_data = {
-            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
+        # 🚨 Crear nueva alerta (solo si no hay una ya abierta)
+        alerta_existente = mongo.db.alertas.find_one({
+            "idSensor": str(sensor["nroSensor"]),
             "idEmpresa": id_empresa,
             "criticidad": "Crítica",
             "tipoAlerta": "Temperatura fuera de rango",
             "descripcion": descripcion,
             "mensajeAlerta": mensaje,
-            "fechaHoraAlerta": fecha_actual
-        }
-        print(f"[DEBUG] Insertando alerta: {alerta_data}")
-        alerta_id = insert_alerta(mongo, alerta_data)
-        print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
-        
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
-        print(f"[DEBUG] Emails asignados para alerta: {emails}")
-        if emails:
-            _enviar_mail_alerta(
-                emails, 
-                "Temperatura fuera de rango", 
-                descripcion, 
-                "Crítica", 
-                sensor, 
-                mensaje, 
-                fecha_actual,
-                "termi-alerta"
-            )
-        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+            "fechaHoraAlerta": fecha_actual,
+            "duracionMinutos": None  # significa que sigue abierta
+        })
 
-    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
+        if not alerta_existente:
+            # Insertar alerta SIN duración
+            alerta_data = {
+                "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
+                "idEmpresa": id_empresa,
+                "criticidad": "Crítica",
+                "tipoAlerta": "Temperatura fuera de rango",
+                "descripcion": descripcion,
+                "mensajeAlerta": mensaje,
+                "fechaHoraAlerta": fecha_actual,
+                "duracionMinutos": None  
+            }
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
+            
+            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+            print(f"[DEBUG] Emails asignados para alerta: {emails}")
+            if emails:
+                _enviar_mail_alerta(
+                    emails, 
+                    "Temperatura fuera de rango", 
+                    descripcion, 
+                    "Crítica", 
+                    sensor, 
+                    mensaje, 
+                    fecha_actual,
+                    "termi-alerta"
+                )
+            return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+    else:
+        # ✅ Cerrar alerta si existe abierta
+        alerta_abierta = mongo.db.alertas.find_one({
+            "idSensor": str(sensor["nroSensor"]),
+            "idEmpresa": id_empresa,
+            "tipoAlerta": "Temperatura fuera de rango",
+            "duracionMinutos": None
+        })
+        if alerta_abierta:
+            inicio = alerta_abierta["fechaHoraAlerta"]
+            # El sensor volvió al rango, calcula duración
+            duracion = (fecha_actual - inicio).total_seconds() / 60  # minutos
+            # Actualiza la última alerta de este tipo con la duración
+            #update_alerta(mongo, sensor, id_empresa, inicio_alerta, duracion)
+            #inicio_alerta = None  # Resetea el flag
+
+            mongo.db.alertas.update_one(
+                {"_id": alerta_abierta["_id"]},
+                {"$set": {"duracionMinutos": duracion}}
+            )
+            print(f"✅ ALERTA TEMP cerrada  duración {duracion:.1f} min")
+
+        return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 
 def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa):
