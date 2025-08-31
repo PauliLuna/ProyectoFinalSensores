@@ -9,6 +9,7 @@ def register_empresa_route():
     mongo = current_app.mongo
     return register_empresa_controller(mongo)
 
+# Utils
 @empresa_bp.route('/empresa_nombre', methods=['GET'])
 @token_required
 def get_empresa_nombre():

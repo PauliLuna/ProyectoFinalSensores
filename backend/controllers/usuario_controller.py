@@ -7,8 +7,8 @@ import datetime, secrets, random, string, re, jwt, os
 from controllers.alerta_controller import _alerta_acceso_nocturno, _alerta_bloqueo_cuenta
 import pytz
 
-
 SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
+
 
 def get_usuarios_controller(mongo):
     id_empresa = session.get('idEmpresa')
@@ -30,24 +30,14 @@ def usuario_actual_controller(mongo):
             "username": usuario.get("username", ""),
             "phone": usuario.get("phone", ""),
             "roles": usuario.get("roles", ""),
-            "notificacionesAlertas": usuario.get("notificacionesAlertas", {
-                "critica": True,
-                "informativa": True,
-                "preventiva": True,
-                "seguridad": True
-            })
+            "notificacionesAlertas": usuario.get("notificacionesAlertas") #Delete by default fields
         })
     elif request.method == 'PUT':
         data = request.get_json()
         update_fields = {
             "username": data.get("username", usuario.get("username", "")),
             "phone": data.get("phone", usuario.get("phone", "")),
-            "notificacionesAlertas": data.get("notificacionesAlertas", usuario.get("notificacionesAlertas", {
-                "critica": True,
-                "informativa": True,
-                "preventiva": True,
-                "seguridad": True
-            }))
+            "notificacionesAlertas": data.get("notificacionesAlertas", usuario.get("notificacionesAlertas")) #Delete by default fields
         }
         if data.get("newPassword"):
             current_password = data.get("currentPassword", "")
@@ -77,10 +67,10 @@ def register_usuario_controller(mongo):
             "critica": True,
             "informativa": True,
             "preventiva": True,
-            "seguridad": True
+            "seguridad": True # superAdmin recibe todas las alertas
         }
     }
-    user_id = insert_usuario(mongo, usuario_data)
+    insert_usuario(mongo, usuario_data)
     return jsonify({"message": "Usuario registrado correctamente", "user_email": usuario_data.get("email")}), 201
 
 def invite_user_controller(mongo):
@@ -178,6 +168,7 @@ def invite_user_controller(mongo):
         return jsonify({"error": f"Error al enviar el correo: {str(e)}"}), 500
     return jsonify({"message": f"Se mandó un correo de invitación a {email}"}), 200
 
+#Login_usuario
 def complete_registration_controller(mongo):
     email = request.form.get('email').strip().lower()
     username = request.form.get('username')
@@ -202,10 +193,10 @@ def complete_registration_controller(mongo):
             "critica": True,
             "informativa": True,
             "preventiva": True,
-            "seguridad": True
+            "seguridad": False # Usuario común no recibe alertas de seguridad por defecto
         }
     }
-    mongo.db.usuarios.update_one({"email": email}, {"$set": update_fields})
+    update_usuario_email(mongo, email, update_fields)
     return jsonify({
         "message": "Registro completado correctamente",
         "user_email": email
@@ -375,14 +366,6 @@ def solicitar_reset_password_controller(mongo):
     mail.send(msg)
     return jsonify({"message": "Se ha enviado un correo con instrucciones para restablecer tu contraseña."})
 
-def es_password_fuerte(password):
-    return (
-        len(password) >= 8 and
-        re.search(r'[A-Z]', password) and
-        re.search(r'[a-z]', password) and
-        re.search(r'[^A-Za-z0-9]', password)
-    )
-
 def reset_password_controller(mongo):
     data = request.get_json()
     token = data.get('token')
@@ -398,8 +381,6 @@ def reset_password_controller(mongo):
         return jsonify({"error": "Token expirado"}), 400
     if validate_only:
         return jsonify({"message": "Token válido"}), 200
-    if not es_password_fuerte(new_password):
-        return jsonify({"error": "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo."}), 400
     email = token_doc['email']
     hashed = generate_password_hash(new_password, method='pbkdf2:sha256')
     update_usuario_password(mongo, email, hashed)

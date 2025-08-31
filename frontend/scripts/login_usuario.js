@@ -44,3 +44,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+// Registro de usuario invitado
+async function registrarUsuario(formData) {
+    const response = await fetch('/complete_registration', {
+        method: 'POST',
+        body: formData,
+    });
+    return response.json();
+}

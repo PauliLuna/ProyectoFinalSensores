@@ -42,7 +42,7 @@ document.getElementById('resetPasswordForm').addEventListener('submit', async fu
         return;
     }
     
-    const data = await resetearPassword(token, newPassword);
+    const data = await resetearPassword(token, newPassword); // from usuarios.js
 
     if (data.message) {
         document.getElementById('resetResult').textContent = "¡Contraseña restablecida con éxito! Redirigiendo...";

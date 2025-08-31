@@ -38,6 +38,7 @@ async function cargarPerfil() {
     document.getElementById('notifPreventiva').checked = !!prefs.preventiva;
     document.getElementById('notifSeguridad').checked = !!prefs.seguridad;
 }
+
 cargarPerfil();
 
 // 2. Guardar cambios en el perfil
@@ -73,7 +74,7 @@ document.getElementById('profileForm').addEventListener('submit', async function
         }
     };
     
-    const result = await actualizarPerfil(body);
+    const result = await actualizarPerfil(body); // from usuarios.js
 
     if (result.message) {
         document.getElementById('successMessage').textContent = "¡Perfil actualizado con éxito!";
@@ -96,4 +97,3 @@ window.onclick = function(event) {
         modal.style.display = 'none';
     }
 };
-// 4. Función para mostrar/ocultar contraseñas
