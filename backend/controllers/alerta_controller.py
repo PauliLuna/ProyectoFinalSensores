@@ -1,10 +1,5 @@
 from flask import jsonify, request, session, current_app
-from models.alerta import (
-    get_alertas_filtradas, 
-    insert_alerta, 
-    get_alertas_caida_de_energia, 
-    get_alertas_puerta_abierta, 
-    update_alerta)
+from models.alerta import get_alertas_filtradas,  insert_alerta, get_alertas_caida_de_energia, get_alertas_puerta_abierta
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -135,7 +130,6 @@ def chequear_alertas_criticas(mongo, id_empresa):
         prev_med = None
         en_ciclo = False
         inicio_ciclo = None
-        inicio_alerta= None
 
         # 3️⃣ Analizar mediciones
         for med in mediciones:
@@ -187,7 +181,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
                     total_alertas_generadas += alertas_generadas_ciclo
 
                 # Alerta temp fuera de rango
-                total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa, inicio_alerta)
+                total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
 
             prev_med = med    
 
@@ -444,7 +438,6 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     """Detecta huecos de tiempo sin mediciones"""
     gap = fecha_actual - prev_med["fechaHoraMed"]
     if gap >= timedelta(minutes=10):
-        duracion = gap.total_seconds() / 60  # minutos
         print(f"⚠️ ALERTA: sensor {sensor['nroSensor']} sin mediciones por {gap}")
 
         alerta_data = {
@@ -454,8 +447,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             "tipoAlerta": "Sensor offline",
             "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
             "mensajeAlerta": "Sensor offline (sin mediciones)",
-            "fechaHoraAlerta": fecha_actual, 
-            "duracionMinutos": duracion  # Duración del offline en minutos
+            "fechaHoraAlerta": fecha_actual
         }
         print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
@@ -521,18 +513,18 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
     return puerta_estado == 1, alertas_generadas  # ⚠️ Devuelve el estado y el contador
 
 
-def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa, inicio_alerta):
+def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa):
     """Detecta temperatura fuera de rango"""
     if temp > valor_max or temp < valor_min:
         print(f"⚠️ ALERTA: temp={temp}°C fuera de rango ({valor_min}, {valor_max}) para sensor {sensor['nroSensor']}")
-        # Generar mensaje y descripción
+         # Generar mensaje y descripción
         if temp > valor_max:
             mensaje = "Temperatura interna alta"
             descripcion = f"La temperatura actual ({temp}°C) excede el límite superior ({valor_max}°C) para el sensor {sensor['nroSensor']}."
         else:
             mensaje = "Temperatura interna baja"
             descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {sensor['nroSensor']}."
-        # Insertar alerta SIN duración
+
         alerta_data = {
             "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
             "idEmpresa": id_empresa,
@@ -559,16 +551,9 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
                 fecha_actual,
                 "termi-alerta"
             )
-        inicio_alerta = fecha_actual  # Marca el inicio
         return 1  # ⚠️ Devuelve 1 si se insertó una alerta
-    else:
-        # El sensor volvió al rango, calcula duración
-        duracion = (fecha_actual - inicio_alerta).total_seconds() / 60  # minutos
-        # Actualiza la última alerta de este tipo con la duración
-        update_alerta(mongo, sensor, id_empresa, inicio_alerta, duracion)
-        inicio_alerta = None  # Resetea el flag
 
-        return 0  # ⚠️ Devuelve 0 si no se insertó alerta
+    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 
 def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa):

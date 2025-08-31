@@ -40,44 +40,6 @@ def alertas_por_mes():
     result = list(mongo.db.alertas.aggregate(pipeline))
     return jsonify(result), 200
 
-@alerta_bp.route('/promedio_fuera_rango', methods=['GET'])
-@token_required
-def promedio_fuera_rango():
-    mongo = current_app.mongo
-    id_empresa = session.get("idEmpresa")
-    alertas = list(mongo.db.alertas.find({
-        "idEmpresa": id_empresa,
-        "tipoAlerta": "Temperatura fuera de rango"
-    }))
-    total_min = 0
-    count = 0
-    for alerta in alertas:
-        duracion = alerta.get("duracionMinutos")  # Debe estar en minutos
-        if duracion:
-            total_min += duracion
-            count += 1
-    promedio = (total_min / count) if count else 0
-    return jsonify({"promedio": promedio}), 200
-
-@alerta_bp.route('/promedio_offline', methods=['GET'])
-@token_required
-def promedio_offline():
-    mongo = current_app.mongo
-    id_empresa = session.get("idEmpresa")
-    alertas = list(mongo.db.alertas.find({
-        "idEmpresa": id_empresa,
-        "tipoAlerta": "Sensor offline"
-    }))
-    total_min = 0
-    count = 0
-    for alerta in alertas:
-        duracion = alerta.get("duracionMinutos")  # Debe estar en minutos
-        if duracion:
-            total_min += duracion
-            count += 1
-    promedio = (total_min / count) if count else 0
-    return jsonify({"promedio": promedio}), 200
-
 @alerta_bp.route('/alertas', methods=['POST'])
 @token_required
 def post_alerta():
