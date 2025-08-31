@@ -59,21 +59,21 @@
                 </div>
 
                 <div class="kpi-cards" style="max-width: 1000px;">
-                      <div class="kpi-card success kpi-home">
-                        <p id="sensores-en-rango" class="kpi-alerta-numero"></p>
-                        <div class="kpi-alerta-texto">
+                      <div class="kpi-card success kpi-home" >
+                        <p id="sensores-en-rango" class="kpi-alerta-numero" style="cursor: pointer;"></p>
+                        <div class="kpi-alerta-texto" style="cursor: pointer;">
                             <h3>Sensores en Rango</h3>
                         </div>
                     </div>
                     <div class="kpi-card warning kpi-home">
-                      <p id="sensores-fuera-rango" class="kpi-alerta-numero"></p>
-                      <div class="kpi-alerta-texto">
+                      <p id="sensores-fuera-rango" class="kpi-alerta-numero" style="cursor: pointer;"></p>
+                      <div class="kpi-alerta-texto" style="cursor: pointer;">
                           <h3>Sensores Fuera de Rango</h3>
                       </div>
                   </div>
                   <div class="kpi-card offline kpi-home">
-                      <p id="sensores-fallo" class="kpi-alerta-numero"></p>
-                      <div class="kpi-alerta-texto">
+                      <p id="sensores-fallo" class="kpi-alerta-numero" style="cursor: pointer;"></p>
+                      <div class="kpi-alerta-texto"style="cursor: pointer;">
                           <h3>Sensores sin Señal (offline)</h3>
                       </div>
                   </div>
@@ -87,23 +87,14 @@
                   </div>
                 </div>
 
-                <h5 class="mb-3">KPIs Predictivos</h5>
+                <h5 class="mb-3" style="margin-bottom: 3px !important;">KPIs Seguimiento</h5>
 
                 <!-- Gráfico de Tendencia de Temperatura Promedio -->
-                <div class="ranking-card">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="text-primary mb-0">Tendencia Temp. Promedio</h6>
-                    <div class="dropdown">
-                      <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="dropdownPeriodo" data-bs-toggle="dropdown" aria-expanded="false">
-                        Periodo
-                      </button>
-                      <ul class="dropdown-menu" aria-labelledby="dropdownPeriodo">
-                        <li><a class="dropdown-item" href="#" onclick="cambiarPeriodo('7d')">Próximos 7 días</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="cambiarPeriodo('30d')">Próximos 30 días</a></li>
-                      </ul>
+                <div id="chart-section" class="charts-section">
+                    <div class="chart-container" style="border: 0px">
+                        <h5 >Alertas por Sucursal y Tipo</h5>
+                        <canvas id="alertasSucursalesChart"></canvas>
                     </div>
-                  </div>
-                  <canvas id="chart-tendencia-temp" height="180" style="width:100%;"></canvas>
                 </div>
             </div>
 

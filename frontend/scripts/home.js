@@ -28,12 +28,17 @@ if (!token || isTokenExpired(token)) {
 // Cargar datos de KPIs desde el backend
 async function cargarKPIs() {
     try {
-        const res = await fetch('/sensores', {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        });
-        const sensores = await res.json();
+        // Usa Promise.all para hacer las llamadas en paralelo
+        const [sensoresRes, alertasRes] = await Promise.all([
+            fetch('/sensores', { headers: { 'Authorization': 'Bearer ' + token } }),
+            fetch('/alertas', { headers: { 'Authorization': 'Bearer ' + token } })
+        ]);
+
+        const sensores = await sensoresRes.json();
+        const alertas = await alertasRes.json();
+
+        // ⚠️ Pasa ambos arrays a la función del gráfico
+        renderAlertaSucursalesChart(alertas, sensores);
 
         // Total de sensores
         document.getElementById('total-sensores').textContent = sensores.length;
@@ -79,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarUltimasConexiones();
     cargarRankingUsuariosActivos();
     cargarPiePermisosUsuarios();
+
     cargarAlertasParaBarra();
     cargarPorcentajeAlertasMes();
     cargarRankingSensores();
@@ -415,6 +421,135 @@ async function cargarPiePermisosUsuarios() {
             }
         }
     });
+}
+
+// Variable global para almacenar el gráfico
+let alertasSucursalesChart = null;
+
+/**
+ * Procesa las alertas y genera un gráfico de barras agrupadas por sucursal.
+ * @param {Array} alertas - Array de objetos de alerta.
+ * @param {Array} sensores - Array de objetos de sensor, necesario para obtener la dirección.
+ */
+function renderAlertaSucursalesChart(alertas, sensores) {
+    if (!alertas || alertas.length === 0 || !sensores || sensores.length === 0) {
+        console.log("No hay datos suficientes para mostrar el gráfico de sucursales.");
+        const chartDiv = document.getElementById('chart-section');
+        if (chartDiv) chartDiv.style.display = 'none';
+        return;
+    }
+
+    // ---------- MAPA: nroSensor -> direccion ----------
+    const sensoresMap = sensores.reduce((map, sensor) => {
+        // soporta variantes y normaliza a string
+        const rawKey = sensor.nroSensor;
+        if (rawKey != null) {
+            const key = String(rawKey).trim();
+            map[key] = (sensor.direccion || '').trim() || 'Sin Dirección';
+        }
+        return map;
+    }, {});
+
+    // Debug: muestra algunas claves para confirmar
+    console.debug('Sensores cargados (ejemplo claves):', Object.keys(sensoresMap).slice(0, 20));
+
+    // ---------- AGRUPAR ALERTAS ----------
+    const dataAgrupada = alertas
+        .filter(alerta => {
+            const crit = (alerta.criticidad || '')
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+            return crit !== 'seguridad';
+        })
+        .reduce((acc, alerta) => {
+            // tomar id de la alerta (idSensor en alertas) y normalizar a string
+            const rawSensorId = alerta.idSensor;
+            const sensorKey = rawSensorId != null ? String(rawSensorId).trim() : null;
+
+            // buscar por nroSensor en el mapa
+            const direccion = sensorKey && sensoresMap.hasOwnProperty(sensorKey)
+                ? sensoresMap[sensorKey]
+                : 'Sin Dirección';
+
+            // normalizar criticidad
+            const criticidadNormalizada = (alerta.criticidad || '')
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            if (!acc[direccion]) {
+                acc[direccion] = { critica: 0, informativa: 0, preventiva: 0 };
+            }
+            if (acc[direccion].hasOwnProperty(criticidadNormalizada)) {
+                acc[direccion][criticidadNormalizada]++;
+            } else {
+                // Si llega un tipo nuevo, lo incluimos como informativa por defecto (opcional)
+                // O comentar la línea siguiente si preferís ignorar tipos desconocidos.
+                // acc[direccion].informativa++;
+            }
+
+            return acc;
+        }, {});
+
+    // Debug: ver cuántas alertas quedaron sin match
+    const sinMatch = alertas.filter(a => {
+        const key = a.idSensor;
+        return !key || !sensoresMap.hasOwnProperty(String(key).trim());
+    }).length;
+    console.debug('Alertas sin match (caen en "Sin Dirección"):', sinMatch);
+
+    // ---------- PREPARAR Y RENDERIZAR GRÁFICO ----------
+    const sucursales = Object.keys(dataAgrupada);
+    const tiposAlerta = ['critica', 'informativa', 'preventiva'];
+    
+    const colores = {
+        critica: '#ef4444',
+        informativa: '#facc15',
+        preventiva: '#7F8C8D'
+        
+    };
+
+    const datasets = tiposAlerta.map(tipo => ({
+        label: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+        data: sucursales.map(sucursal => dataAgrupada[sucursal][tipo]),
+        backgroundColor: colores[tipo],
+        borderColor: colores[tipo],
+        borderWidth: 1
+    }));
+
+    const ctx = document.getElementById('alertasSucursalesChart').getContext('2d');
+    if (alertasSucursalesChart) {
+        alertasSucursalesChart.destroy();
+    }
+
+    alertasSucursalesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sucursales,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    stacked: false,
+                    title: { display: true, text: 'Sucursales' }
+                },
+                y: {
+                    stacked: false,
+                    title: { display: true, text: 'Cantidad de Alertas' },
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { mode: 'index', intersect: false }
+            }
+        }
+    });
+
 }
 
 function addBarTooltips(counts) {
