@@ -915,6 +915,34 @@ document.getElementById('btnDescargar').addEventListener('click', async () => {
 
         y += cardHeight + marginY + 5;
 
+        // ---  SECCIÓN DE ALERTAS ---
+        const sensorNroForAlerts = document.getElementById('sensor-nro').textContent;
+        const alertCounts = await cargarAlertasParaBarra(sensorNroForAlerts);
+
+        // Subtítulo de la sección de alertas
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(mainTitleColor[0], mainTitleColor[1], mainTitleColor[2]);
+        pdf.text('Resumen de Alertas', margin, y);
+        y += 8;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        pdf.setTextColor(subtitleColor[0], subtitleColor[1], subtitleColor[2]);
+        
+        // Mostrar el total de alertas
+        pdf.text(`Total de alertas detectadas: ${alertCounts.total}`, margin, y);
+        y += 8;
+
+        // Mostrar el desglose por tipo de alerta
+        pdf.setTextColor([74, 74, 74][0], [74, 74, 74][1], [74, 74, 74][2]);
+        pdf.text(`- Críticas: ${alertCounts.critica}`, margin + 5, y);
+        y += 5;
+        pdf.text(`- Preventivas: ${alertCounts.preventiva}`, margin + 5, y);
+        y += 5;
+        pdf.text(`- Informativas: ${alertCounts.informativa}`, margin + 5, y);
+        y += 5;
+
         // Línea separadora
         pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
         pdf.line(margin, y, pageWidth - margin, y);
@@ -1174,8 +1202,17 @@ async function cargarAlertasParaBarra(nroSensor) {
     
         // Agregar tooltips
         addBarTooltips(counts);
+
+        // Retornar las cantidades y el total para que sean accesibles fuera de la función
+        return {
+            critica: counts.critica,
+            informativa: counts.informativa,
+            preventiva: counts.preventiva,
+            total: total
+        }
     
     } catch (error) {
         console.error("Error al cargar alertas para la barra:", error);
+        return { critica: 0, informativa: 0, preventiva: 0, seguridad: 0, total: 0 };
     }
 }
