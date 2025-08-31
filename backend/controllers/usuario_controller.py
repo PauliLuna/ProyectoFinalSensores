@@ -171,16 +171,12 @@ def invite_user_controller(mongo):
 #Login_usuario
 def complete_registration_controller(mongo):
     email = request.form.get('email').strip().lower()
-    username = request.form.get('username')
-    phone = request.form.get('phone')
-    password = request.form.get('password')
-    codigo = request.form.get('codigo')
-    resultado = verificar_codigo_invitacion(mongo, email, codigo)
-    if not resultado.get("valido"):
-        return jsonify({"error": resultado.get("motivo", "Código inválido")}), 400
     usuario = get_usuario_by_email(mongo, email)
     if not usuario:
         return jsonify({"error": "Usuario no encontrado"}), 404
+    username = request.form.get('username')
+    phone = request.form.get('phone')
+    password = request.form.get('password')
     now = datetime.datetime.now()
     update_fields = {
         "username": username,
@@ -196,7 +192,7 @@ def complete_registration_controller(mongo):
             "seguridad": False # Usuario común no recibe alertas de seguridad por defecto
         }
     }
-    update_usuario_email(mongo, email, update_fields)
+    update_usuario_email(mongo, email, update_fields) # Porque ya está invitado, se busca por email
     return jsonify({
         "message": "Registro completado correctamente",
         "user_email": email

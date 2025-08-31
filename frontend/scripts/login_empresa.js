@@ -31,15 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const codeInvitation = form.codeInvitation.value;
 
         try {
-            const verifyResponse = await fetch('/verificar-codigo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ mailUsuario: mailUsuario, codigo: codeInvitation })
-            });
-
-            const verifyResult = await verifyResponse.json();
+            
+            const verifyResult = await verificarCodigo(mailUsuario, codeInvitation)
 
             if (!verifyResult.valido) {
                 noMatchCodigo.style.display = 'block';

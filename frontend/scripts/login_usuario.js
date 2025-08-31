@@ -27,6 +27,26 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const mailUsuario = document.getElementById('email').value;
+        const codeInvitation = document.getElementById('codigo').value;
+
+        try {
+            
+            const verifyResult = await verificarCodigo(mailUsuario, codeInvitation)
+
+            if (!verifyResult.valido) {
+                noMatchCodigo.style.display = 'block';
+                alert("Código de invitación inválido porque " + verifyResult.motivo);
+                return;
+            }else {
+                noMatchCodigo.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error al verificar código:", error);
+            alert("Error al verificar el código de invitación.");
+            return;
+        }
+
         const formData = new FormData(this);
         try {
             const result = await registrarUsuario(formData);
