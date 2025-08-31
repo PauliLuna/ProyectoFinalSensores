@@ -39,6 +39,7 @@ async function cargarKPIs() {
 
         // ⚠️ Pasa ambos arrays a la función del gráfico
         renderAlertaSucursalesChart(alertas, sensores);
+        renderAlertasRecurrentesTable(alertas, sensores);
 
         // Total de sensores
         document.getElementById('total-sensores').textContent = sensores.length;
@@ -551,6 +552,95 @@ function renderAlertaSucursalesChart(alertas, sensores) {
     });
 
 }
+
+/**
+ * Genera y renderiza una tabla con las alertas más recurrentes por sucursal.
+ * @param {Array} alertas - Array de objetos de alerta.
+ * @param {Array} sensores - Array de objetos de sensor.
+ */
+function renderAlertasRecurrentesTable(alertas, sensores) {
+    if (!alertas || alertas.length === 0 || !sensores || sensores.length === 0) {
+        document.getElementById('ranking-alertas-recurrentes-tbody').innerHTML = '<tr><td colspan="3" class="text-center">No hay datos suficientes para mostrar el ranking.</td></tr>';
+        return;
+    }
+
+   // 1. Crear un mapa de sensores: nroSensor -> dirección
+    const sensoresMap = sensores.reduce((map, sensor) => {
+        const key = sensor.nroSensor ?? sensor.idSensor ?? sensor.id ?? sensor._id ?? sensor.sensorId;
+        if (key != null) {
+            map[String(key).trim()] = sensor.direccion || 'Sin Dirección';
+        }
+        return map;
+    }, {});
+
+    // 2. Agrupar y contar las alertas por sucursal y tipo
+    const dataAgrupada = alertas
+        .filter(alerta => {
+            const crit = (alerta.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return crit !== 'seguridad' && alerta.idSensor;
+        })
+        .reduce((acc, alerta) => {
+            const sensorKey = String(alerta.idSensor).trim();
+            const direccion = sensoresMap[sensorKey] || 'Sin Dirección';
+            const tipoAlerta = alerta.tipoAlerta || 'Desconocido';
+            const criticidad = alerta.criticidad || 'N/A';
+            
+            if (!acc[direccion]) acc[direccion] = {};
+
+            if (!acc[direccion][tipoAlerta]) {
+                acc[direccion][tipoAlerta] = { count: 0, criticidad: criticidad };
+            }
+            acc[direccion][tipoAlerta].count++;
+            return acc;
+        }, {});
+    
+    // 3. Generar el ranking top 3 para cada sucursal
+    const rankingPorSucursal = Object.entries(dataAgrupada).map(([direccion, tipos]) => {
+        const topTipos = Object.entries(tipos)
+            .sort(([, a], [, b]) => b.count - a.count)
+            .slice(0, 3)
+            .map(([tipo, data]) => ({ tipo, count: data.count, criticidad: data.criticidad }));
+        
+        return { direccion, topTipos };
+    });
+
+    // 4. Renderizar la tabla
+    const tbody = document.getElementById('ranking-alertas-recurrentes-tbody');
+    tbody.innerHTML = ''; // limpiar contenido previo
+
+    if (rankingPorSucursal.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay alertas para mostrar el ranking.</td></tr>';
+        return;
+    }
+
+    rankingPorSucursal.forEach(sucursal => {
+        let primeraFilaSucursal = true;
+        sucursal.topTipos.forEach(item => {
+            const row = document.createElement('tr');
+            if (primeraFilaSucursal) {
+                // primera fila de la sucursal
+                row.innerHTML = `
+                    <td rowspan="${sucursal.topTipos.length}">${sucursal.direccion}</td>
+                    <td><strong>${item.tipo}</strong> (${item.count} alertas)</td>
+                    <td class="criticidad-${item.criticidad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}">
+                        ${item.criticidad}
+                    </td>
+                `;
+                primeraFilaSucursal = false;
+            } else {
+                // filas siguientes (solo tipo y criticidad)
+                row.innerHTML = `
+                    <td><strong>${item.tipo}</strong> (${item.count} alertas)</td>
+                    <td class="criticidad-${item.criticidad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}">
+                        ${item.criticidad}
+                    </td>
+                `;
+            }
+            tbody.appendChild(row);
+        });
+    });
+}
+
 
 function addBarTooltips(counts) {
     const bar = document.querySelector('.bar');

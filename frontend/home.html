@@ -78,6 +78,7 @@
                       </div>
                   </div>
                 </div>
+                <!--
                 <div class="kpi-cards">
                     <div class="kpi-card kpi-home">
                       <p id="frecuencia-aperturas" class="kpi-alerta-numero"></p>
@@ -86,16 +87,33 @@
                       </div>
                   </div>
                 </div>
+                -->
 
                 <h5 class="mb-3" style="margin-bottom: 3px !important;">KPIs Seguimiento</h5>
 
                 <!-- Gráfico de Tendencia de Temperatura Promedio -->
-                <div id="chart-section" class="charts-section">
+                <div id="chart-section" class="charts-section" >
                     <div class="chart-container" style="border: 0px">
                         <h5 >Alertas por Sucursal y Tipo</h5>
                         <canvas id="alertasSucursalesChart"></canvas>
                     </div>
                 </div>
+
+                <div class="ranking-card">
+                  <h6>Alertas Recurrentes por Sucursal</h6>
+                  <table class="ranking-table">
+                      <thead>
+                          <tr>
+                              <th>Sucursal</th>
+                              <th>Tipo de Alerta más Común</th>
+                              <th>Criticidad</th>
+                          </tr>
+                      </thead>
+                      <tbody id="ranking-alertas-recurrentes-tbody">
+                          </tbody>
+                  </table>
+              </div>
+              
             </div>
 
             <!-- Columna de Alertas -->
