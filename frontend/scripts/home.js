@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarRankingUsuariosActivos();
     cargarPiePermisosUsuarios();
     cargarAlertasParaBarra();
+    cargarPorcentajeAlertasMes();
     cargarRankingSensores();
 });
 
@@ -496,6 +497,34 @@ async function cargarAlertasParaBarra() {
     }
 }
 
+async function cargarPorcentajeAlertasMes() {
+    const res = await fetch('/alertas_por_mes', { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    });
+    const meses = await res.json();
+    if (meses.length < 2) return;
+
+    const actual = meses[0].count;
+    const anterior = meses[1].count;
+    const pct = anterior ? (((actual - anterior) / anterior) * 100).toFixed(1) : 0;
+    const spanPct = document.getElementById('porcentajeAlertasMes');
+
+    // Definir mensaje y color según el valor
+    if (pct > 0) {
+        spanPct.textContent = `⬆ ${pct}% respecto al mes anterior`;
+        spanPct.classList.remove("text-danger");
+        spanPct.classList.add("text-success");
+    } else if (pct < 0) {
+        spanPct.textContent = `⬇ ${Math.abs(pct)}% respecto al mes anterior`;
+        spanPct.classList.remove("text-success");
+        spanPct.classList.add("text-danger");
+    } else {
+        spanPct.textContent = `= ${pct}% respecto al mes anterior`;
+        spanPct.classList.remove("text-success", "text-danger");
+    }
+
+}
+
 async function cargarRankingSensores() {
   try {
     const res = await fetch('/alertas', {
@@ -508,16 +537,18 @@ async function cargarRankingSensores() {
 
     alertas.forEach(alerta => {
       const idSensor = alerta.idSensor || "Desconocido";
-      const tipo = alerta.criticidad || "otro";
+      let crit = (alerta.criticidad || "")
+        .toLowerCase()
+        .normalize("NFD")               // descompone tildes
+        .replace(/[\u0300-\u036f]/g, ""); // elimina tildes
 
       if (!agrupado[idSensor]) {
-        agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, seguridad: 0, total: 0 };
+        agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, total: 0 };
       }
 
-      if (tipo === "Critica") agrupado[idSensor].criticas++;
-      if (tipo === "Informativa") agrupado[idSensor].informativas++;
-      if (tipo === "Preventiva") agrupado[idSensor].preventivas++;
-      if (tipo === "Seguridad") agrupado[idSensor].seguridad++;
+      if (crit === "critica") agrupado[idSensor].criticas++;
+      else if (crit === "informativa") agrupado[idSensor].informativas++;
+      else if (crit === "preventiva") agrupado[idSensor].preventivas++;
 
       agrupado[idSensor].total++;
     });
@@ -539,7 +570,6 @@ async function cargarRankingSensores() {
           <td>${sensor.criticas}</td>
           <td>${sensor.informativas}</td>
           <td>${sensor.preventivas}</td>
-          <td>${sensor.seguridad}</td>
           <td><strong>${sensor.total}</strong></td>
         </tr>
       `;
