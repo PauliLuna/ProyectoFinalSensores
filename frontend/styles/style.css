@@ -1304,6 +1304,28 @@ button[disabled] {
     transform: scale(1.05);
 }
 
+.contenedor-tablas {
+    display: flex;
+    /* Esto se asegura de que el contenido no se desborde */
+    box-sizing: border-box; 
+    /* El espacio entre las tablas es opcional */
+    gap: 20px; 
+}
+
+.tabla-2-3 {
+    /* Ocupa dos tercios del espacio flexible disponible */
+    flex: 2; 
+    /* Ancho inicial de 66.66% del contenedor padre */
+    flex-basis: 55%; 
+}
+
+.tabla-1-3 {
+    /* Ocupa un tercio del espacio flexible disponible */
+    flex: 1; 
+    /* Ancho inicial de 33.33% del contenedor padre */
+    flex-basis: 45%;
+}
+
 
 /* Assistant Chat */
 .assistant-container {

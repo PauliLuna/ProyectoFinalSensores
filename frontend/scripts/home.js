@@ -29,17 +29,20 @@ if (!token || isTokenExpired(token)) {
 async function cargarKPIs() {
     try {
         // Usa Promise.all para hacer las llamadas en paralelo
-        const [sensoresRes, alertasRes] = await Promise.all([
+        const [sensoresRes, alertasRes, usuariosRes] = await Promise.all([
             fetch('/sensores', { headers: { 'Authorization': 'Bearer ' + token } }),
-            fetch('/alertas', { headers: { 'Authorization': 'Bearer ' + token } })
+            fetch('/alertas', { headers: { 'Authorization': 'Bearer ' + token } }),
+            fetch('/usuarios', { headers: { 'Authorization': 'Bearer ' + token } })
         ]);
 
         const sensores = await sensoresRes.json();
         const alertas = await alertasRes.json();
+        const usuarios = await usuariosRes.json();
 
         // ⚠️ Pasa ambos arrays a la función del gráfico
         renderAlertaSucursalesChart(alertas, sensores);
         renderAlertasRecurrentesTable(alertas, sensores);
+        renderAlertasSeguridadTable(alertas, usuarios);
 
         // Total de sensores
         document.getElementById('total-sensores').textContent = sensores.length;
@@ -634,6 +637,84 @@ function renderAlertasRecurrentesTable(alertas, sensores) {
                     <td class="criticidad-${item.criticidad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}">
                         ${item.criticidad}
                     </td>
+                `;
+            }
+            tbody.appendChild(row);
+        });
+    });
+}
+
+/**
+ * Genera y renderiza una tabla con las alertas de seguridad por usuario.
+ * @param {Array} alertas - Array de objetos de alerta.
+ * @param {Array} usuarios - Array de objetos de usuario.
+ */
+function renderAlertasSeguridadTable(alertas, usuarios) {
+    if (!alertas || alertas.length === 0 || !usuarios || usuarios.length === 0) {
+        document.getElementById('ranking-alertas-seguridad-tbody').innerHTML = '<tr><td colspan="3" class="text-center">No hay datos suficientes para mostrar las alertas de seguridad.</td></tr>';
+        return;
+    }
+
+    // 1. Crear un mapa para vincular idUsuario con el nombre del usuario
+    const usuariosMap = usuarios.reduce((map, usuario) => {
+        if (usuario._id) {
+            map[usuario._id] = usuario.username || usuario.email || 'Desconocido';
+        }
+        return map;
+    }, {});
+
+    // 2. Agrupar y contar las alertas de seguridad por usuario y tipo
+    const dataAgrupada = alertas
+        .filter(alerta => {
+            const crit = (alerta.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return crit === 'seguridad' && alerta.idUsuario;
+        })
+        .reduce((acc, alerta) => {
+            const idUsuario = alerta.idUsuario;
+            const tipoAlerta = alerta.tipoAlerta || 'Desconocido';
+
+            if (!acc[idUsuario]) {
+                acc[idUsuario] = {};
+            }
+
+            if (!acc[idUsuario][tipoAlerta]) {
+                acc[idUsuario][tipoAlerta] = 0;
+            }
+            acc[idUsuario][tipoAlerta]++;
+            return acc;
+        }, {});
+    
+    // 3. Renderizar la tabla con la estructura solicitada
+    const tbody = document.getElementById('ranking-alertas-seguridad-tbody');
+    tbody.innerHTML = ''; // Limpiar contenido previo
+
+    const usuariosConAlertas = Object.keys(dataAgrupada);
+    if (usuariosConAlertas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay alertas de seguridad para mostrar.</td></tr>';
+        return;
+    }
+
+    usuariosConAlertas.forEach(idUsuario => {
+        let primeraFilaUsuario = true;
+        const nombreUsuario = usuariosMap[idUsuario] || idUsuario;
+        const tiposAlertas = Object.keys(dataAgrupada[idUsuario]);
+
+        tiposAlertas.forEach(tipoAlerta => {
+            const count = dataAgrupada[idUsuario][tipoAlerta];
+            const row = document.createElement('tr');
+            if (primeraFilaUsuario) {
+                // Primera fila para el usuario, con rowspan
+                row.innerHTML = `
+                    <td rowspan="${tiposAlertas.length}">${nombreUsuario}</td>
+                    <td>${tipoAlerta}</td>
+                    <td>${count}</td>
+                `;
+                primeraFilaUsuario = false;
+            } else {
+                // Filas subsiguientes, solo con los datos de la alerta
+                row.innerHTML = `
+                    <td>${tipoAlerta}</td>
+                    <td>${count}</td>
                 `;
             }
             tbody.appendChild(row);

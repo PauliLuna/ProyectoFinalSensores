@@ -99,21 +99,6 @@
                     </div>
                 </div>
 
-                <div class="ranking-card">
-                  <h6>Alertas Recurrentes por Sucursal</h6>
-                  <table class="ranking-table">
-                      <thead>
-                          <tr>
-                              <th>Sucursal</th>
-                              <th>Tipo de Alerta más Común</th>
-                              <th>Criticidad</th>
-                          </tr>
-                      </thead>
-                      <tbody id="ranking-alertas-recurrentes-tbody">
-                          </tbody>
-                  </table>
-              </div>
-              
             </div>
 
             <!-- Columna de Alertas -->
@@ -195,7 +180,38 @@
             </div>
         </div>
 
-         <!-- KPIs de Usuario y Auditoría -->
+         <!-- KPIs de Alertas por sucursal y de usuario -->
+        <div class="contenedor-tablas">
+          <div class="ranking-card tabla-2-3">
+              <h6>Alertas Recurrentes por Sucursal</h6>
+              <table class="ranking-table">
+                  <thead>
+                      <tr>
+                          <th>Sucursal</th>
+                          <th>Tipo de Alerta más Común</th>
+                          <th>Criticidad</th>
+                      </tr>
+                  </thead>
+                  <tbody id="ranking-alertas-recurrentes-tbody">
+                      </tbody>
+              </table>
+          </div>
+          <div class="ranking-card tabla-1-3">
+              <h6>Alertas de Seguridad por Usuario</h6>
+              <table class="ranking-table">
+                  <thead>
+                      <tr>
+                          <th>ID Usuario</th>
+                          <th style="width: 35%;">Tipo Alerta</th>
+                          <th>Cantidad</th>
+                      </tr>
+                  </thead>
+                  <tbody id="ranking-alertas-seguridad-tbody">
+                      </tbody>
+              </table>
+          </div>
+
+        </div>
 
         <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
         <div class="recent-activity" style="margin-top: 20px;">
