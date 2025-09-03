@@ -474,6 +474,7 @@ function renderAlertaSucursalesChart(alertas, sensores) {
     console.debug('Sensores cargados (ejemplo claves):', Object.keys(sensoresMap).slice(0, 20));
 
     // ---------- AGRUPAR ALERTAS ----------
+    // 2. Agrupar alertas por sucursal y criticidad (filtrando las de seguridad)
     const dataAgrupada = alertas
         .filter(alerta => {
             const crit = (alerta.criticidad || '')
@@ -520,8 +521,19 @@ function renderAlertaSucursalesChart(alertas, sensores) {
     console.debug('Alertas sin match (caen en "Sin Dirección"):', sinMatch);
 
     // ---------- PREPARAR Y RENDERIZAR GRÁFICO ----------
-    const sucursales = Object.keys(dataAgrupada);
+    // 3. Preparar los datos y renderizar el gráfico
+    const sucursalesOrdenadas = Object.entries(dataAgrupada)
+        .map(([direccion, counts]) => ({
+            direccion,
+            total: counts.critica + counts.informativa + counts.preventiva
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 3) // top 3 sucursales
+        .map(item => item.direccion);
+
+    const sucursales = sucursalesOrdenadas;
     const tiposAlerta = ['critica', 'informativa', 'preventiva'];
+
     
     const colores = {
         critica: '#ef4444',
@@ -614,14 +626,18 @@ function renderAlertasRecurrentesTable(alertas, sensores) {
         }, {});
     
     // 3. Generar el ranking top 3 para cada sucursal
-    const rankingPorSucursal = Object.entries(dataAgrupada).map(([direccion, tipos]) => {
+    const rankingPorSucursal = Object.entries(dataAgrupada)
+    .map(([direccion, tipos]) => {
+        const total = Object.values(tipos).reduce((acc, t) => acc + t.count, 0);
         const topTipos = Object.entries(tipos)
             .sort(([, a], [, b]) => b.count - a.count)
             .slice(0, 3)
             .map(([tipo, data]) => ({ tipo, count: data.count, criticidad: data.criticidad }));
-        
-        return { direccion, topTipos };
-    });
+        return { direccion, total, topTipos };
+    })
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 3); // limita a 3 sucursales
+
 
     // 4. Renderizar la tabla
     const tbody = document.getElementById('ranking-alertas-recurrentes-tbody');
