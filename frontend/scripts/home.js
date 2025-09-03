@@ -39,10 +39,15 @@ async function cargarKPIs() {
         const alertas = await alertasRes.json();
         const usuarios = await usuariosRes.json();
 
+        alertasData = alertas; // Guarda todas las alertas para filtrar después
+
         // ⚠️ Pasa ambos arrays a la función del gráfico
         renderAlertaSucursalesChart(alertas, sensores);
         renderAlertasRecurrentesTable(alertas, sensores);
         renderAlertasSeguridadTable(alertas, usuarios);
+
+        // Carga inicial del gráfico de tendencias con el período por defecto
+        renderAlertasTendenciaChart('24h'); 
 
         // Total de sensores
         document.getElementById('total-sensores').textContent = sensores.length;
@@ -92,6 +97,17 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarAlertasParaBarra();
     cargarPorcentajeAlertasMes();
     cargarRankingSensores();
+
+    document.querySelectorAll('#dropdownPeriodoAlertas + ul .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const periodo = this.dataset.period;
+            const dropdownButton = document.getElementById('dropdownPeriodoAlertas');
+            dropdownButton.textContent = this.textContent;
+            renderAlertasTendenciaChart(periodo);
+        });
+    });
+
 });
 
 // Cargar últimas conexiones de usuarios desde el backend
@@ -719,6 +735,98 @@ function renderAlertasSeguridadTable(alertas, usuarios) {
             }
             tbody.appendChild(row);
         });
+    });
+}
+
+// Variable global para almacenar el gráfico y los datos sin filtrar
+let alertasTendenciaChart = null;
+//sslet alertasData = [];
+
+/**
+ * Filtra las alertas por el período de tiempo seleccionado y renderiza el gráfico.
+ * @param {string} periodo - '24h', '7d', '30d', '90d'.
+ */
+
+function renderAlertasTendenciaChart(periodo) {
+    const ahora = new Date();
+    let fechaInicio, pasoMs;
+
+    switch (periodo) {
+        case '24h':
+            fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000);
+            pasoMs = 60 * 60 * 1000; // 1 hora
+            break;
+        case '7d':
+            fechaInicio = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
+            pasoMs = 24 * 60 * 60 * 1000; // 1 día
+            break;
+        case '30d':
+            fechaInicio = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
+            pasoMs = 24 * 60 * 60 * 1000;
+            break;
+        case '90d':
+            fechaInicio = new Date(ahora.getTime() - 90 * 24 * 60 * 60 * 1000);
+            pasoMs = 30 * 24 * 60 * 60 * 1000; // ~1 mes
+            break;
+        default:
+            fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000);
+            pasoMs = 60 * 60 * 1000;
+    }
+
+    // Clave estable: HH:00 para 24h, YYYY-MM-DD para otros periodos
+    const keyFromDate = (d) => {
+        if (periodo === '24h') return d.getHours().toString().padStart(2, '0') + ':00';
+        return d.toISOString().slice(0, 10);
+    };
+
+    // Inicializar ejes con todo el rango (así la línea no "salta")
+    const labels = [];
+    const dataAgrupada = {};
+    for (let t = new Date(fechaInicio); t <= ahora; t = new Date(t.getTime() + pasoMs)) {
+        const k = keyFromDate(t);
+        labels.push(k);
+        dataAgrupada[k] = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
+    }
+
+    // Contar por criticidad
+    const tipos = ['critica', 'informativa', 'preventiva', 'seguridad'];
+    alertasData.forEach(alerta => {
+        const rawFecha = alerta.fechaHoraAlerta?.$date || alerta.fechaHoraAlerta;
+        const fechaAlerta = new Date(rawFecha);
+        if (isNaN(fechaAlerta.getTime()) || fechaAlerta < fechaInicio || fechaAlerta > ahora) return;
+
+        const k = keyFromDate(fechaAlerta);
+        const crit = (alerta.criticidad || '')
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        if (dataAgrupada[k] && tipos.includes(crit)) {
+            dataAgrupada[k][crit]++;
+        }
+    });
+
+    // Datasets
+    const datasets = [
+        { label: 'Críticas',     data: labels.map(l => dataAgrupada[l].critica),     borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.2)', fill: true, tension: 0.4 },
+        { label: 'Informativas', data: labels.map(l => dataAgrupada[l].informativa), borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,0.2)', fill: true, tension: 0.4 },
+        { label: 'Preventivas',  data: labels.map(l => dataAgrupada[l].preventiva),  borderColor: '#6c757d', backgroundColor: 'rgba(108,117,125,0.2)', fill: true, tension: 0.4 },
+        { label: 'Seguridad',    data: labels.map(l => dataAgrupada[l].seguridad),   borderColor: '#17a2b8', backgroundColor: 'rgba(23,162,184,0.2)', fill: true, tension: 0.4 }
+    ];
+
+    // Render
+    const ctx = document.getElementById('alertasTendenciaChart').getContext('2d');
+    if (alertasTendenciaChart) alertasTendenciaChart.destroy();
+    alertasTendenciaChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Cantidad de Alertas' } },
+                x: { title: { display: true, text: 'Fecha' } }
+            }
+        }
     });
 }
 

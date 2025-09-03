@@ -91,8 +91,34 @@
 
                 <h5 class="mb-3" style="margin-bottom: 3px !important;">KPIs Seguimiento</h5>
 
+                <div id="chart-tendencia-alertas" class="charts-section" style="margin-bottom: -3px !important;">
+                  <div class="chart-container" style="border: 0px;">
+
+                    <!-- Encabezado con título y dropdown alineados -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h5 class="block-title mb-0" style="margin-right: 15px;">Tendencia de Alertas en el Tiempo</h5>
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownPeriodoAlertas" data-bs-toggle="dropdown" aria-expanded="false">
+                          Últimas 24 hs
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownPeriodoAlertas">
+                          <li><a class="dropdown-item" href="#" data-period="24h">Últimas 24 hs</a></li>
+                          <li><a class="dropdown-item" href="#" data-period="7d">Últimos 7 días</a></li>
+                          <li><a class="dropdown-item" href="#" data-period="30d">Últimos 30 días</a></li>
+                          <li><a class="dropdown-item" href="#" data-period="90d">Últimos 3 meses</a></li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Gráfico -->
+                    <canvas id="alertasTendenciaChart"></canvas>
+
+                  </div>
+                </div>
+
+
                 <!-- Gráfico de Tendencia de Temperatura Promedio -->
-                <div id="chart-section" class="charts-section" >
+                <div id="chart-section" class="charts-section" style=" margin-bottom: -3px !important;" >
                     <div class="chart-container" style="border: 0px">
                         <h5 >Alertas por Sucursal y Tipo</h5>
                         <canvas id="alertasSucursalesChart"></canvas>
@@ -172,16 +198,15 @@
                             <tr><td>Sensor X</td><td>180</td><td>26.4%</td></tr>
                             <tr><td>Sensor Y</td><td>145</td><td>21.3%</td></tr>
                             <tr><td>Sensor Z</td><td>132</td><td>18.7%</td></tr>
-                            <tr><td>Sensor W</td><td>101</td><td>14.9%</td></tr>
-                            <tr><td>Sensor V</td><td>89</td><td>12.5%</td></tr>
                         </tbody>
                     </table>
                 </div>
+
             </div>
         </div>
 
          <!-- KPIs de Alertas por sucursal y de usuario -->
-        <div class="contenedor-tablas">
+        <div class="contenedor-tablas" style="margin-top: 0px !important;">
           <div class="ranking-card tabla-2-3">
               <h6>Alertas Recurrentes por Sucursal</h6>
               <table class="ranking-table">

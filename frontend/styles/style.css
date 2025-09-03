@@ -1275,6 +1275,7 @@ button[disabled] {
   .ranking-table th,
   .ranking-table td {
     padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #dee2e6;
   }
 
   .ranking-table th {
