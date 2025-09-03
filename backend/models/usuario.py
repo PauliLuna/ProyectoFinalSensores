@@ -5,8 +5,10 @@ def insert_usuario(mongo, usuario_data):
     result = usuarios_coll.insert_one(usuario_data)
     return str(result.inserted_id)
 
+
 def get_usuario_by_email(mongo, email):
     return mongo.db.usuarios.find_one({"email": email})
+
 
 def get_usuarios_by_empresa(mongo, id_empresa):
     usuarios = list(mongo.db.usuarios.find(
@@ -23,6 +25,12 @@ def get_usuario_by_id(mongo, user_id):
 def update_usuario(mongo, user_id, update_fields):
     mongo.db.usuarios.update_one(
         {"_id": ObjectId(user_id)},
+        {"$set": update_fields}
+    )
+
+def update_usuario_email(mongo, email, update_fields):
+    mongo.db.usuarios.update_one(
+        {"email": email},
         {"$set": update_fields}
     )
 
