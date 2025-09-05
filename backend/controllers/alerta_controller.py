@@ -522,10 +522,14 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
 def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa): # VER TO DO
     """Detecta temperatura fuera de rango"""
 
-    # 1) ¿Está fuera de rango?
+    # 1) Buscar la última alerta abierta una única vez
+    alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
+
+        # 2) ¿Está la temperatura fuera de rango?
     if temp > valor_max or temp < valor_min:
         print(f"⚠️ ALERTA: temp={temp}°C fuera de rango ({valor_min}, {valor_max}) para sensor {sensor['nroSensor']}")
-         # Generar mensaje y descripción
+        
+        # Generar mensaje y descripción
         if temp > valor_max:
             mensaje = "Temperatura interna alta"
             descripcion = f"La temperatura actual ({temp}°C) excede el límite superior ({valor_max}°C) para el sensor {sensor['nroSensor']}."
@@ -533,53 +537,51 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             mensaje = "Temperatura interna baja"
             descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {sensor['nroSensor']}."
 
-        # 2) Si NO hay una alerta abierta, crearla y mandar mail
-        alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
-
+        # Si NO hay una alerta abierta, crearla y mandar mail
         if not alerta_abierta:
-            # Insertar alerta SIN duración
             alerta_data = {
-                "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
+                "idSensor": str(sensor["nroSensor"]),
                 "idEmpresa": id_empresa,
                 "criticidad": "Crítica",
                 "tipoAlerta": "Temperatura fuera de rango",
                 "descripcion": descripcion,
                 "mensajeAlerta": mensaje,
                 "fechaHoraAlerta": fecha_actual,
-                "duracionMinutos": None  
+                "duracionMinutos": None 
             }
             print(f"[DEBUG] Insertando alerta: {alerta_data}")
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
-            
-            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
-            print(f"[DEBUG] Emails asignados para alerta: {emails}")
+
+            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
             if emails:
                 _enviar_mail_alerta(
                     emails, 
                     "Temperatura fuera de rango", 
-                    descripcion, 
+                    alerta_data["descripcion"], 
                     "Crítica", 
                     sensor, 
-                    mensaje, 
+                    alerta_data["mensajeAlerta"], 
                     fecha_actual,
                     "termi-alerta"
                 )
-            return 1  # ⚠️ Devuelve 1 si se insertó una alerta
-    else:
-        # 3) Volvió al rango → cerrar la alerta abierta
-        alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
+            return 1 # Devuelve 1 si se insertó una alerta
+        else:
+            # Si SÍ hay una alerta abierta, no hacemos nada y devolvemos 0
+            print(f"La alerta para el sensor {sensor['nroSensor']} ya está activa.")
+            return 0
+    else: # La temperatura está dentro del rango
+        # 3) Si el sensor vuelve al rango y hay una alerta abierta, la cerramos
         if alerta_abierta:
             inicio = alerta_abierta["fechaHoraAlerta"]
-            # El sensor volvió al rango, calcula duración
-            duracion = (fecha_actual - inicio).total_seconds() / 60  # minutos
+            duracion = (fecha_actual - inicio).total_seconds() / 60
             duracion = round(duracion, 1)
 
             updateDuracion(mongo, alerta_abierta["_id"], duracion)
+            print(f"✅ ALERTA TEMP cerrada duración {duracion:.1f} min")
 
-            print(f"✅ ALERTA TEMP cerrada  duración {duracion:.1f} min")
-
-        return 0  # ⚠️ Devuelve 0 si no se insertó alerta
+        # Si no hay alerta abierta, no pasa nada
+        return 0
 
 
 def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa):
