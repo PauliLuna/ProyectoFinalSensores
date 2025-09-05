@@ -53,3 +53,21 @@ def updateDuracion(mongo, alerta_id, duracion):
             "estadoAlerta": "cerrada"
         }}
     )
+
+def updateStatus(mongo, nroSensor, id_empresa, estado):
+    mongo.db.sensors.update_one(
+        {"nroSensor": nroSensor, "idEmpresa": id_empresa},
+        {"$set": {"estado": estado}}
+    )
+
+def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
+    filtro = {
+        "idSensor": str(nro_sensor),
+        "tipoAlerta": "Sensor offline",
+        "idEmpresa": str(id_empresa),
+        "$or": [
+            {"duracionMinutos": None},
+            {"duracionMinutos": {"$exists": False}}
+        ]
+    }
+    return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])

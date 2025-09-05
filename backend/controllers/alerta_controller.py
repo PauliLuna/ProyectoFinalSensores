@@ -5,7 +5,9 @@ from models.alerta import (
     get_alertas_caida_de_energia, 
     get_alertas_puerta_abierta,
     q_alerta_abierta_temp,
-    updateDuracion)
+    q_alerta_abierta_offline,
+    updateDuracion,
+    updateStatus)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -442,47 +444,73 @@ def _alerta_bloqueo_cuenta(mongo, email, usuario):
 
 def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     """Detecta huecos de tiempo sin mediciones"""
+
+    # 1) Buscar la última alerta offline abierta
+    alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
+
     gap = fecha_actual - prev_med["fechaHoraMed"]
     if gap >= timedelta(minutes=10):
         print(f"⚠️ ALERTA: sensor {sensor['nroSensor']} sin mediciones por {gap}")
 
-        alerta_data = {
-            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
-            "idEmpresa": id_empresa,
-            "criticidad": "Crítica",
-            "tipoAlerta": "Sensor offline",
-            "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
-            "mensajeAlerta": "Sensor offline (sin mediciones)",
-            "fechaHoraAlerta": fecha_actual #TO DO: agregar minutos
-        }
-        print(f"[DEBUG] Insertando alerta: {alerta_data}")
-        alerta_id = insert_alerta(mongo, alerta_data)
-        print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
+        # Si NO hay una alerta abierta, es la primera vez que se detecta el problema.
+        if not alerta_abierta:
+            alerta_data = {
+                "idSensor": str(sensor["nroSensor"]),
+                "idEmpresa": id_empresa,
+                "criticidad": "Crítica",
+                "tipoAlerta": "Sensor offline",
+                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
+                "mensajeAlerta": "Sensor offline (sin mediciones)",
+                "fechaHoraAlerta": fecha_actual,
+                "duracionMinutos": None
+            }
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
+
+            # 🔹 Actualizar estado del sensor a inactive
+            updateStatus(mongo, str(sensor["nroSensor"]), id_empresa, "inactive")
+            
+            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
+
+            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+            print(f"[DEBUG] Emails asignados para alerta: {emails}")
+            if emails:
+                print(f"[DEBUG] Enviando mail de alerta a: {emails}")
+                _enviar_mail_alerta(
+                    emails,
+                    "Sensor offline",
+                    alerta_data["descripcion"], 
+                    "Crítica", 
+                    sensor, 
+                    alerta_data["mensajeAlerta"], 
+                    fecha_actual,
+                    "termi-alerta"
+                )
+            return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+        else:
+            # Si ya hay una alerta abierta, no hacemos nada y devolvemos 0
+            print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.")
+            return 0
+    else: # El sensor está online (con mediciones recientes)
+        # Si había una alerta abierta, la cerramos
+        if alerta_abierta:
+            inicio = alerta_abierta["fechaHoraAlerta"]
+            duracion = (fecha_actual - inicio).total_seconds() / 60
+            duracion = round(duracion, 1)
+
+            # Actualizar la alerta con la duración
+            updateDuracion(mongo, str(alerta_abierta["_id"]), duracion)
+
+            print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
+
+        # Si el estado actual del sensor es 'inactive', lo actualizamos a 'active'
+        if sensor.get("estado") == "inactive":
+            updateStatus(mongo, str(sensor["nroSensor"]), id_empresa, "active")
         
-          # 🔹 Actualizar estado del sensor a inactive
-        mongo.db.sensors.update_one(
-            {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
-            {"$set": {"estado": "inactive"}}
-        )
-        print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
+            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
-        print(f"[DEBUG] Emails asignados para alerta: {emails}")
-        if emails:
-            print(f"[DEBUG] Enviando mail de alerta a: {emails}")
-            _enviar_mail_alerta(
-                emails,
-                "Sensor offline",
-                alerta_data["descripcion"], 
-                "Crítica", 
-                sensor, 
-                alerta_data["mensajeAlerta"], 
-                fecha_actual,
-                "termi-alerta"
-            )
-        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
-
-    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
+        return 0  # Devuelve 0 si no se insertó alerta
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
     """Detecta puerta abierta prolongada"""
