@@ -3,7 +3,9 @@ from models.alerta import (
     get_alertas_filtradas,  
     insert_alerta, 
     get_alertas_caida_de_energia, 
-    get_alertas_puerta_abierta)
+    get_alertas_puerta_abierta,
+    q_alerta_abierta_temp,
+    updateDuracion)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -451,7 +453,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             "tipoAlerta": "Sensor offline",
             "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
             "mensajeAlerta": "Sensor offline (sin mediciones)",
-            "fechaHoraAlerta": fecha_actual
+            "fechaHoraAlerta": fecha_actual #TO DO: agregar minutos
         }
         print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
@@ -516,25 +518,8 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
     # Si no se disparó alerta, actualizamos el estado según puerta actual
     return puerta_estado == 1, alertas_generadas  # ⚠️ Devuelve el estado y el contador
 
-def _q_alerta_abierta_temp(nro_sensor, id_empresa):
-    # Construye un query tolerante a tipos y a la ausencia de 'duracionMinutos'
-    empresa_id_str = str(id_empresa)
-    return {
-        "idSensor": str(nro_sensor),
-        "tipoAlerta": "Temperatura fuera de rango",
-        "$and": [
-            {"$or": [
-                {"idEmpresa": empresa_id_str},
-                {"idEmpresa": id_empresa}  # por si quedó como ObjectId
-            ]},
-            {"$or": [
-                {"duracionMinutos": None},
-                {"duracionMinutos": {"$exists": False}}
-            ]}
-        ]
-    }
 
-def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa):
+def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa): # VER TO DO
     """Detecta temperatura fuera de rango"""
 
     # 1) ¿Está fuera de rango?
@@ -549,7 +534,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {sensor['nroSensor']}."
 
         # 2) Si NO hay una alerta abierta, crearla y mandar mail
-        alerta_abierta = mongo.db.alertas.find_one(_q_alerta_abierta_temp(sensor["nroSensor"], id_empresa))
+        alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
 
         if not alerta_abierta:
             # Insertar alerta SIN duración
@@ -583,20 +568,15 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             return 1  # ⚠️ Devuelve 1 si se insertó una alerta
     else:
         # 3) Volvió al rango → cerrar la alerta abierta
-        alerta_abierta = mongo.db.alertas.find_one(_q_alerta_abierta_temp(sensor["nroSensor"], id_empresa))
+        alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
         if alerta_abierta:
             inicio = alerta_abierta["fechaHoraAlerta"]
             # El sensor volvió al rango, calcula duración
             duracion = (fecha_actual - inicio).total_seconds() / 60  # minutos
             duracion = round(duracion, 1)
 
-            mongo.db.alertas.update_one(
-                {"_id": alerta_abierta["_id"]},
-                {"$set": {
-                    "duracionMinutos": duracion,
-                    "estadoAlerta": "cerrada"
-                }}
-            )
+            updateDuracion(mongo, alerta_abierta["_id"], duracion)
+
             print(f"✅ ALERTA TEMP cerrada  duración {duracion:.1f} min")
 
         return 0  # ⚠️ Devuelve 0 si no se insertó alerta

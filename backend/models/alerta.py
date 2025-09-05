@@ -1,3 +1,5 @@
+from pymongo import DESCENDING
+
 def get_alertas_filtradas(mongo, id_empresa, tipo=None):
     filtro = {"idEmpresa": id_empresa}
     if tipo:
@@ -31,3 +33,23 @@ def get_alertas_puerta_abierta(mongo, nro_sensor, id_empresa, hoy_inicio):
     }
     return mongo.db.alertas.count_documents(filtro)
 
+def q_alerta_abierta_temp(mongo, nro_sensor, id_empresa):
+    filtro = {
+        "idSensor": str(nro_sensor),
+        "tipoAlerta": "Temperatura fuera de rango",
+        "idEmpresa": str(id_empresa),
+        "$or": [
+            {"duracionMinutos": None},
+            {"duracionMinutos": {"$exists": False}}
+        ]
+    }
+    return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])
+
+def updateDuracion(mongo, alerta_id, duracion):
+    mongo.db.alertas.update_one(
+        {"_id": alerta_id},
+        {"$set": {
+            "duracionMinutos": duracion,
+            "estadoAlerta": "cerrada"
+        }}
+    )
