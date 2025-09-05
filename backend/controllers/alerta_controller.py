@@ -130,6 +130,14 @@ def chequear_alertas_criticas(mongo, id_empresa):
         print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
         if not mediciones:
+            # ⚠️ Si no hay mediciones nuevas, igual verificamos el estado offline.
+            # Se usa la última medición conocida del sensor para el cálculo del tiempo.
+            ultima_medicion = mongo.db.mediciones.find_one(
+                {"idSensor": nro_sensor}, sort=[('fechaHoraMed', -1)]
+            )
+            if ultima_medicion:
+                offline_alertas = _alerta_offline(mongo, sensor, ultima_medicion, datetime.now(), id_empresa)
+                total_alertas_generadas += offline_alertas
             print(f"[DEBUG] No hay mediciones nuevas para sensor {sensor['nroSensor']}")
             continue
 
@@ -143,13 +151,6 @@ def chequear_alertas_criticas(mongo, id_empresa):
         for med in mediciones:
             print(f"[DEBUG] Medición: {med}")
             fecha_actual = med["fechaHoraMed"]
-
-              # 🔹 Actualizar estado del sensor a active
-            mongo.db.sensors.update_one(
-                {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
-                {"$set": {"estado": "active"}}
-            )
-            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
 
             # --- ALERTA OFFLINE ---
             if prev_med:
