@@ -519,13 +519,13 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
     return puerta_estado == 1, alertas_generadas  # ⚠️ Devuelve el estado y el contador
 
 
-def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa): # VER TO DO
+def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa):
     """Detecta temperatura fuera de rango"""
 
     # 1) Buscar la última alerta abierta una única vez
     alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
 
-        # 2) ¿Está la temperatura fuera de rango?
+    # 2) ¿Está la temperatura fuera de rango?
     if temp > valor_max or temp < valor_min:
         print(f"⚠️ ALERTA: temp={temp}°C fuera de rango ({valor_min}, {valor_max}) para sensor {sensor['nroSensor']}")
         
