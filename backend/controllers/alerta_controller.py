@@ -861,10 +861,14 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     # 1. Caso: Todos los sensores están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
         if not alerta_existente:
+            # Si no existe una alerta pendiente, se crea una nueva.
             print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
 
+            # Se recopilan los números de todos los sensores inactivos en una lista
+            sensores_inactivos = [str(s["nroSensor"]) for s in sensores_misma_dir]
+
             alerta_data = {
-                "idSensor": str(sensor["nroSensor"]),
+                "idSensor": sensores_inactivos,
                 "idEmpresa": id_empresa,
                 "criticidad": "Preventiva",
                 "tipoAlerta": "Caída de energía eléctrica",
