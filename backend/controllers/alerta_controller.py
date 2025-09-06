@@ -855,11 +855,13 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     if not sensores_misma_dir:
         return 0
 
+    # Buscar si ya existe una alerta pendiente
+    alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
+
     # Verificar si todos están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
-        existe = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
-        print(f"[DEBUG] Alerta de caída de energía ya existe: {existe}")
-        if existe:
+        if alerta_existente:
+            print(f"[DEBUG] Ya existe alerta pendiente: {alerta_existente['_id']}, no se crea otra")
             return 0
     
         print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
@@ -872,7 +874,8 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
             "mensajeAlerta": "Caída de energía eléctrica",
             "fechaHoraAlerta": datetime.utcnow(),
-            "estadoAlerta": "pendiente"
+            "estadoAlerta": "pendiente",
+            "direccion": direccion,
         }
         print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
@@ -891,11 +894,24 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
                 descripcion=alerta_data["descripcion"],
                 criticidad="Preventiva",
                 sensor=sensor,
-                mensaje="Caída de energía eléctrica en la sucursal",
+                mensaje=f"Caída de energía eléctrica en la sucursal: {direccion}",
                 fecha=alerta_data["fechaHoraAlerta"],
                 termi="termi-inteligente"
             )
-        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+        return 1 # ⚠️ Devuelve 1 si se insertó una alerta
+    # Caso 2️⃣: hay sensores activos -> cerrar alerta pendiente si existe
+    else:
+        if alerta_existente:
+            inicio = alerta_existente["fechaHoraAlerta"]
+            duracion = (datetime.now() - inicio).total_seconds() / 60
+            duracion = round(duracion, 1)
+
+            print(f"[DEBUG] Cerrando alerta pendiente: {alerta_existente['_id']}")
+            
+            updateDuracion(mongo, alerta_existente["_id"], duracion)
+            
+            print(f"✅ Alerta de caída de energía cerrada en dirección {direccion}")
+            return 
     return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
 
