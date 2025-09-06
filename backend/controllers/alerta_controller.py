@@ -738,6 +738,10 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
     """Detecta oscilaciones abruptas en un periodo corto (ej. 1 hora)"""
     nro_sensor = sensor["nroSensor"]
 
+    if not mediciones:
+        print(f"[DEBUG] Sensor {nro_sensor} - Temperaturas alerta_fluctuacion_temp: {mediciones}")
+        return 0
+    
     # Calcular min y max de las últimas mediciones
     temps = [float(m["valorTempInt"]) for m in mediciones if m.get("valorTempInt") is not None]
 
