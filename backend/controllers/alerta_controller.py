@@ -86,7 +86,7 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
     # Busca solo las alertas de ese sensor y empresa
     alertas = list(mongo.db.alertas.find({
         "idEmpresa": id_empresa,
-        "idSensor": sensor_id
+        "idSensor": {"$in": [sensor_id]}
     }).sort("fechaHoraAlerta", -1))
     # Definimos la zona horaria UTC y la zona de Argentina.
     zona_utc = pytz.timezone('UTC')
