@@ -93,8 +93,11 @@ def nueva_alerta(mongo):
 def evaluar_alertas(mongo, id_empresa):
     total = 0
     total += chequear_alertas_criticas(mongo, id_empresa)
+    print(f"[DEBUG] Total alertas críticas generadas: {total}")
     total += chequear_alertas_preventivas(mongo, id_empresa)
+    print(f"[DEBUG] Total + alertas preventivas generadas: {total}")
     total += chequear_alertas_informativas(mongo, id_empresa)
+    print(f"[DEBUG] Total + alertas informativas generadas: {total}")
     return total
 
 
