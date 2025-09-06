@@ -858,62 +858,69 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     # Buscar si ya existe una alerta pendiente
     alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
 
-    # Verificar si todos están inactivos
+    # 1. Caso: Todos los sensores están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
-        if alerta_existente:
-            print(f"[DEBUG] Ya existe alerta pendiente: {alerta_existente['_id']}, no se crea otra")
+        if not alerta_existente:
+            print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
+
+            alerta_data = {
+                "idSensor": str(sensor["nroSensor"]),
+                "idEmpresa": id_empresa,
+                "criticidad": "Preventiva",
+                "tipoAlerta": "Caída de energía eléctrica",
+                "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
+                "mensajeAlerta": "Caída de energía eléctrica",
+                "fechaHoraAlerta": datetime.utcnow(),
+                "estadoAlerta": "pendiente",
+                "direccion": direccion,
+            }
+
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"✅ Alerta preventiva (caída energía) insertada -> ID {alerta_id}")
+
+            # Obtener emails de todos los sensores de la dirección para enviar notificación
+            emails = []
+            for s in sensores_misma_dir:
+                emails.extend(_obtener_emails_asignados(mongo, s["nroSensor"], alerta_data["criticidad"]))
+            emails = list(set(emails))
+
+            if emails:
+                _enviar_mail_alerta(
+                    emails=emails,
+                    tipo_alerta="Caída de energía eléctrica",
+                    descripcion=alerta_data["descripcion"],
+                    criticidad="Preventiva",
+                    sensor=sensor,
+                    mensaje=f"Caída de energía eléctrica en la sucursal: {direccion}",
+                    fecha=alerta_data["fechaHoraAlerta"],
+                    termi="termi-inteligente"
+                )
+            return 1 # Devuelve 1 si se insertó una alerta
+        else:
+            print(f"[DEBUG] Ya existe alerta pendiente: {alerta_existente['_id']}, no se crea otra.")
             return 0
-    
-        print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
 
-        alerta_data = {
-            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
-            "idEmpresa": id_empresa,
-            "criticidad": "Preventiva",
-            "tipoAlerta": "Caída de energía eléctrica",
-            "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
-            "mensajeAlerta": "Caída de energía eléctrica",
-            "fechaHoraAlerta": datetime.utcnow(),
-            "estadoAlerta": "pendiente",
-            "direccion": direccion,
-        }
-        print(f"[DEBUG] Insertando alerta: {alerta_data}")
-        alerta_id = insert_alerta(mongo, alerta_data)
-        print(f"✅ Alerta preventiva (caída energía) insertada -> ID {alerta_id}")
-
-        # Obtener emails de todos los sensores de la dirección
-        emails = []
-        for s in sensores_misma_dir:
-            emails += _obtener_emails_asignados(mongo, s["nroSensor"], alerta_data["criticidad"])
-        emails = list(set(emails))  # eliminar duplicados
-
-        if emails:
-            _enviar_mail_alerta(
-                emails=emails,
-                tipo_alerta="Caída de energía eléctrica",
-                descripcion=alerta_data["descripcion"],
-                criticidad="Preventiva",
-                sensor=sensor,
-                mensaje=f"Caída de energía eléctrica en la sucursal: {direccion}",
-                fecha=alerta_data["fechaHoraAlerta"],
-                termi="termi-inteligente"
-            )
-        return 1 # ⚠️ Devuelve 1 si se insertó una alerta
-    # Caso 2️⃣: hay sensores activos -> cerrar alerta pendiente si existe
+    # 2. Caso: Al menos un sensor está activo
+    # Este 'else' se ejecuta si la condición anterior no se cumple.
+    # Es decir, si no todos los sensores están inactivos.
     else:
         if alerta_existente:
+            print(f"✅ Se detectó al menos un sensor activo. Cerrando alerta pendiente: {alerta_existente['_id']}.")
+            
+            # Calcular la duración de la alerta
             inicio = alerta_existente["fechaHoraAlerta"]
             duracion = (datetime.now() - inicio).total_seconds() / 60
             duracion = round(duracion, 1)
 
-            print(f"[DEBUG] Cerrando alerta pendiente: {alerta_existente['_id']}")
-            
+            # Actualizar la duración en la base de datos
             updateDuracion(mongo, alerta_existente["_id"], duracion)
             
             print(f"✅ Alerta de caída de energía cerrada en dirección {direccion}")
-            return 
-    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
-
+            return 0
+        else:
+            print(f"[DEBUG] Sensores activos y no hay alerta pendiente para cerrar.")
+            return 0
 
 def chequear_alertas_informativas(mongo, id_empresa):
     total_alertas_generadas = 0
