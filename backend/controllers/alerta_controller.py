@@ -477,7 +477,8 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
                 "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
                 "mensajeAlerta": "Sensor offline (sin mediciones)",
                 "fechaHoraAlerta": fecha_actual,
-                "duracionMinutos": None
+                "duracionMinutos": None,
+                "estadoAlerta": "abierta"
             }
             print(f"[DEBUG] Insertando alerta: {alerta_data}")
             alerta_id = insert_alerta(mongo, alerta_data)
@@ -515,7 +516,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             duracion = round(duracion, 1)
 
             # Actualizar la alerta con la duración
-            updateDuracion(mongo, str(alerta_abierta["_id"]), duracion)
+            updateDuracion(mongo, alerta_abierta["_id"], duracion)
 
             print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
 
