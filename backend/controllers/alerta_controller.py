@@ -685,6 +685,8 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
+        print(f"[DEBUG] Sensor {nro_sensor} - Rango de temperatura ({valor_min}, {valor_max})")
+
           # 1️⃣ Obtener checkpoint de preventivas
         checkpoint = mongo.db.alerta_checkpoint.find_one({
             "idEmpresa": id_empresa,
@@ -693,12 +695,16 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         })
         last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
 
+        print(f"[DEBUG] Checkpoint para sensor {nro_sensor}: {last_date}")
+
          # 2️⃣ Obtener mediciones nuevas (no analizadas desde el checkpoint)
         filtro = {"idSensor": nro_sensor}
         if last_date:
             filtro["fechaHoraMed"] = {"$gt": last_date}
 
         mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+
+        print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
         if not mediciones:
             continue
@@ -734,6 +740,8 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
 
     # Calcular min y max de las últimas mediciones
     temps = [float(m["valorTempInt"]) for m in mediciones if m.get("valorTempInt") is not None]
+
+    print(f"[DEBUG] Sensor {nro_sensor} - Temperaturas analizadas: {temps}")
     if not temps:
         return 0
 
