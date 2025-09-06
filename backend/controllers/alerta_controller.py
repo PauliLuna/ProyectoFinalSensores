@@ -842,6 +842,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     están inactivos -> posible caída de energía eléctrica.
     """
     direccion = sensor.get("direccion")
+    print(f"[DEBUG] Verificando caída de energía para sensor {sensor['nroSensor']} en dirección {direccion}")
     if not direccion:
         return 0
 
@@ -850,13 +851,14 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
         "idEmpresa": id_empresa,
         "direccion": direccion
     }))
-
+    print(f"[DEBUG] Sensores en la misma dirección ({direccion}): {len(sensores_misma_dir)}")
     if not sensores_misma_dir:
         return 0
 
     # Verificar si todos están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
         existe = get_alertas_caida_de_energia(mongo, id_empresa, direccion)
+        print(f"[DEBUG] Alerta de caída de energía ya existe: {existe}")
         if existe:
             return 0
     
