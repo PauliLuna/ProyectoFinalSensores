@@ -10,16 +10,17 @@ def insert_alerta(mongo, alerta_data):
     return mongo.db.alertas.insert_one(alerta_data).inserted_id
 
 
-def get_alertas_caida_de_energia(mongo, id_empresa, direccion):
+def get_alerta_caida_energia_abierta(mongo, id_empresa, direccion):
     """
-    Devuelve todas las alertas del tipo caida de energia de una empresa
+    Devuelve la última alerta de caída de energía que esté ABIERTA
     """
     filtro = {
         "idEmpresa": id_empresa,
         "tipoAlerta": "Caída de energía eléctrica",
-        "direccion": direccion
+        "direccion": direccion,
+        "estado": "pendiente"
     }
-    return list(mongo.db.alertas.find_one(filtro))
+    return mongo.db.alertas.find_one(filtro, sort=[("fechaHoraAlerta", -1)])
 
 def get_alertas_puerta_abierta(mongo, nro_sensor, id_empresa, hoy_inicio):
     """

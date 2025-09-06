@@ -2,7 +2,7 @@ from flask import jsonify, request, session, current_app
 from models.alerta import (
     get_alertas_filtradas,  
     insert_alerta, 
-    get_alertas_caida_de_energia, 
+    get_alerta_caida_energia_abierta, 
     get_alertas_puerta_abierta,
     q_alerta_abierta_temp,
     q_alerta_abierta_offline,
@@ -857,7 +857,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
 
     # Verificar si todos están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
-        existe = get_alertas_caida_de_energia(mongo, id_empresa, direccion)
+        existe = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
         print(f"[DEBUG] Alerta de caída de energía ya existe: {existe}")
         if existe:
             return 0
@@ -871,7 +871,8 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             "tipoAlerta": "Caída de energía eléctrica",
             "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
             "mensajeAlerta": "Caída de energía eléctrica",
-            "fechaHoraAlerta": datetime.utcnow()
+            "fechaHoraAlerta": datetime.utcnow(),
+            "estadoAlerta": "pendiente"
         }
         print(f"[DEBUG] Insertando alerta: {alerta_data}")
         alerta_id = insert_alerta(mongo, alerta_data)
