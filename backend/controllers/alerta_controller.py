@@ -670,13 +670,17 @@ def chequear_alertas_preventivas(mongo, id_empresa):
     """
     total_alertas_generadas = 0
     sensores = get_all_sensors_empresa(mongo,id_empresa)
+    print(f"[DEBUG] Empresa {id_empresa} - Sensores encontrados: {len(sensores)}")
+
     if not sensores:
         return 0
 
     for sensor in sensores:
         #Validación de caida de energía
+        print(f"[DEBUG] Procesando sensor: {sensor['nroSensor']}")
         total_alertas_generadas += _alerta_caida_energia(mongo, sensor, id_empresa)
 
+        print(f"[DEBUG] Total alertas generadas hasta ahora (caida_energia): {total_alertas_generadas}")
         nro_sensor = sensor["nroSensor"]
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
@@ -705,8 +709,12 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         # 2️⃣ Analizar fluctuaciones
         total_alertas_generadas += _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
 
+        print(f"[DEBUG] Total alertas generadas hasta ahora (fluctuacion_temp): {total_alertas_generadas}")
+
         # 3️⃣ Alerta de puerta abierta recurrente
         total_alertas_generadas += _alerta_puerta_recurrente(mongo, sensor, id_empresa)
+
+        print(f"[DEBUG] Total alertas generadas hasta ahora (puerta_recurrente): {total_alertas_generadas}")
 
         # 3️⃣ Actualizar checkpoint
         mongo.db.alerta_checkpoint.update_one(
