@@ -113,94 +113,108 @@ def chequear_alertas_criticas(mongo, id_empresa):
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
-        # 1️⃣ Obtener checkpoint
-        checkpoint = mongo.db.alerta_checkpoint.find_one({
-            "idEmpresa": id_empresa,
-            "idSensor": nro_sensor,
-            "tipo": "critica"
-        })
-        last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+        try:
+            # 1️⃣ Obtener checkpoint
+            checkpoint = mongo.db.alerta_checkpoint.find_one({
+                "idEmpresa": id_empresa,
+                "idSensor": nro_sensor,
+                "tipo": "critica"
+            })
+            last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
 
-        # 2️⃣ Obtener mediciones no analizadas
-        filtro = {"idSensor": nro_sensor}
-        if last_date:
-            filtro["fechaHoraMed"] = {"$gt": last_date}
+            # 2️⃣ Obtener mediciones no analizadas
+            filtro = {"idSensor": nro_sensor}
+            if last_date:
+                filtro["fechaHoraMed"] = {"$gt": last_date}
 
-        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
-        print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
+            mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+            print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
-        if not mediciones:
-            # ⚠️ Si no hay mediciones nuevas, igual verificamos el estado offline.
-            # Se usa la última medición conocida del sensor para el cálculo del tiempo.
-            ultima_medicion = mongo.db.mediciones.find_one(
-                {"idSensor": nro_sensor}, sort=[('fechaHoraMed', -1)]
-            )
-            if ultima_medicion:
-                offline_alertas = _alerta_offline(mongo, sensor, ultima_medicion, datetime.now(), id_empresa)
-                total_alertas_generadas += offline_alertas
-            print(f"[DEBUG] No hay mediciones nuevas para sensor {sensor['nroSensor']}")
-            continue
-
-        # Mantener un flag de puerta abierta previa
-        puerta_abierta_previa = False
-        prev_med = None
-        en_ciclo = False
-        inicio_ciclo = None
-
-        # 3️⃣ Analizar mediciones
-        for med in mediciones:
-            print(f"[DEBUG] Medición: {med}")
-            fecha_actual = med["fechaHoraMed"]
-
-            # --- ALERTA OFFLINE ---
-            if prev_med:
-                offline_alertas = _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
-                print(f"[DEBUG] Alertas offline generadas: {offline_alertas}")
-                total_alertas_generadas += offline_alertas
-
-            # --- ALERTA PUERTA ---
-            puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
-            puerta_abierta_previa, alertas_puerta= _alerta_puerta(
-                mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
-            )
-            print(f"[DEBUG] Alertas puerta generadas: {alertas_puerta}")
-            total_alertas_generadas += alertas_puerta
-            
-           # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
-            try:
-                temp = float(med.get("valorTempInt"))
-                print(f"[DEBUG] Temperatura interna: {temp}")
-            except (TypeError, ValueError):
-                print("[DEBUG] Medición sin temperatura válida, se salta.")
-                prev_med = med
+            if not mediciones:
+                # ⚠️ Si no hay mediciones nuevas, igual verificamos el estado offline.
+                # Se usa la última medición conocida del sensor para el cálculo del tiempo.
+                ultima_medicion = mongo.db.mediciones.find_one(
+                    {"idSensor": nro_sensor}, sort=[('fechaHoraMed', -1)]
+                )
+                if ultima_medicion:
+                    offline_alertas = _alerta_offline(mongo, sensor, ultima_medicion, datetime.now(), id_empresa)
+                    total_alertas_generadas += offline_alertas
+                print(f"[DEBUG] No hay mediciones nuevas para sensor {sensor['nroSensor']}")
                 continue
 
-            if valor_min is not None and valor_max is not None:
-                # Detectar entrada/salida en ciclo
-                if temp > valor_max and not en_ciclo:
-                    en_ciclo = True
-                    inicio_ciclo = fecha_actual
-                elif en_ciclo and valor_min <= temp <= valor_max:
-                    en_ciclo = False
-                    inicio_ciclo = None
-                else:
-                    en_ciclo, inicio_ciclo,  alertas_generadas_ciclo= _alerta_ciclo_asincronico(
-                        mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa
+            # Mantener un flag de puerta abierta previa
+            puerta_abierta_previa = False
+            prev_med = None
+            en_ciclo = False
+            inicio_ciclo = None
+
+            # 3️⃣ Analizar mediciones
+            for med in mediciones:
+                print(f"[DEBUG] Medición: {med}")
+                fecha_actual = med["fechaHoraMed"]
+
+                # --- ALERTA OFFLINE ---
+                if prev_med:
+                    try:
+                        offline_alertas = _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
+                        print(f"[DEBUG] Alertas offline generadas: {offline_alertas}")
+                        total_alertas_generadas += offline_alertas
+                    except Exception as e:
+                        print(f"[ERROR] Fallo en _alerta_offline para sensor {nro_sensor}: {e}")
+
+                # --- ALERTA PUERTA ---
+                puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
+                try:
+                    puerta_abierta_previa, alertas_puerta = _alerta_puerta(
+                        mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
                     )
-                    total_alertas_generadas += alertas_generadas_ciclo
+                    total_alertas_generadas += alertas_puerta
+                except Exception as e:
+                    print(f"[ERROR] Fallo en _alerta_puerta para sensor {nro_sensor}: {e}")
+            
+                # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
+                try:
+                    temp = float(med.get("valorTempInt"))
+                    print(f"[DEBUG] Temperatura interna: {temp}")
+                except (TypeError, ValueError):
+                    print("[DEBUG] Medición sin temperatura válida, se salta.")
+                    prev_med = med
+                    continue
 
-                # Alerta temp fuera de rango
-                total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
+                if valor_min is not None and valor_max is not None:
+                # Detectar entrada/salida en ciclo
+                    if temp > valor_max and not en_ciclo:
+                        en_ciclo = True
+                        inicio_ciclo = fecha_actual
+                    elif en_ciclo and valor_min <= temp <= valor_max:
+                        en_ciclo = False
+                        inicio_ciclo = None
+                    else:
+                        try:
+                            en_ciclo, inicio_ciclo,  alertas_generadas_ciclo= _alerta_ciclo_asincronico(
+                                mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa
+                            )
+                            total_alertas_generadas += alertas_generadas_ciclo
+                        except Exception as e:
+                            print(f"[ERROR] Fallo en _alerta_ciclo_asincronico para sensor {nro_sensor}: {e}")
+                    try:
+                        # Alerta temp fuera de rango
+                        total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
+                    except Exception as e:
+                        print(f"[ERROR] Fallo en _alerta_temp_fuera_rango para sensor {nro_sensor}: {e}")
 
-            prev_med = med    
+                prev_med = med    
 
-        # 6️⃣ Actualizar checkpoint con la última medición analizada
-        last_med = mediciones[-1]
-        mongo.db.alerta_checkpoint.update_one(
-            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "critica"},
-            {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
-            upsert=True
-        )
+            # 6️⃣ Actualizar checkpoint con la última medición analizada
+            last_med = mediciones[-1]
+            mongo.db.alerta_checkpoint.update_one(
+                {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "critica"},
+                {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
+                upsert=True
+            )
+        except Exception as e:
+            print(f"[ERROR] Fallo al procesar el sensor {nro_sensor}: {e}")
+            continue
 
     return total_alertas_generadas  # Retorna la cantidad de alertas agregadas
 
@@ -470,7 +484,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
             # 🔹 Actualizar estado del sensor a inactive
-            updateStatus(mongo, str(sensor["nroSensor"]), id_empresa, "inactive")
+            updateStatus(mongo, sensor["nroSensor"], id_empresa, "inactive")
             
             print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
 
