@@ -12,7 +12,7 @@ def insert_alerta(mongo, alerta_data):
 
 def get_alerta_caida_energia_abierta(mongo, id_empresa, direccion):
     """
-    Devuelve la última alerta de caída de energía que esté ABIERTA
+    Devuelve la última alerta de caída de energía que esté Pendiente
     """
     filtro = {
         "idEmpresa": id_empresa,

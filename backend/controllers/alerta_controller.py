@@ -29,8 +29,28 @@ def obtener_alertas(mongo):
 
     tipo = request.args.get("tipoAlerta")
     alertas = get_alertas_filtradas(mongo, id_empresa, tipo)
+    
     # Convertir idSensor a int para el join
-    sensores_ids = list(set(int(a["idSensor"]) for a in alertas if "idSensor" in a and a["idSensor"].isdigit()))
+    sensores_ids_validos = set()
+    for alerta in alertas:
+        # Asegurarse de que el campo 'idSensor' existe en la alerta
+        if "idSensor" in alerta:
+            valor_sensor = alerta["idSensor"]
+            
+            # Caso 1: el valor es un array (list) de IDs
+            if isinstance(valor_sensor, list):
+                for sensor_id in valor_sensor:
+                    # Verificar que el elemento del array es un string de dígitos
+                    if isinstance(sensor_id, str) and sensor_id.isdigit():
+                        sensores_ids_validos.add(int(sensor_id))
+            
+            # Caso 2: el valor es un solo ID como string
+            elif isinstance(valor_sensor, str) and valor_sensor.isdigit():
+                sensores_ids_validos.add(int(valor_sensor))
+    
+    sensores_ids = list(sensores_ids_validos)
+
+
     sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
     sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
     sensor_direccion = {int(s["nroSensor"]): s.get("direccion", "") for s in sensores}
@@ -66,7 +86,7 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
     # Busca solo las alertas de ese sensor y empresa
     alertas = list(mongo.db.alertas.find({
         "idEmpresa": id_empresa,
-        "idSensor": str(sensor_id)
+        "idSensor": sensor_id
     }).sort("fechaHoraAlerta", -1))
     # Definimos la zona horaria UTC y la zona de Argentina.
     zona_utc = pytz.timezone('UTC')
