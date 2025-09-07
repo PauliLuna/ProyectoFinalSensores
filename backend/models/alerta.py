@@ -39,6 +39,7 @@ def q_alerta_abierta_temp(mongo, nro_sensor, id_empresa):
         "idSensor": str(nro_sensor),
         "tipoAlerta": "Temperatura fuera de rango",
         "idEmpresa": str(id_empresa),
+        "estadoAlerta": "abierta",
         "$or": [
             {"duracionMinutos": None},
             {"duracionMinutos": {"$exists": False}}

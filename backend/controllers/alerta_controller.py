@@ -608,7 +608,8 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
                 "descripcion": descripcion,
                 "mensajeAlerta": mensaje,
                 "fechaHoraAlerta": fecha_actual,
-                "duracionMinutos": None 
+                "duracionMinutos": None,
+                "estadoAlerta": "abierta"
             }
             print(f"[DEBUG] Insertando alerta: {alerta_data}")
             alerta_id = insert_alerta(mongo, alerta_data)
