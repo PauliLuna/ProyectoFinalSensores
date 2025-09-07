@@ -147,6 +147,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
             # 2️⃣ Obtener mediciones no analizadas
             last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+            print(f"[DEBUG] Checkpoint para sensor {nro_sensor}: {last_date}")
             mediciones = get_mediciones(mongo, nro_sensor, last_date)
 
             print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
