@@ -18,7 +18,7 @@ def get_alerta_caida_energia_abierta(mongo, id_empresa, direccion):
         "idEmpresa": id_empresa,
         "tipoAlerta": "Caída de energía eléctrica",
         "direccion": direccion,
-        "estado": "pendiente"
+        "estadoAlerta": "abierta"
     }
     return mongo.db.alertas.find_one(filtro, sort=[("fechaHoraAlerta", -1)])
 
@@ -58,7 +58,7 @@ def updateDuracion(mongo, alerta_id, duracion):
 def updateStatus(mongo, nroSensor, id_empresa, estado):
     mongo.db.sensors.update_one(
         {"nroSensor": nroSensor, "idEmpresa": id_empresa},
-        {"$set": {"estado": estado}}
+        {"$set": {"estadoAlerta": estado}}
     )
 
 def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
@@ -66,6 +66,7 @@ def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
         "idSensor": str(nro_sensor),
         "tipoAlerta": "Sensor offline",
         "idEmpresa": str(id_empresa),
+        "estadoAlerta": "abierta",
         "$or": [
             {"duracionMinutos": None},
             {"duracionMinutos": {"$exists": False}}

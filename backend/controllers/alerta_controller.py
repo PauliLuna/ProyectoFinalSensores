@@ -883,7 +883,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
                 "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
                 "mensajeAlerta": "Caída de energía eléctrica",
                 "fechaHoraAlerta": datetime.utcnow(),
-                "estadoAlerta": "pendiente",
+                "estadoAlerta": "abierta",
                 "direccion": direccion,
             }
 
