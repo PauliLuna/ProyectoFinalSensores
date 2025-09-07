@@ -72,3 +72,23 @@ def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
         ]
     }
     return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])
+
+def get_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta):
+    return mongo.db.alerta_checkpoint.find_one({
+        "idEmpresa": id_empresa,
+        "idSensor": nro_sensor,
+        "tipoAlerta": tipo_alerta
+    })
+
+def update_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta, fecha_ultima_analizada):
+    mongo.db.alerta_checkpoint.update_one(
+        {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": tipo_alerta},
+        {"$set": {"fechaUltimaAnalizada": fecha_ultima_analizada}},
+        upsert=True
+    )
+
+def get_alertas_sensor(mongo, id_empresa, sensor_id):
+    return list(mongo.db.alertas.find({
+        "idEmpresa": id_empresa,
+        "idSensor": {"$in": [sensor_id]}
+    }).sort("fechaHoraAlerta", -1))

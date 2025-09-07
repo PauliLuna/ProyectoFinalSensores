@@ -117,3 +117,19 @@ def get_last_open_duration(mediciones):
         if mediciones[i]['puerta'] == 1 and mediciones[i + 1]['puerta'] == 0:
             return mediciones[i + 1]['fechaHoraMed'] - mediciones[i]['fechaHoraMed']
     return None
+
+def get_mediciones(mongo, nro_sensor, last_date=None):
+    """
+    Obtiene las mediciones de un sensor específico.
+        nro_sensor: El número del sensor para el cual se obtienen las mediciones.
+        last_date: (Opcional) Un objeto datetime para obtener mediciones
+                   posteriores a esa fecha.
+    """
+    filtro = {"idSensor": nro_sensor}
+    if last_date:
+        filtro["fechaHoraMed"] = {"$gt": last_date}
+
+    # ordenadas por fecha de forma ascendente.
+    mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+
+    return mediciones

@@ -7,7 +7,14 @@ from models.alerta import (
     q_alerta_abierta_temp,
     q_alerta_abierta_offline,
     updateDuracion,
-    updateStatus)
+    updateStatus,
+    get_checkpoint,
+    get_alertas_sensor,
+    update_checkpoint)
+from models.sensor import(
+    get_mediciones,
+    get_ultima_medicion
+)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -84,10 +91,8 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
         return jsonify({"error": "Empresa no encontrada"}), 401
 
     # Busca solo las alertas de ese sensor y empresa
-    alertas = list(mongo.db.alertas.find({
-        "idEmpresa": id_empresa,
-        "idSensor": {"$in": [sensor_id]}
-    }).sort("fechaHoraAlerta", -1))
+    alertas = get_alertas_sensor(mongo, id_empresa, sensor_id)
+
     # Definimos la zona horaria UTC y la zona de Argentina.
     zona_utc = pytz.timezone('UTC')
     zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
@@ -138,27 +143,19 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
         try:
             # 1️⃣ Obtener checkpoint
-            checkpoint = mongo.db.alerta_checkpoint.find_one({
-                "idEmpresa": id_empresa,
-                "idSensor": nro_sensor,
-                "tipo": "critica"
-            })
-            last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+            checkpoint = get_checkpoint(mongo, id_empresa, nro_sensor, "critica")
 
             # 2️⃣ Obtener mediciones no analizadas
-            filtro = {"idSensor": nro_sensor}
-            if last_date:
-                filtro["fechaHoraMed"] = {"$gt": last_date}
+            last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+            mediciones = get_mediciones(mongo, nro_sensor, last_date)
 
-            mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
             print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
             if not mediciones:
                 # ⚠️ Si no hay mediciones nuevas, igual verificamos el estado offline.
                 # Se usa la última medición conocida del sensor para el cálculo del tiempo.
-                ultima_medicion = mongo.db.mediciones.find_one(
-                    {"idSensor": nro_sensor}, sort=[('fechaHoraMed', -1)]
-                )
+                ultima_medicion = get_ultima_medicion(mongo, nro_sensor)
+                
                 if ultima_medicion:
                     offline_alertas = _alerta_offline(mongo, sensor, ultima_medicion, datetime.now(), id_empresa)
                     total_alertas_generadas += offline_alertas
@@ -230,11 +227,8 @@ def chequear_alertas_criticas(mongo, id_empresa):
 
             # 6️⃣ Actualizar checkpoint con la última medición analizada
             last_med = mediciones[-1]
-            mongo.db.alerta_checkpoint.update_one(
-                {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "critica"},
-                {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
-                upsert=True
-            )
+            update_checkpoint(mongo, id_empresa, nro_sensor, "critica", last_med["fechaHoraMed"])
+            
         except Exception as e:
             print(f"[ERROR] Fallo al procesar el sensor {nro_sensor}: {e}")
             continue
@@ -695,10 +689,15 @@ def chequear_alertas_preventivas(mongo, id_empresa):
     if not sensores:
         return 0
 
+    # Agrupar sensores por dirección para evitar duplicados
+    direcciones_procesadas = set()
     for sensor in sensores:
-        #Validación de caida de energía
         print(f"[DEBUG] Procesando sensor: {sensor['nroSensor']}")
-        total_alertas_generadas += _alerta_caida_energia(mongo, sensor, id_empresa)
+        #Validación de caida de energía
+        direccion = sensor.get("direccion")
+        if direccion and direccion not in direcciones_procesadas:
+            total_alertas_generadas += _alerta_caida_energia(mongo, sensor, id_empresa)
+            direcciones_procesadas.add(direccion)
 
         print(f"[DEBUG] Total alertas generadas hasta ahora (caida_energia): {total_alertas_generadas}")
         nro_sensor = sensor["nroSensor"]
@@ -707,22 +706,15 @@ def chequear_alertas_preventivas(mongo, id_empresa):
 
         print(f"[DEBUG] Sensor {nro_sensor} - Rango de temperatura ({valor_min}, {valor_max})")
 
-          # 1️⃣ Obtener checkpoint de preventivas
-        checkpoint = mongo.db.alerta_checkpoint.find_one({
-            "idEmpresa": id_empresa,
-            "idSensor": nro_sensor,
-            "tipo": "preventiva"
-        })
+        # 1️⃣ Obtener checkpoint de preventivas
+        checkpoint = get_checkpoint(mongo, id_empresa, nro_sensor, "preventiva")
+        
         last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
 
         print(f"[DEBUG] Checkpoint para sensor {nro_sensor}: {last_date}")
 
          # 2️⃣ Obtener mediciones nuevas (no analizadas desde el checkpoint)
-        filtro = {"idSensor": nro_sensor}
-        if last_date:
-            filtro["fechaHoraMed"] = {"$gt": last_date}
-
-        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+        mediciones = get_mediciones(mongo, nro_sensor, last_date)
 
         print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
@@ -732,22 +724,18 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         if len(mediciones) < 3:
             continue  # Necesitamos varias mediciones para detectar fluctuaciones
 
-        # 2️⃣ Analizar fluctuaciones
+        # Analizar fluctuaciones
         total_alertas_generadas += _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
 
         print(f"[DEBUG] Total alertas generadas hasta ahora (fluctuacion_temp): {total_alertas_generadas}")
 
-        # 3️⃣ Alerta de puerta abierta recurrente
+        # Alerta de puerta abierta recurrente
         total_alertas_generadas += _alerta_puerta_recurrente(mongo, sensor, id_empresa)
 
         print(f"[DEBUG] Total alertas generadas hasta ahora (puerta_recurrente): {total_alertas_generadas}")
 
         # 3️⃣ Actualizar checkpoint
-        mongo.db.alerta_checkpoint.update_one(
-            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "preventiva"},
-            {"$set": {"fechaUltimaAnalizada": mediciones[-1]["fechaHoraMed"]}},
-            upsert=True
-        )
+        update_checkpoint(mongo, id_empresa, nro_sensor, "preventiva", mediciones[-1]["fechaHoraMed"])
     
     return total_alertas_generadas # Retorna la cantidad de mediciones analizadas
 
@@ -962,22 +950,16 @@ def chequear_alertas_informativas(mongo, id_empresa):
             continue
 
         # 2️⃣ Obtener checkpoint
-        checkpoint = mongo.db.alerta_checkpoint.find_one({
-            "idEmpresa": id_empresa,
-            "idSensor": nro_sensor,
-            "tipo": "informativas"
-        })
+        checkpoint = get_checkpoint(mongo, id_empresa, nro_sensor, "informativas")
+        
         last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
         en_ciclo = checkpoint.get("enCiclo") if checkpoint else False
         fecha_inicio_ciclo = checkpoint.get("fechaInicioCiclo") if checkpoint else None
         temp_max_ciclo = checkpoint["tempMaxCiclo"] if checkpoint else None
 
         # 3️⃣ Obtener mediciones nuevas (sin analizar desde el ultimo checkpoint)
-        filtro = {"idSensor": nro_sensor}
-        if last_date:
-            filtro["fechaHoraMed"] = {"$gt": last_date}
+        mediciones = get_mediciones(mongo, nro_sensor, last_date)
 
-        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
         if not mediciones:
             continue
 
@@ -1004,7 +986,7 @@ def chequear_alertas_informativas(mongo, id_empresa):
             total_alertas_generadas += alertas_generadas
             last_date = fecha_actual
 
-        # 5️⃣ Actualizar checkpoint
+        # 5️⃣ Actualizar checkpoint --> VER
         last_med = mediciones[-1]
         mongo.db.alerta_checkpoint.update_one(
             {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "informativas"},
