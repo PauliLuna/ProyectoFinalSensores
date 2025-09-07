@@ -133,3 +133,9 @@ def get_mediciones(mongo, nro_sensor, last_date=None):
     mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
 
     return mediciones
+
+def updateStatus(mongo, nroSensor, id_empresa, estado):
+    mongo.db.sensors.update_one(
+        {"nroSensor": nroSensor, "idEmpresa": id_empresa},
+        {"$set": {"estado": estado}}
+    )

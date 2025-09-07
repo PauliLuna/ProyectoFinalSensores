@@ -7,14 +7,13 @@ from models.alerta import (
     q_alerta_abierta_temp,
     q_alerta_abierta_offline,
     updateDuracion,
-    updateStatus,
     get_checkpoint,
     get_alertas_sensor,
     update_checkpoint)
 from models.sensor import(
     get_mediciones,
-    get_ultima_medicion
-)
+    get_ultima_medicion,
+    updateStatus)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -173,6 +172,21 @@ def chequear_alertas_criticas(mongo, id_empresa):
             for med in mediciones:
                 print(f"[DEBUG] Medición: {med}")
                 fecha_actual = med["fechaHoraMed"]
+
+                # --- CASO ESPECIAL: Primera medición nueva ---
+                if prev_med is None:
+                    # Si el sensor está inactivo y hay alerta offline abierta, cerrarla y reactivar sensor
+                    alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
+                    if sensor.get("estado") == "inactive" and alerta_abierta:
+                        inicio = alerta_abierta["fechaHoraAlerta"]
+                        duracion = (fecha_actual - inicio).total_seconds() / 60
+                        duracion = round(duracion, 1)
+                        updateDuracion(mongo, alerta_abierta["_id"], duracion)
+                        print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
+                        updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
+                        print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
+                    prev_med = med
+                    continue
 
                 # --- ALERTA OFFLINE ---
                 if prev_med:
@@ -540,7 +554,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
 
         # Si el estado actual del sensor es 'inactive', lo actualizamos a 'active'
         if sensor.get("estado") == "inactive":
-            updateStatus(mongo, str(sensor["nroSensor"]), id_empresa, "active")
+            updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
         
             print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
 
