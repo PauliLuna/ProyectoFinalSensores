@@ -79,7 +79,7 @@ def get_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta):
     return mongo.db.alerta_checkpoint.find_one({
         "idEmpresa": id_empresa,
         "idSensor": nro_sensor,
-        "tipoAlerta": tipo_alerta
+        "tipo": tipo_alerta
     })
 
 def update_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta, fecha_ultima_analizada):
