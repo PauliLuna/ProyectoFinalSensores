@@ -538,7 +538,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             return 1  # ⚠️ Devuelve 1 si se insertó una alerta
         else:
             # Si ya hay una alerta abierta, no hacemos nada y devolvemos 0
-            print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.")
+            print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.") # TO DO: updatear descripcion de la alerta a la nueva fecha
             return 0
     else: # El sensor está online (con mediciones recientes)
         # Si había una alerta abierta, la cerramos
@@ -549,15 +549,10 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
 
             # Actualizar la alerta con la duración
             updateDuracion(mongo, alerta_abierta["_id"], duracion)
-
             print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
 
-        # Si el estado actual del sensor es 'inactive', lo actualizamos a 'active'
-        if sensor.get("estado") == "inactive":
             updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
-        
             print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
-
         return 0  # Devuelve 0 si no se insertó alerta
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
