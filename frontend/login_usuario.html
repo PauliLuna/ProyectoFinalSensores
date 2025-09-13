@@ -9,8 +9,8 @@
 </head>
 <body class="auth-bg">
     <a href="index.html" class="back-button">← Volver</a>
-    <div class="auth-container">
-        <div class="card" style="max-width: 550px;">
+    <div class="auth-container" style="display: flex; justify-content: center;">
+        <div class="card" style="min-width: 800px;">
             <div class="card-body p-4">
                 <div class="text-center mb-4">
                     <img src="assets/logo1.png" alt="Logo SensIA" style="height:60px;">
@@ -19,50 +19,71 @@
                 </div>
                 <form id="userRegistrationForm" class="form" action="/complete_registration" method="POST">
                     <!-- Código de Identificación -->
-                    <div class="form-group mb-3">
-                        <label for="codigo">Código de Identificación</label>
-                        <input type="text" id="codigo" class="form-control" name="codigo" placeholder="Ingrese el código de identificación" required>
-                        <small id="noMatchCodigo" style="color:#e63946; display:none;">
-                            El código de invitación es inválido.
-                        </small>
-                    </div>
+                    <div class="form-row mb-3">
+                            <div class="form-group flex-fill">
+                                <label for="codigo">Código de Identificación</label>
+                                <input type="text" id="codigo" class="form-control" name="codigo" placeholder="Ingrese el código de identificación" required>
+                                <small id="noMatchCodigo" style="color:#e63946; display:none;">
+                                    El código de invitación es inválido.
+                                </small>
+                            </div>
+                            <div class="form-group flex-fill">
+                                <label for="email">Correo Electrónico</label>
+                                <input type="email" id="email" class="form-control" name="email" placeholder="Ingrese su correo electrónico" required style="margin-top: 4px; margin-bottom: 12px;">
+                            </div>
+                        </div>
 
-                    <!-- Datos del Usuario -->
-                    <div class="form-group mb-3">
-                        <label for="email">Correo Electrónico</label>
-                        <input type="email" id="email" class="form-control" name="email" placeholder="Ingrese su correo electrónico" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="phone">Número de Celular</label>
-                        <input type="tel" id="phone" class="form-control" name="phone" placeholder="Ingrese su número de celular" pattern="[0-9]+" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="username">Nombre de Usuario</label>
-                        <input type="text" id="username" class="form-control" name="username" placeholder="Ingrese su nombre de usuario" required>
-                    </div>
-                    <div class="form-group mb-3 password-wrapper">
-                        <label for="password">Contraseña</label>
-                        <input type="password" id="password" class="form-control" name="password" placeholder="Ingrese su contraseña" required>
-                        <button type="button" class="toggle-password" tabindex="-1" onclick="togglePassword('password','eyeIcon1')">
-                            <span id="eyeIcon1">🙈</span>
-                        </button>
-                    </div>
-                    <small id="noMatchPass" style="color:#e63946; display:none;">
-                        Las contraseñas no coinciden. Por favor, inténtelo de nuevo.
-                    </small>
-                    <small id="strongPass" class="text-muted" style="display:block;margin-bottom:0px;">
-                        La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.
-                    </small>
-                    <div class="form-group mb-3 password-wrapper">
-                        <label for="confirmPassword">Confirmar Contraseña</label>
-                        <input type="password" id="confirmPassword" class="form-control" name="confirmPassword" placeholder="Confirme su contraseña" required>
-                        <button type="button" class="toggle-password" tabindex="-1" onclick="togglePassword('confirmPassword','eyeIcon2')">
-                            <span id="eyeIcon2">🙈</span>
-                        </button>
-                    </div>
-                    <button type="submit" class="btn-primary w-100">Registrar</button>
+                        <div class="form-row mb-3">
+                            <div class="form-group flex-fill">
+                                <label for="username">Nombre de Usuario</label>
+                                <input type="text" id="username" class="form-control" name="username" placeholder="Ingrese su nombre de usuario" required>
+                            </div>
+                            <div class="form-group flex-fill">
+                                <label for="phone">Número de Celular</label>
+                                <input type="tel" id="phone" class="form-control" name="phone" placeholder="Ingrese su número de celular" pattern="[0-9]+" required style="margin-top: 4px; margin-bottom: 12px;">
+                            </div>
+                        </div>
+                        <div class="form-row mb-3">
+                            <div class="form-group">
+                                <label for="password">Contraseña</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="password" class="form-control" name="password" placeholder="Ingrese su contraseña" required style="margin-top: 4px; margin-bottom: 0px;">
+                                    <button type="button" class="toggle-password" tabindex="-1" onclick="togglePassword('password','eyeIcon1')" style="top: 53% !important;">
+                                        <span id="eyeIcon1">🙈</span>
+                                    </button>
+                                </div>
+                                <small id="strongPass" class="text-muted" style="display:block; margin-top: 4px;">
+                                    La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.
+                                </small>
+                            </div>
+
+                            <div class="form-group flex-fill">
+                                <label for="confirmPassword">Confirmar Contraseña</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="confirmPassword" class="form-control" name="confirmPassword" placeholder="Confirme su contraseña" required style="margin-top: 4px; margin-bottom: 0px;">
+                                    <button type="button" class="toggle-password" tabindex="-1" onclick="togglePassword('confirmPassword','eyeIcon2')" style="top: 53% !important;">
+                                        <span id="eyeIcon2" >🙈</span>
+                                    </button>
+                                </div>
+                                <small id="noMatchPass" style="color:#e63946; display:none;">
+                                    Las contraseñas no coinciden.
+                                </small>
+                            </div>
+                        </div>
+                                                
+
+                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 0px;">
+                            <div style="width: 300px;"></div> 
+                            
+                            <button type="submit" class="btn-primary submit-btn" style="flex: 1; ">Registrar</button>
+                            
+                            <div class="d-flex align-items-center">
+                                <img src="assets/termi-confirmacion.png" alt="Icono de confirmación" style="height: 120px; margin-right: 180px;">
+                            </div>
+                        </div>
+
                 </form>
-                <div class="form-footer mt-3 text-center">
+                <div class="form-footer mt-3 text-center" style="margin-top: 0px;">
                     <span>¿Ya tienes cuenta? <a href="signin.html">Inicia sesión</a></span>
                 </div>
                 <div id="registerMsg"></div>
