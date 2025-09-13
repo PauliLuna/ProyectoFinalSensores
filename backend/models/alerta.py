@@ -1,3 +1,5 @@
+from pymongo import DESCENDING
+
 def get_alertas_filtradas(mongo, id_empresa, tipo=None):
     filtro = {"idEmpresa": id_empresa}
     if tipo:
@@ -8,16 +10,17 @@ def insert_alerta(mongo, alerta_data):
     return mongo.db.alertas.insert_one(alerta_data).inserted_id
 
 
-def get_alertas_caida_de_energia(mongo, id_empresa, direccion):
+def get_alerta_caida_energia_abierta(mongo, id_empresa, direccion):
     """
-    Devuelve todas las alertas del tipo caida de energia de una empresa
+    Devuelve la última alerta de caída de energía que esté Pendiente
     """
     filtro = {
         "idEmpresa": id_empresa,
         "tipoAlerta": "Caída de energía eléctrica",
-        "direccion": direccion
+        "direccion": direccion,
+        "estadoAlerta": "abierta"
     }
-    return list(mongo.db.alertas.find_one(filtro))
+    return mongo.db.alertas.find_one(filtro, sort=[("fechaHoraAlerta", -1)])
 
 def get_alertas_puerta_abierta(mongo, nro_sensor, id_empresa, hoy_inicio):
     """
@@ -31,3 +34,57 @@ def get_alertas_puerta_abierta(mongo, nro_sensor, id_empresa, hoy_inicio):
     }
     return mongo.db.alertas.count_documents(filtro)
 
+def q_alerta_abierta_temp(mongo, nro_sensor, id_empresa):
+    filtro = {
+        "idSensor": str(nro_sensor),
+        "tipoAlerta": "Temperatura fuera de rango",
+        "idEmpresa": str(id_empresa),
+        "estadoAlerta": "abierta",
+        "$or": [
+            {"duracionMinutos": None},
+            {"duracionMinutos": {"$exists": False}}
+        ]
+    }
+    return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])
+
+def updateDuracion(mongo, alerta_id, duracion):
+    mongo.db.alertas.update_one(
+        {"_id": alerta_id},
+        {"$set": {
+            "duracionMinutos": duracion,
+            "estadoAlerta": "cerrada"
+        }}
+    )
+
+def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
+    filtro = {
+        "idSensor": str(nro_sensor),
+        "tipoAlerta": "Sensor offline",
+        "idEmpresa": str(id_empresa),
+        "estadoAlerta": "abierta",
+        "$or": [
+            {"duracionMinutos": None},
+            {"duracionMinutos": {"$exists": False}}
+        ]
+    }
+    return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])
+
+def get_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta):
+    return mongo.db.alerta_checkpoint.find_one({
+        "idEmpresa": id_empresa,
+        "idSensor": nro_sensor,
+        "tipo": tipo_alerta
+    })
+
+def update_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta, fecha_ultima_analizada):
+    mongo.db.alerta_checkpoint.update_one(
+        {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": tipo_alerta},
+        {"$set": {"fechaUltimaAnalizada": fecha_ultima_analizada}},
+        upsert=True
+    )
+
+def get_alertas_sensor(mongo, id_empresa, sensor_id):
+    return list(mongo.db.alertas.find({
+        "idEmpresa": id_empresa,
+        "idSensor": {"$in": [sensor_id]}
+    }).sort("fechaHoraAlerta", -1))

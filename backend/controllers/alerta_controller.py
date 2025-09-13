@@ -2,8 +2,18 @@ from flask import jsonify, request, session, current_app
 from models.alerta import (
     get_alertas_filtradas,  
     insert_alerta, 
-    get_alertas_caida_de_energia, 
-    get_alertas_puerta_abierta)
+    get_alerta_caida_energia_abierta, 
+    get_alertas_puerta_abierta,
+    q_alerta_abierta_temp,
+    q_alerta_abierta_offline,
+    updateDuracion,
+    get_checkpoint,
+    get_alertas_sensor,
+    update_checkpoint)
+from models.sensor import(
+    get_mediciones,
+    get_ultima_medicion,
+    updateStatus)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from flask_mail import Message
@@ -25,8 +35,28 @@ def obtener_alertas(mongo):
 
     tipo = request.args.get("tipoAlerta")
     alertas = get_alertas_filtradas(mongo, id_empresa, tipo)
+    
     # Convertir idSensor a int para el join
-    sensores_ids = list(set(int(a["idSensor"]) for a in alertas if "idSensor" in a and a["idSensor"].isdigit()))
+    sensores_ids_validos = set()
+    for alerta in alertas:
+        # Asegurarse de que el campo 'idSensor' existe en la alerta
+        if "idSensor" in alerta:
+            valor_sensor = alerta["idSensor"]
+            
+            # Caso 1: el valor es un array (list) de IDs
+            if isinstance(valor_sensor, list):
+                for sensor_id in valor_sensor:
+                    # Verificar que el elemento del array es un string de dígitos
+                    if isinstance(sensor_id, str) and sensor_id.isdigit():
+                        sensores_ids_validos.add(int(sensor_id))
+            
+            # Caso 2: el valor es un solo ID como string
+            elif isinstance(valor_sensor, str) and valor_sensor.isdigit():
+                sensores_ids_validos.add(int(valor_sensor))
+    
+    sensores_ids = list(sensores_ids_validos)
+
+
     sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
     sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
     sensor_direccion = {int(s["nroSensor"]): s.get("direccion", "") for s in sensores}
@@ -60,10 +90,8 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
         return jsonify({"error": "Empresa no encontrada"}), 401
 
     # Busca solo las alertas de ese sensor y empresa
-    alertas = list(mongo.db.alertas.find({
-        "idEmpresa": id_empresa,
-        "idSensor": str(sensor_id)
-    }).sort("fechaHoraAlerta", -1))
+    alertas = get_alertas_sensor(mongo, id_empresa, sensor_id)
+
     # Definimos la zona horaria UTC y la zona de Argentina.
     zona_utc = pytz.timezone('UTC')
     zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
@@ -89,8 +117,11 @@ def nueva_alerta(mongo):
 def evaluar_alertas(mongo, id_empresa):
     total = 0
     total += chequear_alertas_criticas(mongo, id_empresa)
+    print(f"[DEBUG] Total alertas críticas generadas: {total}")
     total += chequear_alertas_preventivas(mongo, id_empresa)
+    print(f"[DEBUG] Total + alertas preventivas generadas: {total}")
     total += chequear_alertas_informativas(mongo, id_empresa)
+    print(f"[DEBUG] Total + alertas informativas generadas: {total}")
     return total
 
 
@@ -109,93 +140,113 @@ def chequear_alertas_criticas(mongo, id_empresa):
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
-        # 1️⃣ Obtener checkpoint
-        checkpoint = mongo.db.alerta_checkpoint.find_one({
-            "idEmpresa": id_empresa,
-            "idSensor": nro_sensor,
-            "tipo": "critica"
-        })
-        last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+        try:
+            # 1️⃣ Obtener checkpoint
+            checkpoint = get_checkpoint(mongo, id_empresa, nro_sensor, "critica")
 
-        # 2️⃣ Obtener mediciones no analizadas
-        filtro = {"idSensor": nro_sensor}
-        if last_date:
-            filtro["fechaHoraMed"] = {"$gt": last_date}
+            # 2️⃣ Obtener mediciones no analizadas
+            last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
+            print(f"[DEBUG] Checkpoint para sensor {nro_sensor}: {last_date}")
+            mediciones = get_mediciones(mongo, nro_sensor, last_date)
 
-        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
-        print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
+            print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
-        if not mediciones:
-            print(f"[DEBUG] No hay mediciones nuevas para sensor {sensor['nroSensor']}")
-            continue
-
-        # Mantener un flag de puerta abierta previa
-        puerta_abierta_previa = False
-        prev_med = None
-        en_ciclo = False
-        inicio_ciclo = None
-
-        # 3️⃣ Analizar mediciones
-        for med in mediciones:
-            print(f"[DEBUG] Medición: {med}")
-            fecha_actual = med["fechaHoraMed"]
-
-              # 🔹 Actualizar estado del sensor a active
-            mongo.db.sensors.update_one(
-                {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
-                {"$set": {"estado": "active"}}
-            )
-            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
-
-            # --- ALERTA OFFLINE ---
-            if prev_med:
-                offline_alertas = _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
-                print(f"[DEBUG] Alertas offline generadas: {offline_alertas}")
-                total_alertas_generadas += offline_alertas
-
-            # --- ALERTA PUERTA ---
-            puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
-            puerta_abierta_previa, alertas_puerta= _alerta_puerta(
-                mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
-            )
-            print(f"[DEBUG] Alertas puerta generadas: {alertas_puerta}")
-            total_alertas_generadas += alertas_puerta
-            
-           # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
-            try:
-                temp = float(med.get("valorTempInt"))
-                print(f"[DEBUG] Temperatura interna: {temp}")
-            except (TypeError, ValueError):
-                print("[DEBUG] Medición sin temperatura válida, se salta.")
-                prev_med = med
+            if not mediciones:
+                # ⚠️ Si no hay mediciones nuevas, igual verificamos el estado offline.
+                # Se usa la última medición conocida del sensor para el cálculo del tiempo.
+                ultima_medicion = get_ultima_medicion(mongo, nro_sensor)
+                
+                if ultima_medicion:
+                    offline_alertas = _alerta_offline(mongo, sensor, ultima_medicion, datetime.now(), id_empresa)
+                    total_alertas_generadas += offline_alertas
+                print(f"[DEBUG] No hay mediciones nuevas para sensor {sensor['nroSensor']}")
                 continue
 
-            if valor_min is not None and valor_max is not None:
-                # Detectar entrada/salida en ciclo
-                if temp > valor_max and not en_ciclo:
-                    en_ciclo = True
-                    inicio_ciclo = fecha_actual
-                elif en_ciclo and valor_min <= temp <= valor_max:
-                    en_ciclo = False
-                    inicio_ciclo = None
-                else:
-                    en_ciclo, inicio_ciclo,  alertas_generadas_ciclo= _alerta_ciclo_asincronico(
-                        mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa
+            # Mantener un flag de puerta abierta previa
+            puerta_abierta_previa = False
+            prev_med = None
+            en_ciclo = False
+            inicio_ciclo = None
+
+            # 3️⃣ Analizar mediciones
+            for med in mediciones:
+                print(f"[DEBUG] Medición: {med}")
+                fecha_actual = med["fechaHoraMed"]
+
+                # --- CASO ESPECIAL: Primera medición nueva ---
+                if prev_med is None:
+                    # Si el sensor está inactivo y hay alerta offline abierta, cerrarla y reactivar sensor
+                    alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
+                    if sensor.get("estado") == "inactive" and alerta_abierta:
+                        inicio = alerta_abierta["fechaHoraAlerta"]
+                        duracion = (fecha_actual - inicio).total_seconds() / 60
+                        duracion = round(duracion, 1)
+                        updateDuracion(mongo, alerta_abierta["_id"], duracion)
+                        print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
+                        updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
+                        print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
+                    prev_med = med
+                    continue
+
+                # --- ALERTA OFFLINE ---
+                if prev_med:
+                    try:
+                        offline_alertas = _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa)
+                        print(f"[DEBUG] Alertas offline generadas: {offline_alertas}")
+                        total_alertas_generadas += offline_alertas
+                    except Exception as e:
+                        print(f"[ERROR] Fallo en _alerta_offline para sensor {nro_sensor}: {e}")
+
+                # --- ALERTA PUERTA ---
+                puerta_estado = med.get("puerta")  # 0 cerrado, 1 abierto
+                try:
+                    puerta_abierta_previa, alertas_puerta = _alerta_puerta(
+                        mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
                     )
-                    total_alertas_generadas += alertas_generadas_ciclo
+                    total_alertas_generadas += alertas_puerta
+                except Exception as e:
+                    print(f"[ERROR] Fallo en _alerta_puerta para sensor {nro_sensor}: {e}")
+            
+                # --- ALERTA TEMPERATURA FUERA DE RANGO + CICLO ---
+                try:
+                    temp = float(med.get("valorTempInt"))
+                    print(f"[DEBUG] Temperatura interna: {temp}")
+                except (TypeError, ValueError):
+                    print("[DEBUG] Medición sin temperatura válida, se salta.")
+                    prev_med = med
+                    continue
 
-                # Alerta temp fuera de rango
-                total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
+                if valor_min is not None and valor_max is not None:
+                # Detectar entrada/salida en ciclo
+                    if temp > valor_max and not en_ciclo:
+                        en_ciclo = True
+                        inicio_ciclo = fecha_actual
+                    elif en_ciclo and valor_min <= temp <= valor_max:
+                        en_ciclo = False
+                        inicio_ciclo = None
+                    else:
+                        try:
+                            en_ciclo, inicio_ciclo,  alertas_generadas_ciclo= _alerta_ciclo_asincronico(
+                                mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa
+                            )
+                            total_alertas_generadas += alertas_generadas_ciclo
+                        except Exception as e:
+                            print(f"[ERROR] Fallo en _alerta_ciclo_asincronico para sensor {nro_sensor}: {e}")
+                    try:
+                        # Alerta temp fuera de rango
+                        total_alertas_generadas += _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa)
+                    except Exception as e:
+                        print(f"[ERROR] Fallo en _alerta_temp_fuera_rango para sensor {nro_sensor}: {e}")
 
-            prev_med = med    
+                prev_med = med    
 
-        # 6️⃣ Actualizar checkpoint con la última medición analizada
-        last_med = mediciones[-1]
-        mongo.db.alerta_checkpoint.update_one(
-            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "critica"},
-            {"$set": {"fechaUltimaAnalizada": last_med["fechaHoraMed"]}},
-            upsert=True
-        )
+            # 6️⃣ Actualizar checkpoint con la última medición analizada
+            last_med = mediciones[-1]
+            update_checkpoint(mongo, id_empresa, nro_sensor, "critica", last_med["fechaHoraMed"])
+            
+        except Exception as e:
+            print(f"[ERROR] Fallo al procesar el sensor {nro_sensor}: {e}")
+            continue
 
     return total_alertas_generadas  # Retorna la cantidad de alertas agregadas
 
@@ -440,47 +491,69 @@ def _alerta_bloqueo_cuenta(mongo, email, usuario):
 
 def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     """Detecta huecos de tiempo sin mediciones"""
+
+    # 1) Buscar la última alerta offline abierta
+    alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
+
     gap = fecha_actual - prev_med["fechaHoraMed"]
     if gap >= timedelta(minutes=10):
         print(f"⚠️ ALERTA: sensor {sensor['nroSensor']} sin mediciones por {gap}")
 
-        alerta_data = {
-            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
-            "idEmpresa": id_empresa,
-            "criticidad": "Crítica",
-            "tipoAlerta": "Sensor offline",
-            "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
-            "mensajeAlerta": "Sensor offline (sin mediciones)",
-            "fechaHoraAlerta": fecha_actual
-        }
-        print(f"[DEBUG] Insertando alerta: {alerta_data}")
-        alerta_id = insert_alerta(mongo, alerta_data)
-        print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
-        
-          # 🔹 Actualizar estado del sensor a inactive
-        mongo.db.sensors.update_one(
-            {"nroSensor": sensor["nroSensor"], "idEmpresa": id_empresa},
-            {"$set": {"estado": "inactive"}}
-        )
-        print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
+        # Si NO hay una alerta abierta, es la primera vez que se detecta el problema.
+        if not alerta_abierta:
+            alerta_data = {
+                "idSensor": str(sensor["nroSensor"]),
+                "idEmpresa": id_empresa,
+                "criticidad": "Crítica",
+                "tipoAlerta": "Sensor offline",
+                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
+                "mensajeAlerta": "Sensor offline (sin mediciones)",
+                "fechaHoraAlerta": fecha_actual,
+                "duracionMinutos": None,
+                "estadoAlerta": "abierta"
+            }
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"✅ Alerta offline para sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
-        print(f"[DEBUG] Emails asignados para alerta: {emails}")
-        if emails:
-            print(f"[DEBUG] Enviando mail de alerta a: {emails}")
-            _enviar_mail_alerta(
-                emails,
-                "Sensor offline",
-                alerta_data["descripcion"], 
-                "Crítica", 
-                sensor, 
-                alerta_data["mensajeAlerta"], 
-                fecha_actual,
-                "termi-alerta"
-            )
-        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+            # 🔹 Actualizar estado del sensor a inactive
+            updateStatus(mongo, sensor["nroSensor"], id_empresa, "inactive")
+            
+            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
 
-    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
+            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+            print(f"[DEBUG] Emails asignados para alerta: {emails}")
+            if emails:
+                print(f"[DEBUG] Enviando mail de alerta a: {emails}")
+                _enviar_mail_alerta(
+                    emails,
+                    "Sensor offline",
+                    alerta_data["descripcion"], 
+                    "Crítica", 
+                    sensor, 
+                    alerta_data["mensajeAlerta"], 
+                    fecha_actual,
+                    "termi-alerta"
+                )
+            return 1  # ⚠️ Devuelve 1 si se insertó una alerta
+        else:
+            # Si ya hay una alerta abierta, no hacemos nada y devolvemos 0
+            print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.") # TO DO: updatear descripcion de la alerta a la nueva fecha
+            return 0
+    else: # El sensor está online (con mediciones recientes)
+        # Si había una alerta abierta, la cerramos
+        if alerta_abierta:
+            inicio = alerta_abierta["fechaHoraAlerta"]
+            duracion = (fecha_actual - inicio).total_seconds() / 60
+            duracion = round(duracion, 1)
+
+            # Actualizar la alerta con la duración
+            updateDuracion(mongo, alerta_abierta["_id"], duracion)
+            print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
+
+            updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
+            print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
+        return 0  # Devuelve 0 si no se insertó alerta
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
     """Detecta puerta abierta prolongada"""
@@ -516,31 +589,18 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
     # Si no se disparó alerta, actualizamos el estado según puerta actual
     return puerta_estado == 1, alertas_generadas  # ⚠️ Devuelve el estado y el contador
 
-def _q_alerta_abierta_temp(nro_sensor, id_empresa):
-    # Construye un query tolerante a tipos y a la ausencia de 'duracionMinutos'
-    empresa_id_str = str(id_empresa)
-    return {
-        "idSensor": str(nro_sensor),
-        "tipoAlerta": "Temperatura fuera de rango",
-        "$and": [
-            {"$or": [
-                {"idEmpresa": empresa_id_str},
-                {"idEmpresa": id_empresa}  # por si quedó como ObjectId
-            ]},
-            {"$or": [
-                {"duracionMinutos": None},
-                {"duracionMinutos": {"$exists": False}}
-            ]}
-        ]
-    }
 
 def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa):
     """Detecta temperatura fuera de rango"""
 
-    # 1) ¿Está fuera de rango?
+    # 1) Buscar la última alerta abierta una única vez
+    alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
+
+    # 2) ¿Está la temperatura fuera de rango?
     if temp > valor_max or temp < valor_min:
         print(f"⚠️ ALERTA: temp={temp}°C fuera de rango ({valor_min}, {valor_max}) para sensor {sensor['nroSensor']}")
-         # Generar mensaje y descripción
+        
+        # Generar mensaje y descripción
         if temp > valor_max:
             mensaje = "Temperatura interna alta"
             descripcion = f"La temperatura actual ({temp}°C) excede el límite superior ({valor_max}°C) para el sensor {sensor['nroSensor']}."
@@ -548,58 +608,52 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             mensaje = "Temperatura interna baja"
             descripcion = f"La temperatura actual ({temp}°C) está por debajo del límite inferior ({valor_min}°C) para el sensor {sensor['nroSensor']}."
 
-        # 2) Si NO hay una alerta abierta, crearla y mandar mail
-        alerta_abierta = mongo.db.alertas.find_one(_q_alerta_abierta_temp(sensor["nroSensor"], id_empresa))
-
+        # Si NO hay una alerta abierta, crearla y mandar mail
         if not alerta_abierta:
-            # Insertar alerta SIN duración
             alerta_data = {
-                "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
+                "idSensor": str(sensor["nroSensor"]),
                 "idEmpresa": id_empresa,
                 "criticidad": "Crítica",
                 "tipoAlerta": "Temperatura fuera de rango",
                 "descripcion": descripcion,
                 "mensajeAlerta": mensaje,
                 "fechaHoraAlerta": fecha_actual,
-                "duracionMinutos": None  
+                "duracionMinutos": None,
+                "estadoAlerta": "abierta"
             }
             print(f"[DEBUG] Insertando alerta: {alerta_data}")
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
-            
-            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
-            print(f"[DEBUG] Emails asignados para alerta: {emails}")
+
+            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
             if emails:
                 _enviar_mail_alerta(
                     emails, 
                     "Temperatura fuera de rango", 
-                    descripcion, 
+                    alerta_data["descripcion"], 
                     "Crítica", 
                     sensor, 
-                    mensaje, 
+                    alerta_data["mensajeAlerta"], 
                     fecha_actual,
                     "termi-alerta"
                 )
-            return 1  # ⚠️ Devuelve 1 si se insertó una alerta
-    else:
-        # 3) Volvió al rango → cerrar la alerta abierta
-        alerta_abierta = mongo.db.alertas.find_one(_q_alerta_abierta_temp(sensor["nroSensor"], id_empresa))
+            return 1 # Devuelve 1 si se insertó una alerta
+        else:
+            # Si SÍ hay una alerta abierta, no hacemos nada y devolvemos 0
+            print(f"La alerta para el sensor {sensor['nroSensor']} ya está activa.")
+            return 0
+    else: # La temperatura está dentro del rango
+        # 3) Si el sensor vuelve al rango y hay una alerta abierta, la cerramos
         if alerta_abierta:
             inicio = alerta_abierta["fechaHoraAlerta"]
-            # El sensor volvió al rango, calcula duración
-            duracion = (fecha_actual - inicio).total_seconds() / 60  # minutos
+            duracion = (fecha_actual - inicio).total_seconds() / 60
             duracion = round(duracion, 1)
 
-            mongo.db.alertas.update_one(
-                {"_id": alerta_abierta["_id"]},
-                {"$set": {
-                    "duracionMinutos": duracion,
-                    "estadoAlerta": "cerrada"
-                }}
-            )
-            print(f"✅ ALERTA TEMP cerrada  duración {duracion:.1f} min")
+            updateDuracion(mongo, alerta_abierta["_id"], duracion)
+            print(f"✅ ALERTA TEMP cerrada duración {duracion:.1f} min")
 
-        return 0  # ⚠️ Devuelve 0 si no se insertó alerta
+        # Si no hay alerta abierta, no pasa nada
+        return 0
 
 
 def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa):
@@ -641,31 +695,39 @@ def chequear_alertas_preventivas(mongo, id_empresa):
     """
     total_alertas_generadas = 0
     sensores = get_all_sensors_empresa(mongo,id_empresa)
+    print(f"[DEBUG] Empresa {id_empresa} - Sensores encontrados: {len(sensores)}")
+
     if not sensores:
         return 0
 
+    # Agrupar sensores por dirección para evitar duplicados
+    direcciones_procesadas = set()
     for sensor in sensores:
+        print(f"[DEBUG] Procesando sensor: {sensor['nroSensor']}")
         #Validación de caida de energía
-        total_alertas_generadas += _alerta_caida_energia(mongo, sensor, id_empresa)
+        direccion = sensor.get("direccion")
+        if direccion and direccion not in direcciones_procesadas:
+            total_alertas_generadas += _alerta_caida_energia(mongo, sensor, id_empresa)
+            direcciones_procesadas.add(direccion)
 
+        print(f"[DEBUG] Total alertas generadas hasta ahora (caida_energia): {total_alertas_generadas}")
         nro_sensor = sensor["nroSensor"]
         valor_min = sensor.get("valorMin")
         valor_max = sensor.get("valorMax")
 
-          # 1️⃣ Obtener checkpoint de preventivas
-        checkpoint = mongo.db.alerta_checkpoint.find_one({
-            "idEmpresa": id_empresa,
-            "idSensor": nro_sensor,
-            "tipo": "preventiva"
-        })
+        print(f"[DEBUG] Sensor {nro_sensor} - Rango de temperatura ({valor_min}, {valor_max})")
+
+        # 1️⃣ Obtener checkpoint de preventivas
+        checkpoint = get_checkpoint(mongo, id_empresa, nro_sensor, "preventiva")
+        
         last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
 
-         # 2️⃣ Obtener mediciones nuevas (no analizadas desde el checkpoint)
-        filtro = {"idSensor": nro_sensor}
-        if last_date:
-            filtro["fechaHoraMed"] = {"$gt": last_date}
+        print(f"[DEBUG] Checkpoint para sensor {nro_sensor}: {last_date}")
 
-        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
+         # 2️⃣ Obtener mediciones nuevas (no analizadas desde el checkpoint)
+        mediciones = get_mediciones(mongo, nro_sensor, last_date)
+
+        print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
         if not mediciones:
             continue
@@ -673,18 +735,18 @@ def chequear_alertas_preventivas(mongo, id_empresa):
         if len(mediciones) < 3:
             continue  # Necesitamos varias mediciones para detectar fluctuaciones
 
-        # 2️⃣ Analizar fluctuaciones
+        # Analizar fluctuaciones
         total_alertas_generadas += _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id_empresa)
 
-        # 3️⃣ Alerta de puerta abierta recurrente
+        print(f"[DEBUG] Total alertas generadas hasta ahora (fluctuacion_temp): {total_alertas_generadas}")
+
+        # Alerta de puerta abierta recurrente
         total_alertas_generadas += _alerta_puerta_recurrente(mongo, sensor, id_empresa)
 
+        print(f"[DEBUG] Total alertas generadas hasta ahora (puerta_recurrente): {total_alertas_generadas}")
+
         # 3️⃣ Actualizar checkpoint
-        mongo.db.alerta_checkpoint.update_one(
-            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "preventiva"},
-            {"$set": {"fechaUltimaAnalizada": mediciones[-1]["fechaHoraMed"]}},
-            upsert=True
-        )
+        update_checkpoint(mongo, id_empresa, nro_sensor, "preventiva", mediciones[-1]["fechaHoraMed"])
     
     return total_alertas_generadas # Retorna la cantidad de mediciones analizadas
 
@@ -695,8 +757,14 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
     """Detecta oscilaciones abruptas en un periodo corto (ej. 1 hora)"""
     nro_sensor = sensor["nroSensor"]
 
+    if not mediciones:
+        print(f"[DEBUG] Sensor {nro_sensor} - Temperaturas alerta_fluctuacion_temp: {mediciones}")
+        return 0
+    
     # Calcular min y max de las últimas mediciones
     temps = [float(m["valorTempInt"]) for m in mediciones if m.get("valorTempInt") is not None]
+
+    print(f"[DEBUG] Sensor {nro_sensor} - Temperaturas analizadas: {temps}")
     if not temps:
         return 0
 
@@ -793,6 +861,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     están inactivos -> posible caída de energía eléctrica.
     """
     direccion = sensor.get("direccion")
+    print(f"[DEBUG] Verificando caída de energía para sensor {sensor['nroSensor']} en dirección {direccion}")
     if not direccion:
         return 0
 
@@ -801,51 +870,80 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
         "idEmpresa": id_empresa,
         "direccion": direccion
     }))
-
+    print(f"[DEBUG] Sensores en la misma dirección ({direccion}): {len(sensores_misma_dir)}")
     if not sensores_misma_dir:
         return 0
 
-    # Verificar si todos están inactivos
+    # Buscar si ya existe una alerta pendiente
+    alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
+
+    # 1. Caso: Todos los sensores están inactivos
     if all(s["estado"] == "inactive" for s in sensores_misma_dir):
-        existe = get_alertas_caida_de_energia(mongo, id_empresa, direccion)
-        if existe:
+        if not alerta_existente:
+            # Si no existe una alerta pendiente, se crea una nueva.
+            print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
+
+            # Se recopilan los números de todos los sensores inactivos en una lista
+            sensores_inactivos = [str(s["nroSensor"]) for s in sensores_misma_dir]
+
+            alerta_data = {
+                "idSensor": sensores_inactivos,
+                "idEmpresa": id_empresa,
+                "criticidad": "Preventiva",
+                "tipoAlerta": "Caída de energía eléctrica",
+                "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
+                "mensajeAlerta": "Caída de energía eléctrica",
+                "fechaHoraAlerta": datetime.utcnow(),
+                "estadoAlerta": "abierta",
+                "direccion": direccion,
+            }
+
+            print(f"[DEBUG] Insertando alerta: {alerta_data}")
+            alerta_id = insert_alerta(mongo, alerta_data)
+            print(f"✅ Alerta preventiva (caída energía) insertada -> ID {alerta_id}")
+
+            # Obtener emails de todos los sensores de la dirección para enviar notificación
+            emails = []
+            for s in sensores_misma_dir:
+                emails.extend(_obtener_emails_asignados(mongo, s["nroSensor"], alerta_data["criticidad"]))
+            emails = list(set(emails))
+
+            if emails:
+                _enviar_mail_alerta(
+                    emails=emails,
+                    tipo_alerta="Caída de energía eléctrica",
+                    descripcion=alerta_data["descripcion"],
+                    criticidad="Preventiva",
+                    sensor=sensor,
+                    mensaje=f"Caída de energía eléctrica en la sucursal: {direccion}",
+                    fecha=alerta_data["fechaHoraAlerta"],
+                    termi="termi-inteligente"
+                )
+            return 1 # Devuelve 1 si se insertó una alerta
+        else:
+            print(f"[DEBUG] Ya existe alerta pendiente: {alerta_existente['_id']}, no se crea otra.")
             return 0
-    
-        print(f"⚠️ ALERTA PREVENTIVA: caída de energía en dirección {direccion}")
 
-        alerta_data = {
-            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
-            "idEmpresa": id_empresa,
-            "criticidad": "Preventiva",
-            "tipoAlerta": "Caída de energía eléctrica",
-            "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
-            "mensajeAlerta": "Caída de energía eléctrica",
-            "fechaHoraAlerta": datetime.utcnow()
-        }
-        print(f"[DEBUG] Insertando alerta: {alerta_data}")
-        alerta_id = insert_alerta(mongo, alerta_data)
-        print(f"✅ Alerta preventiva (caída energía) insertada -> ID {alerta_id}")
+    # 2. Caso: Al menos un sensor está activo
+    # Este 'else' se ejecuta si la condición anterior no se cumple.
+    # Es decir, si no todos los sensores están inactivos.
+    else:
+        if alerta_existente:
+            print(f"✅ Se detectó al menos un sensor activo. Cerrando alerta pendiente: {alerta_existente['_id']}.")
+            
+            # Calcular la duración de la alerta
+            inicio = alerta_existente["fechaHoraAlerta"]
+            duracion = (datetime.now() - inicio).total_seconds() / 60
+            duracion = round(duracion, 1)
 
-        # Obtener emails de todos los sensores de la dirección
-        emails = []
-        for s in sensores_misma_dir:
-            emails += _obtener_emails_asignados(mongo, s["nroSensor"], alerta_data["criticidad"])
-        emails = list(set(emails))  # eliminar duplicados
-
-        if emails:
-            _enviar_mail_alerta(
-                emails=emails,
-                tipo_alerta="Caída de energía eléctrica",
-                descripcion=alerta_data["descripcion"],
-                criticidad="Preventiva",
-                sensor=sensor,
-                mensaje="Caída de energía eléctrica en la sucursal",
-                fecha=alerta_data["fechaHoraAlerta"],
-                termi="termi-inteligente"
-            )
-        return 1  # ⚠️ Devuelve 1 si se insertó una alerta
-    return 0  # ⚠️ Devuelve 0 si no se insertó alerta
-
+            # Actualizar la duración en la base de datos
+            updateDuracion(mongo, alerta_existente["_id"], duracion)
+            
+            print(f"✅ Alerta de caída de energía cerrada en dirección {direccion}")
+            return 0
+        else:
+            print(f"[DEBUG] Sensores activos y no hay alerta pendiente para cerrar.")
+            return 0
 
 def chequear_alertas_informativas(mongo, id_empresa):
     total_alertas_generadas = 0
@@ -863,22 +961,16 @@ def chequear_alertas_informativas(mongo, id_empresa):
             continue
 
         # 2️⃣ Obtener checkpoint
-        checkpoint = mongo.db.alerta_checkpoint.find_one({
-            "idEmpresa": id_empresa,
-            "idSensor": nro_sensor,
-            "tipo": "informativas"
-        })
+        checkpoint = get_checkpoint(mongo, id_empresa, nro_sensor, "informativas")
+        
         last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
         en_ciclo = checkpoint.get("enCiclo") if checkpoint else False
         fecha_inicio_ciclo = checkpoint.get("fechaInicioCiclo") if checkpoint else None
         temp_max_ciclo = checkpoint["tempMaxCiclo"] if checkpoint else None
 
         # 3️⃣ Obtener mediciones nuevas (sin analizar desde el ultimo checkpoint)
-        filtro = {"idSensor": nro_sensor}
-        if last_date:
-            filtro["fechaHoraMed"] = {"$gt": last_date}
+        mediciones = get_mediciones(mongo, nro_sensor, last_date)
 
-        mediciones = list(mongo.db.mediciones.find(filtro).sort("fechaHoraMed", 1))
         if not mediciones:
             continue
 
@@ -905,7 +997,7 @@ def chequear_alertas_informativas(mongo, id_empresa):
             total_alertas_generadas += alertas_generadas
             last_date = fecha_actual
 
-        # 5️⃣ Actualizar checkpoint
+        # 5️⃣ Actualizar checkpoint --> VER
         last_med = mediciones[-1]
         mongo.db.alerta_checkpoint.update_one(
             {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "informativas"},
