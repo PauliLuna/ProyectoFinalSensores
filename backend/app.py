@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 #from apscheduler.schedulers.background import BackgroundScheduler
 from controllers.alerta_controller import evaluar_alertas
+from controllers.mediciones_controller import generar_mediciones
 
 print("Cargando variables de entorno...")
 load_dotenv()
@@ -60,6 +61,24 @@ def evaluar_alertas_endpoint():
     except Exception as e:
         print(f"❌ Error en evaluar_alertas: {str(e)}")
         return jsonify({"error": str(e)}), 500
+    
+@app.route("/generar-mediciones", methods=["POST"])
+def generar_mediciones_endpoint():
+    token = request.headers.get("Authorization")
+    if token != f"Bearer {os.getenv('MEDICIONES_SECRET_TOKEN')}":
+        return "", 401  # Solo status code
+
+    try:
+        print("🔍 Generando mediciones simuladas...")
+        from controllers.mediciones_controller import generar_mediciones
+        cantidad = generar_mediciones(mongo)
+        print(f"✅ Mediciones generadas: {cantidad}")
+        return "", 200  # Solo status code
+    except Exception as e:
+        print(f"❌ Error en generar_mediciones: {str(e)}")
+        return "", 500  # Solo status code
+    
+
 
 # Configuración de Flask-Mail
 print("Configurando Mail...")
@@ -102,6 +121,10 @@ app.register_blueprint(asignaciones_bp)
 # Registrar alertas blueprint
 from routes.alerta_routes import alerta_bp
 app.register_blueprint(alerta_bp)
+
+# Registrar mediciones blueprint
+from routes.mediciones_routes import mediciones_bp
+app.register_blueprint(mediciones_bp)
 
 
 if __name__ == '__main__':

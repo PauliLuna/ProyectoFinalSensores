@@ -48,6 +48,16 @@ def get_sensor_with_assignments(mongo, sensor_id):
     sensor["assignments"] = assignments
     return sensor
 
+def get_sensores_para_mediciones(mongo, filtro):
+    """
+    Devuelve los sensores con los campos necesarios para simular mediciones.
+    """
+    campos = {
+        "_id": 1, "nroSensor": 1, "alias": 1,
+        "valorMin": 1, "valorMax": 1, "idEmpresa": 1, "estado": 1
+    }
+    return list(mongo.db.sensors.find(filtro, campos))
+
 def get_mediciones_model(mongo, nro_sensor, fecha_desde, fecha_hasta):
     """
     Devuelve una lista de mediciones para un sensor y rango de fechas.
