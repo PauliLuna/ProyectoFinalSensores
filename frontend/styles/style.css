@@ -172,7 +172,7 @@ html {
 
 /* Para el wrapper del campo de contraseña */
 .password-wrapper {
-    position: relative;
+    position: relative;   
 }
 
 /* Botón del ojito */
@@ -936,6 +936,12 @@ input[disabled] {
 .form-group-inline label {
     margin-bottom: 0;
     white-space: nowrap;
+}
+
+.form-group-column {
+    flex: 1;
+    padding: 0 15px; /* Ajusta el espacio entre las columnas */
+
 }
 
 .estado-select {
