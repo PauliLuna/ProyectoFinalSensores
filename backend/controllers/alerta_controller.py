@@ -68,8 +68,13 @@ def obtener_alertas(mongo):
     for alerta in alertas:
         try:
             alerta["_id"] = str(alerta["_id"])
-            alerta["alias"] = sensor_alias.get(int(alerta.get("idSensor")), "")
-            alerta["direccion"] = sensor_direccion.get(int(alerta.get("idSensor")), "")
+            # Solo asigna alias y direccion si la alerta NO es "Caída de energía eléctrica"
+            if alerta.get("tipoAlerta") == "Caída de energía eléctrica":
+                # Ya tiene 'direccion' en la alerta, no sobrescribir
+                pass
+            else:
+                alerta["alias"] = sensor_alias.get(int(alerta.get("idSensor")), "")
+                alerta["direccion"] = sensor_direccion.get(int(alerta.get("idSensor")), "")
 
             # Convertir fechaHoraAlerta a zona local
             fecha_utc = alerta["fechaHoraAlerta"]

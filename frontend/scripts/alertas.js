@@ -564,12 +564,22 @@ function renderAlertasTable(data) {
 
     pageData.forEach(a => {
         const alerta = normalizarAlerta(a);
+
+        // Mostrar dirección en columna Alias solo para Preventiva + Caída de energía eléctrica
+        let aliasMostrar = alerta.alias || 'N/A';
+        if (
+            (alerta.criticidad || '').toLowerCase() === 'preventiva' &&
+            (alerta.tipoAlerta || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'caida de energia electrica'
+        ) {
+            aliasMostrar = alerta.direccion || 'N/A';
+        }
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${alerta.criticidad || ''}</td>
             <td>${alerta.mensajeAlerta || ''}</td>
             <td>${alerta.idSensor || 'N/A'}</td>
-            <td>${alerta.alias || 'N/A'}</td>
+            <td>${aliasMostrar}</td>
             <td>${alerta.fechaHoraAlerta ? parseFecha(alerta.fechaHoraAlerta).toLocaleString("es-AR", options): ''}</td>
         `;
         tbody.appendChild(tr);
