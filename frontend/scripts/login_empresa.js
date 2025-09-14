@@ -1,6 +1,43 @@
 // JavaScript para manejar el envío del formulario
 document.addEventListener('DOMContentLoaded', function () {
+
+    const btnValidar = document.getElementById('btnValidarCodigo');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const noMatchCodigo = document.getElementById('noMatchCodigo');
+
+    btnValidar.addEventListener('click', async function () {
+        const email = document.getElementById('email').value;
+        const codigo = document.getElementById('codeInvitation').value;
+
+        if (!email.includes('@')) {
+            alert('Ingrese un correo electrónico válido.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/verificar-codigo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mailUsuario: email, codigo: codigo })
+            });
+            const data = await res.json();
+            if (data.valido) {
+                noMatchCodigo.style.display = 'none';
+                step2.style.display = '';
+                step1.style.display = 'none';
+            } else {
+                noMatchCodigo.textContent = data.motivo || 'El código de invitación es inválido.';
+                noMatchCodigo.style.display = 'block';
+            }
+        } catch (e) {
+            alert('Error al verificar el código.');
+        }
+    });
+
+
     const form = document.getElementById('initialRegistrationForm');
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -80,6 +117,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const resultUsuario = await responseUsuario.json();
 
             if (responseEmpresa.ok && responseUsuario.ok) {
+                // Marcar el código como usado
+                try {
+                    await fetch('/marcar-codigo-usado', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mailUsuario: mailUsuario, codigo: codeInvitation })
+                    });
+                } catch (e) {
+                    // Podés loguear el error, pero no bloquea el registro
+                    console.error("No se pudo marcar el código como usado:", e);
+                }
                 alert("Registro completado correctamente");
                 form.reset();
                 window.location.href = "signin.html";
