@@ -1,6 +1,45 @@
 // JavaScript para manejar la validación del formulario
 document.addEventListener('DOMContentLoaded', function () {
+    const btnValidar = document.getElementById('btnValidarCodigo');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const noMatchCodigo = document.getElementById('noMatchCodigo');
+
+    // Mensajes de validación de contraseña y código
+    btnValidar.addEventListener('click', async function () {
+        const email = document.getElementById('email').value;
+        const codigo = document.getElementById('codigo').value;
+
+        // Validación básica de email en FE
+        if (!email.includes('@')) {
+            alert('Ingrese un correo electrónico válido.');
+            return;
+        }
+
+        // Llamada al backend para validar código
+        try {
+            const res = await fetch('/verificar-codigo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mailUsuario: email, codigo: codigo })
+            });
+            const data = await res.json();
+            if (data.valido) {
+                noMatchCodigo.style.display = 'none';
+                step2.style.display = '';
+                step1.style.display = 'none';
+            } else {
+                noMatchCodigo.textContent = data.motivo || 'El código de invitación es inválido.';
+                noMatchCodigo.style.display = 'block';
+            }
+        } catch (e) {
+            alert('Error al verificar el código.');
+        }
+    });
+
     const form = document.getElementById('userRegistrationForm');
+
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 

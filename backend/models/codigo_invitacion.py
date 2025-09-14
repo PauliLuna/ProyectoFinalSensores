@@ -19,20 +19,23 @@ def verificar_codigo_invitacion(mongo, mailUsuario, codigo_ingresado):
     # Validaciones
     if ultimo_codigo["codigo"] != codigo_ingresado:
         return {"valido": False, "motivo": "el código es incorrecto"}
-
+    
+    # PRIMERO: si ya fue usado
+    if "fechaUsado" in ultimo_codigo and ultimo_codigo["fechaUsado"] is not None:
+        return {"valido": False, "motivo": "el código ya fue usado"}
+    
+    # LUEGO: si está vencido
     if "fechaExpiracion" in ultimo_codigo and datetime.now() > ultimo_codigo["fechaExpiracion"]:
         return {"valido": False, "motivo": "el código ha vencido"}
 
-    if "fechaUsado" in ultimo_codigo and ultimo_codigo["fechaUsado"] is not None:
-        return {"valido": False, "motivo": "el código ya fue usado"}
+    return {"valido": True, "motivo": "Código válido"}
 
-    # Si pasa todas las validaciones, actualizar el campo fechaUsado
+def marcar_codigo_usado(mongo, mailUsuario, codigo_ingresado):
+    collection = mongo.db.codigoInvitacion
     collection.update_one(
-        {"_id": ultimo_codigo["_id"]},
+        {"mailUsuario": mailUsuario, "codigo": codigo_ingresado},
         {"$set": {"fechaUsado": datetime.now()}}
     )
-
-    return {"valido": True, "motivo": "Código válido"}
 
 def updateCondigoInvitacionEmpresa(mongo, idmpresa, codInvitacion):
     """

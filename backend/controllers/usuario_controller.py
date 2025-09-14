@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 import datetime, secrets, random, string, re, jwt, os
 from controllers.alerta_controller import _alerta_acceso_nocturno, _alerta_bloqueo_cuenta
+from models.codigo_invitacion import marcar_codigo_usado
 import pytz
 
 SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")
@@ -176,6 +177,7 @@ def complete_registration_controller(mongo):
     username = request.form.get('username')
     phone = request.form.get('phone')
     password = request.form.get('password')
+    codigo = request.form.get('codigo')  # <-- Asegurate de recibir el código
     now = datetime.datetime.now()
     update_fields = {
         "username": username,
@@ -192,6 +194,11 @@ def complete_registration_controller(mongo):
         }
     }
     update_usuario_email(mongo, email, update_fields) # Porque ya está invitado, se busca por email
+    
+    # SOLO AHORA marcar el código de invitación como usado
+    if codigo:
+        marcar_codigo_usado(mongo, email, codigo)
+    
     return jsonify({
         "message": "Registro completado correctamente",
         "user_email": email
