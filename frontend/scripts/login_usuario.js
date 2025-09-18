@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const res = await fetch('/verificar-codigo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mailUsuario: email, codigo: codigo })
+                body: JSON.stringify({ mailUsuario: email, codigo: codigo, tipoEsperado: "Usuario" })
             });
             const data = await res.json();
             if (data.valido) {
@@ -72,8 +72,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             
             const verifyResult = await verificarCodigo(mailUsuario, codeInvitation)
+            console.log("verifyResult:", verifyResult);
 
-            if (!verifyResult.valido) {
+            if (!verifyResult.valido || verifyResult.tipoInvitacion !== "Usuario") {
                 noMatchCodigo.style.display = 'block';
                 alert("Código de invitación inválido porque " + verifyResult.motivo);
                 return;
