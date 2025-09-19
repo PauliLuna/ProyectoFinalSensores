@@ -78,19 +78,6 @@ def generar_mediciones_endpoint():
     except Exception as e:
         print(f"❌ Error en generar_mediciones: {str(e)}")
         return "", 500  # Solo status code
-    
-
-
-# Configuración de Flask-Mail
-print("Configurando Mail...")
-#app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-#app.config['MAIL_PORT'] = 2525
-#app.config['MAIL_USE_TLS'] = True
-#app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-#app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-#mail = Mail(app)
-#app.mail = mail
-
 
 # --- Configuración de la API de Mailjet ---
 api_key = os.getenv('MAILJET_API_KEY')

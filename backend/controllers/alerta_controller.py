@@ -16,7 +16,6 @@ from models.sensor import(
     updateStatus)
 from bson import ObjectId
 from datetime import datetime, timedelta
-from flask_mail import Message
 from controllers.sensor_controller import get_all_sensors_empresa
 import pytz
 

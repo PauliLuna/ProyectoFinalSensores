@@ -1,7 +1,6 @@
 from flask import request, jsonify, session, current_app
 from models.usuario import *
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_mail import Message
 import datetime, secrets, random, string, re, jwt, os
 from controllers.alerta_controller import _alerta_acceso_nocturno, _alerta_bloqueo_cuenta
 from models.codigo_invitacion import marcar_codigo_usado
