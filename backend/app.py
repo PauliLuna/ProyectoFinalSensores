@@ -79,6 +79,8 @@ def generar_mediciones_endpoint():
         print(f"❌ Error en generar_mediciones: {str(e)}")
         return "", 500  # Solo status code
 
+
+
 # --- Configuración de la API de Mailjet ---
 api_key = os.getenv('MAILJET_API_KEY')
 api_secret = os.getenv('MAILJET_SECRET_KEY')
