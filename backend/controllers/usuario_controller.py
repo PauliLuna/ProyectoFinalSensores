@@ -344,7 +344,7 @@ def solicitar_reset_password_controller(mongo):
     expires_at = now + datetime.timedelta(minutes=30)
     insert_password_reset(mongo, email, token, expires_at)
     reset_url = f"https://sensia.onrender.com/password_reset.html?token={token}"
-    mail = current_app.mail
+    subject = "Recuperación de contraseña en SensIA"
     html_template = f"""
     <!DOCTYPE html>
     <html>
@@ -396,14 +396,45 @@ def solicitar_reset_password_controller(mongo):
     </body>
     </html>
     """
-    msg = Message(
-        subject=f"Recuperación de contraseña SensIA",
-        sender=current_app.config['MAIL_USERNAME'],
-        recipients=[email],
-        html=html_template
-    )
-    mail.send(msg)
-    return jsonify({"message": "Se ha enviado un correo con instrucciones para restablecer tu contraseña."})
+    # Obtener el cliente de la API de Mailjet de la configuración de la app
+    mailjet = current_app.config['MAILJET_CLIENT']
+    
+    # Obtener el email del remitente de la configuración de la app
+    sender_email = current_app.config['MAIL_FROM_EMAIL']
+
+    # Crear la carga útil (payload) para la API
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": sender_email,
+                    "Name": "SensIA"
+                },
+                "To": [
+                    {
+                        "Email": email,
+                        "Name": "Destinatario"
+                    }
+                ],
+                "Subject": subject,
+                "HTMLPart": html_template
+            }
+        ]
+    }
+
+    try:
+        # Enviar el correo usando la API de Mailjet
+        result = mailjet.send.create(data=data)
+        
+        # Verificar si la respuesta fue exitosa
+        if result.status_code == 200:
+            print(email)
+            return jsonify({"message": f"Se envió un correo de alerta a {email}"}), 200
+        else:
+            return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
+    except Exception as e:
+        # Captura cualquier excepción de red o de la librería
+        return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
 
 def reset_password_controller(mongo):
     data = request.get_json()

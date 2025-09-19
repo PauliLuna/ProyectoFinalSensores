@@ -281,7 +281,6 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
 def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha, termi):
     fecha_actual_local = fecha - timedelta(hours=3)
     fecha_actual = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
-    mail = current_app.mail
     subject = f"[ALERTA] {tipo_alerta} - Sensor {sensor['nroSensor']}"
     html_template = f"""
     <!DOCTYPE html>
@@ -333,17 +332,43 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
     </body>
     </html>
     """
-    msg = Message(
-        subject=subject, 
-        sender=current_app.config['MAIL_USERNAME'], 
-        recipients=emails,
-        html=html_template
-    )
+
+    # Obtener el cliente de la API de Mailjet de la configuración de la app
+    mailjet = current_app.config['MAILJET_CLIENT']
+    
+    # Obtener el email del remitente de la configuración de la app
+    sender_email = current_app.config['MAIL_FROM_EMAIL']
+
+    recipients = [{"Email": email, "Name": "Destinatario"} for email in emails]
+
+    # Crear la carga útil (payload) para la API
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": sender_email,
+                    "Name": "SensIA"
+                },
+                "To": recipients,
+                "Subject": subject,
+                "HTMLPart": html_template
+            }
+        ]
+    }
+
     try:
-        mail.send(msg)
-        print(f"✅ Mail enviado a {emails}")
+        # Enviar el correo usando la API de Mailjet
+        result = mailjet.send.create(data=data)
+        
+        # Verificar si la respuesta fue exitosa
+        if result.status_code == 200:
+            print(recipients)
+            return jsonify({"message": f"Se envió un correo de alerta a {recipients}"}), 200
+        else:
+            return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
     except Exception as e:
-        print(f"❌ Error enviando mail de alerta: {e}")
+        # Captura cualquier excepción de red o de la librería
+        return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
 
 def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, usuario, mensaje, fecha, termi):
     subject = f"[ALERTA] {tipo_alerta} - Usuario: {usuario}"
@@ -427,7 +452,7 @@ def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, 
         # Verificar si la respuesta fue exitosa
         if result.status_code == 200:
             print(recipients)
-            return jsonify({"message": f"Se envió un correo de invitación a {recipients}"}), 200
+            return jsonify({"message": f"Se envió un correo de alerta de seguridad a {recipients}"}), 200
         else:
             return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
     except Exception as e:
