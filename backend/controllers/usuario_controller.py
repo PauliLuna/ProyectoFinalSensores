@@ -206,6 +206,16 @@ def complete_registration_controller(mongo):
     password = request.form.get('password')
     codigo = request.form.get('codigo')  # <-- Asegurate de recibir el código
     now = datetime.datetime.now()
+
+     # ✅ Validar tipo de invitación antes de continuar
+    if codigo:
+        ultimo_codigo = mongo.db.codigoInvitacion.find_one(
+            {"mailUsuario": email, "codigo": codigo}
+        )
+
+        if not ultimo_codigo or ultimo_codigo.get("tipoInvitacion") != "Usuario":
+            return jsonify({"error": "Código inválido para registro de usuario"}), 400
+        
     update_fields = {
         "username": username,
         "phone": phone,

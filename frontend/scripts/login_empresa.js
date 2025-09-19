@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const res = await fetch('/verificar-codigo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mailUsuario: email, codigo: codigo })
+                body: JSON.stringify({ mailUsuario: email, codigo: codigo, tipoEsperado: "Empresa" })
             });
             const data = await res.json();
             if (data.valido) {
