@@ -10,3 +10,4 @@ pymongo>=3.12
 geopy
 PyJWT
 pytz
+mailjet-rest

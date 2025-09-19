@@ -98,7 +98,6 @@ def invite_user_controller(mongo):
         "estado": "Invitado",
         "roles": "usuario"
     })
-    mail = current_app.mail
     html_template = f"""
     <!DOCTYPE html>
     <html>
@@ -156,17 +155,45 @@ def invite_user_controller(mongo):
     </body>
     </html>
     """
-    msg = Message(
-        subject="Invitación a SensIA",
-        sender=current_app.config['MAIL_USERNAME'],
-        recipients=[email],
-        html=html_template
-    )
+    # Obtener el cliente de la API de Mailjet de la configuración de la app
+    mailjet = current_app.config['MAILJET_CLIENT']
+    
+    # Obtener el email del remitente de la configuración de la app
+    sender_email = current_app.config['MAIL_FROM_EMAIL']
+
+    # Crear la carga útil (payload) para la API
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": sender_email,
+                    "Name": "SensIA"
+                },
+                "To": [
+                    {
+                        "Email": email,
+                        "Name": "Destinatario"
+                    }
+                ],
+                "Subject": "Invitación a SensIA",
+                "HTMLPart": html_template
+            }
+        ]
+    }
+
     try:
-        mail.send(msg)
+        # Enviar el correo usando la API de Mailjet
+        result = mailjet.send.create(data=data)
+        
+        # Verificar si la respuesta fue exitosa
+        if result.status_code == 200:
+            return jsonify({"message": f"Se envió un correo de invitación a {email}"}), 200
+        else:
+            return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
     except Exception as e:
-        return jsonify({"error": f"Error al enviar el correo: {str(e)}"}), 500
-    return jsonify({"message": f"Se mandó un correo de invitación a {email}"}), 200
+        # Captura cualquier excepción de red o de la librería
+        return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
+
 
 #Login_usuario
 def complete_registration_controller(mongo):

@@ -1,11 +1,12 @@
 from flask import Flask, send_from_directory, render_template, request, jsonify
-from flask_mail import Mail
+#from flask_mail import Mail
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import os
 #from apscheduler.schedulers.background import BackgroundScheduler
 from controllers.alerta_controller import evaluar_alertas
 from controllers.mediciones_controller import generar_mediciones
+from mailjet_rest import Client
 
 print("Cargando variables de entorno...")
 load_dotenv()
@@ -82,13 +83,25 @@ def generar_mediciones_endpoint():
 
 # Configuración de Flask-Mail
 print("Configurando Mail...")
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-mail = Mail(app)
-app.mail = mail
+#app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+#app.config['MAIL_PORT'] = 2525
+#app.config['MAIL_USE_TLS'] = True
+#app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+#app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+#mail = Mail(app)
+#app.mail = mail
+
+
+# --- Configuración de la API de Mailjet ---
+api_key = os.getenv('MAILJET_API_KEY')
+api_secret = os.getenv('MAILJET_SECRET_KEY')
+app.config['MAIL_FROM_EMAIL'] = os.getenv('MAIL_FROM_EMAIL')
+
+# Inicializar el cliente de la API de Mailjet y guardarlo en la configuración de la app
+# para que esté disponible en toda la aplicación
+app.config['MAILJET_CLIENT'] = Client(auth=(api_key, api_secret), version='v3.1')
+
+
 
 # Configuración de la clave secreta para tokens JWT
 print("Configurando clave secreta para tokens JWT...")
