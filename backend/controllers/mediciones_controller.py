@@ -1,12 +1,16 @@
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.mediciones import insert_many_mediciones
 from models.sensor import get_sensores_para_mediciones
 
-# Rango externo por "tipo" deducido desde alias (fallback si no hay otra fuente)
+# Probabilidades de patrones especiales (puedes ajustar estos valores)
 P_FALLO_GLOBAL = 0.10
 P_PUERTA_ABIERTA = 0.07
+P_OFFLINE = 0.05  # Probabilidad de simular un hueco offline
+P_CICLO_DESCONGELAMIENTO = 0.08  # Probabilidad de simular inicio de ciclo de descongelamiento
+P_CICLO_ASINCRONICO = 0.03  # Probabilidad de simular ciclo asincrónico
+P_VUELTA_ONLINE = 0.10  # Probabilidad de que un sensor offline vuelva online
 
 DEFAULT_EXT_BY_TIPO = {
     "congelado": (27, 32),
@@ -56,7 +60,12 @@ def _rng_fuera(a, b, extra_low=5.0, extra_high=4.0):
     else:
         return b + random.random() * extra_high
 
-def _simular_medicion(sensor_doc):
+def _simular_medicion(sensor_doc, fecha_base=None, offline_gap_min=15):
+    """
+    Simula una medición para un sensor, pudiendo forzar patrones para disparar alertas.
+    - fecha_base: si se pasa, se usa como fecha de la medición (útil para simular gaps).
+    - offline_gap_min: minutos de hueco para simular offline.
+    """
     tipo = _tipo_from_alias(sensor_doc.get("alias")) or ""
     vmin = sensor_doc.get("valorMin")
     vmax = sensor_doc.get("valorMax")
@@ -67,7 +76,40 @@ def _simular_medicion(sensor_doc):
     
     # Rango externo: por tipo (fallback genérico 20-28)
     rng_ext = DEFAULT_EXT_BY_TIPO.get(tipo, (20.0, 28.0))
-    # Probabilidad de fallo global (10% por defecto)
+
+    # 1. Simular offline (hueco de tiempo)
+    if random.random() < P_OFFLINE:
+        # Simula un hueco de tiempo (no retorna medición, pero retorna la fecha futura)
+        fecha_offline = (fecha_base or datetime.utcnow()) + timedelta(minutes=offline_gap_min)
+        return None, fecha_offline
+
+    # 2. Simular ciclo de descongelamiento (temperatura interna alta)
+    if random.random() < P_CICLO_DESCONGELAMIENTO:
+        temp_int = rng_int[1] + random.uniform(2, 6)  # Muy por encima del rango
+        temp_ext = _rng_dentro(*rng_ext)
+        puerta = 0
+        return {
+            "idSensor": sensor_doc.get("nroSensor") or sensor_doc.get("_id"),
+            "fechaHoraMed": fecha_base or datetime.utcnow(),
+            "valorTempInt": round(temp_int, 1),
+            "valorTempExt": round(temp_ext, 1),
+            "puerta": puerta,
+        }, None
+
+    # 3. Simular ciclo asincrónico (ciclo de descongelamiento anormal)
+    if random.random() < P_CICLO_ASINCRONICO:
+        temp_int = rng_int[1] + random.uniform(8, 12)  # Mucho más alto de lo normal
+        temp_ext = _rng_dentro(*rng_ext)
+        puerta = 0
+        return {
+            "idSensor": sensor_doc.get("nroSensor") or sensor_doc.get("_id"),
+            "fechaHoraMed": fecha_base or datetime.utcnow(),
+            "valorTempInt": round(temp_int, 1),
+            "valorTempExt": round(temp_ext, 1),
+            "puerta": puerta,
+        }, None
+
+    # 4. Simular fuera de rango, Probabilidad de fallo global (10% por defecto)
     fallo = (random.random() < P_FALLO_GLOBAL)
     if fallo:
         temp_int = _rng_fuera(*rng_int)
@@ -80,11 +122,11 @@ def _simular_medicion(sensor_doc):
 
     return {
         "idSensor": sensor_doc.get("nroSensor") or sensor_doc.get("_id"),
-        "fechaHoraMed": datetime.utcnow(),
+        "fechaHoraMed": fecha_base or datetime.utcnow(),
         "valorTempInt": round(float(temp_int), 1),
         "valorTempExt": round(float(temp_ext), 1),
         "puerta": puerta,
-    }
+    }, None
 
 def generar_mediciones(mongo, id_empresa=None, incluir_inactivos=False):
     #   Lee sensores de la colección `sensores` y genera UNA medición por sensor.
@@ -96,7 +138,35 @@ def generar_mediciones(mongo, id_empresa=None, incluir_inactivos=False):
     sensores = get_sensores_para_mediciones(mongo, q)
     if not sensores:
         return 0
-    docs = [_simular_medicion(s) for s in sensores]
+
+    docs = []
+    now = datetime.utcnow()
+    for sensor in sensores:
+        fecha = now
+
+        # --- Refactor: Simular vuelta online ---
+        if sensor.get("estado") == "inactive":
+            # Buscar alerta crítica abierta de offline
+            from models.alerta import q_alerta_abierta_offline
+            alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], sensor["idEmpresa"])
+            if alerta_abierta:
+                if random.random() < P_VUELTA_ONLINE:
+                    # Simular medición para volver online
+                    med, _ = _simular_medicion(sensor, fecha)
+                    if med:
+                        docs.append(med)
+                        # Actualizar estado del sensor a active
+                        from models.sensor import updateStatus
+                        updateStatus(mongo, sensor["nroSensor"], sensor["idEmpresa"], "active")
+                continue  # No simular medición normal para sensores inactivos
+
+        # --- Simulación normal ---
+        med, fecha_offline = _simular_medicion(sensor, fecha)
+        if med:
+            docs.append(med)
+        # Si fecha_offline, simplemente no generás medición (el gap se da naturalmente)
+
+
     if not docs:
         return 0
     insert_many_mediciones(mongo, docs)
