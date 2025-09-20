@@ -440,7 +440,12 @@ function renderLineChart(data) {
             const dia = fecha.toLocaleDateString("es-AR");
             counts[dia] = (counts[dia] || 0) + 1;
         });
-        labels = Object.keys(counts).sort((a, b) => new Date(a) - new Date(b));
+        labels = Object.keys(counts).sort((a, b) => {
+            // dd/mm/yyyy → yyyy-mm-dd para comparar bien
+            const [da, ma, ya] = a.split('/');
+            const [db, mb, yb] = b.split('/');
+            return new Date(`${ya}-${ma}-${da}`) - new Date(`${yb}-${mb}-${db}`);
+        });
     }
      // Destruye el gráfico anterior si existe
     if (window.alertsLineChart && typeof window.alertsLineChart.destroy === 'function') {
