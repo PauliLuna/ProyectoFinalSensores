@@ -939,12 +939,21 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             # Se recopilan los números de todos los sensores inactivos en una lista
             sensores_inactivos = [str(s["nroSensor"]) for s in sensores_misma_dir]
 
+            # === Lógica para la descripción dinámica ===
+            cantidad_sensores = len(sensores_inactivos)
+            sensores_str = ", ".join(sensores_inactivos)
+
+            if cantidad_sensores == 1:
+                descripcion_alerta = f"El sensor {sensores_str} en {direccion} está inactivo. Posible caída de energía."
+            else:
+                descripcion_alerta = f"Todos los {cantidad_sensores} sensores ({sensores_str}) en {direccion} están inactivos. Posible caída de energía."
+
             alerta_data = {
                 "idSensor": sensores_inactivos,
                 "idEmpresa": id_empresa,
                 "criticidad": "Preventiva",
                 "tipoAlerta": "Caída de energía eléctrica",
-                "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
+                "descripcion": descripcion_alerta,
                 "mensajeAlerta": "Caída de energía eléctrica",
                 "fechaHoraAlerta": datetime.utcnow(),
                 "estadoAlerta": "abierta",
