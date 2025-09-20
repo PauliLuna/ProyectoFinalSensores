@@ -83,6 +83,18 @@ def update_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta, fecha_ultima_a
         upsert=True
     )
 
+def update_checkpoint_informativas(mongo, id_empresa, nro_sensor, fecha_ultima_analizada, en_ciclo, fecha_inicio_ciclo, temp_max_ciclo):
+    mongo.db.alerta_checkpoint.update_one(
+            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "informativas"},
+            {"$set": {
+                "fechaUltimaAnalizada": fecha_ultima_analizada,
+                "enCiclo": en_ciclo,
+                "fechaInicioCiclo": fecha_inicio_ciclo,
+                "tempMaxCiclo": temp_max_ciclo
+            }},
+            upsert=True
+        )
+
 def get_alertas_sensor(mongo, id_empresa, sensor_id):
     return list(mongo.db.alertas.find({
         "idEmpresa": id_empresa,

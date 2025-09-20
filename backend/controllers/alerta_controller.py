@@ -8,6 +8,7 @@ from models.alerta import (
     q_alerta_abierta_offline,
     updateDuracion,
     get_checkpoint,
+    update_checkpoint_informativas,
     get_alertas_sensor,
     update_checkpoint)
 from models.sensor import(
@@ -1048,8 +1049,6 @@ def chequear_alertas_informativas(mongo, id_empresa):
         if not mediciones:
             continue
 
-        ciclo_interrumpido = False
-
         # 4️⃣ Analizar mediciones
         for med in mediciones:
             fecha_actual = med["fechaHoraMed"]
@@ -1071,18 +1070,9 @@ def chequear_alertas_informativas(mongo, id_empresa):
             total_alertas_generadas += alertas_generadas
             last_date = fecha_actual
 
-        # 5️⃣ Actualizar checkpoint --> VER
+        # 5️⃣ Actualizar checkpoint
         last_med = mediciones[-1]
-        mongo.db.alerta_checkpoint.update_one(
-            {"idEmpresa": id_empresa, "idSensor": nro_sensor, "tipo": "informativas"},
-            {"$set": {
-                "fechaUltimaAnalizada": last_date,
-                "enCiclo": en_ciclo,
-                "fechaInicioCiclo": fecha_inicio_ciclo,
-                "tempMaxCiclo": temp_max_ciclo
-            }},
-            upsert=True
-        )
+        update_checkpoint_informativas(mongo, id_empresa, nro_sensor, last_med, en_ciclo, fecha_inicio_ciclo, temp_max_ciclo)
         
     return total_alertas_generadas  # Retorna la cantidad de mediciones analizadas
 
