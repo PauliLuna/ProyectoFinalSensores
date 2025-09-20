@@ -1107,6 +1107,10 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
         if duracion >= duracion_min:
             anormal = duracion > duracion_max or (temp_max_ciclo - temp) > incremento_max
 
+            tz_buenos_aires = pytz.timezone('America/Argentina/Buenos_Aires')
+            fecha_inicio_ciclo_local = fecha_inicio_ciclo.astimezone(tz_buenos_aires)
+            fecha_inicio_ciclo_str = fecha_inicio_ciclo_local.strftime('%Y-%m-%d %H:%M:%S')
+            
             # Alertas de inicio y fin
 
             alerta_data = {
@@ -1114,7 +1118,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
                 "idEmpresa": id_empresa,
                 "criticidad": "Informativa",
                 "tipoAlerta": "Inicio de ciclo de descongelamiento",
-                "descripcion": f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo}.",
+                "descripcion": f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo_str}.",
                 "mensajeAlerta": "Inicio de ciclo de descongelamiento",
                 "fechaHoraAlerta": fecha_inicio_ciclo
             }
@@ -1125,7 +1129,7 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
             _enviar_mail_alerta(
                 emails=_obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"]),
                 tipo_alerta="Inicio de ciclo de descongelamiento",
-                descripcion=f"El sensor {sensor['nroSensor']} inició el ciclo de descongelamiento a las {fecha_inicio_ciclo}.",
+                descripcion=alerta_data["descripcion"],
                 criticidad="Informativa",
                 sensor=sensor,
                 mensaje="Inicio de ciclo",
