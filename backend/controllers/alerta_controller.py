@@ -554,12 +554,24 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
 
         # Si NO hay una alerta abierta, es la primera vez que se detecta el problema.
         if not alerta_abierta:
+
+            # Definir la zona horaria de Buenos Aires
+            tz_buenos_aires = pytz.timezone('America/Argentina/Buenos_Aires')
+
+            # Convertir las fechas UTC a la zona horaria de Buenos Aires
+            fecha_med_local = prev_med['fechaHoraMed'].astimezone(tz_buenos_aires)
+            fecha_actual_local = fecha_actual.astimezone(tz_buenos_aires)
+            
+            # Formatear las fechas a un formato legible de 24 horas (ej. 2025-09-20 10:30)
+            fecha_med_str = fecha_med_local.strftime('%Y-%m-%d %H:%M:%S')
+            fecha_actual_str = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
+
             alerta_data = {
                 "idSensor": str(sensor["nroSensor"]),
                 "idEmpresa": id_empresa,
                 "criticidad": "Crítica",
                 "tipoAlerta": "Sensor offline",
-                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
+                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {fecha_med_str} y {fecha_actual_str}.",
                 "mensajeAlerta": "Sensor offline (sin mediciones)",
                 "fechaHoraAlerta": fecha_actual,
                 "duracionMinutos": None,
