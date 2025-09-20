@@ -603,7 +603,7 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             return 1  # ⚠️ Devuelve 1 si se insertó una alerta
         else:
             # Si ya hay una alerta abierta, no hacemos nada y devolvemos 0
-            print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.") # TO DO: updatear descripcion de la alerta a la nueva fecha
+            print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.")
             return 0
     else: # El sensor está online (con mediciones recientes)
         # Si había una alerta abierta, la cerramos
