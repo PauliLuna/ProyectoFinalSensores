@@ -16,7 +16,6 @@ from models.sensor import(
     updateStatus)
 from bson import ObjectId
 from datetime import datetime, timedelta
-from flask_mail import Message
 from controllers.sensor_controller import get_all_sensors_empresa
 import pytz
 
@@ -281,7 +280,6 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
 def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, mensaje, fecha, termi):
     fecha_actual_local = fecha - timedelta(hours=3)
     fecha_actual = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
-    mail = current_app.mail
     subject = f"[ALERTA] {tipo_alerta} - Sensor {sensor['nroSensor']}"
     html_template = f"""
     <!DOCTYPE html>
@@ -333,20 +331,45 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
     </body>
     </html>
     """
-    msg = Message(
-        subject=subject, 
-        sender=current_app.config['MAIL_USERNAME'], 
-        recipients=emails,
-        html=html_template
-    )
+
+    # Obtener el cliente de la API de Mailjet de la configuración de la app
+    mailjet = current_app.config['MAILJET_CLIENT']
+    
+    # Obtener el email del remitente de la configuración de la app
+    sender_email = current_app.config['MAIL_FROM_EMAIL']
+
+    recipients = [{"Email": email, "Name": "Destinatario"} for email in emails]
+
+    # Crear la carga útil (payload) para la API
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": sender_email,
+                    "Name": "SensIA"
+                },
+                "To": recipients,
+                "Subject": subject,
+                "HTMLPart": html_template
+            }
+        ]
+    }
+
     try:
-        mail.send(msg)
-        print(f"✅ Mail enviado a {emails}")
+        # Enviar el correo usando la API de Mailjet
+        result = mailjet.send.create(data=data)
+        
+        # Verificar si la respuesta fue exitosa
+        if result.status_code == 200:
+            print(recipients)
+            return jsonify({"message": f"Se envió un correo de alerta a {recipients}"}), 200
+        else:
+            return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
     except Exception as e:
-        print(f"❌ Error enviando mail de alerta: {e}")
+        # Captura cualquier excepción de red o de la librería
+        return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
 
 def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, usuario, mensaje, fecha, termi):
-    mail = current_app.mail
     subject = f"[ALERTA] {tipo_alerta} - Usuario: {usuario}"
     html_template = f"""
     <!DOCTYPE html>
@@ -398,17 +421,42 @@ def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, 
     </body>
     </html>
     """
-    msg = Message(
-        subject=subject, 
-        sender=current_app.config['MAIL_USERNAME'], 
-        recipients=emails,
-        html=html_template
-    )
+    # Obtener el cliente de la API de Mailjet de la configuración de la app
+    mailjet = current_app.config['MAILJET_CLIENT']
+    
+    # Obtener el email del remitente de la configuración de la app
+    sender_email = current_app.config['MAIL_FROM_EMAIL']
+
+    recipients = [{"Email": email, "Name": "Destinatario"} for email in emails]
+
+    # Crear la carga útil (payload) para la API
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": sender_email,
+                    "Name": "SensIA"
+                },
+                "To": recipients,
+                "Subject": subject,
+                "HTMLPart": html_template
+            }
+        ]
+    }
+
     try:
-        mail.send(msg)
-        print(f"✅ Mail enviado a {emails}")
+        # Enviar el correo usando la API de Mailjet
+        result = mailjet.send.create(data=data)
+        
+        # Verificar si la respuesta fue exitosa
+        if result.status_code == 200:
+            print(recipients)
+            return jsonify({"message": f"Se envió un correo de alerta de seguridad a {recipients}"}), 200
+        else:
+            return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
     except Exception as e:
-        print(f"❌ Error enviando mail de alerta: {e}")
+        # Captura cualquier excepción de red o de la librería
+        return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
 
 def _obtener_emails_admins(mongo, empresa, criticidad):
     """Obtiene los emails de los usuarios asignados a un sensor
@@ -506,12 +554,24 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
 
         # Si NO hay una alerta abierta, es la primera vez que se detecta el problema.
         if not alerta_abierta:
+
+            # Definir la zona horaria de Buenos Aires
+            tz_buenos_aires = pytz.timezone('America/Argentina/Buenos_Aires')
+
+            # Convertir las fechas UTC a la zona horaria de Buenos Aires
+            fecha_med_local = prev_med['fechaHoraMed'].astimezone(tz_buenos_aires)
+            fecha_actual_local = fecha_actual.astimezone(tz_buenos_aires)
+            
+            # Formatear las fechas a un formato legible de 24 horas (ej. 2025-09-20 10:30)
+            fecha_med_str = fecha_med_local.strftime('%Y-%m-%d %H:%M:%S')
+            fecha_actual_str = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
+
             alerta_data = {
                 "idSensor": str(sensor["nroSensor"]),
                 "idEmpresa": id_empresa,
                 "criticidad": "Crítica",
                 "tipoAlerta": "Sensor offline",
-                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {prev_med['fechaHoraMed']} y {fecha_actual}.",
+                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {fecha_med_str} y {fecha_actual_str}.",
                 "mensajeAlerta": "Sensor offline (sin mediciones)",
                 "fechaHoraAlerta": fecha_actual,
                 "duracionMinutos": None,
@@ -891,12 +951,21 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             # Se recopilan los números de todos los sensores inactivos en una lista
             sensores_inactivos = [str(s["nroSensor"]) for s in sensores_misma_dir]
 
+            # === Lógica para la descripción dinámica ===
+            cantidad_sensores = len(sensores_inactivos)
+            sensores_str = ", ".join(sensores_inactivos)
+
+            if cantidad_sensores == 1:
+                descripcion_alerta = f"El sensor {sensores_str} en {direccion} está inactivo. Posible caída de energía."
+            else:
+                descripcion_alerta = f"Todos los {cantidad_sensores} sensores ({sensores_str}) en {direccion} están inactivos. Posible caída de energía."
+
             alerta_data = {
                 "idSensor": sensores_inactivos,
                 "idEmpresa": id_empresa,
                 "criticidad": "Preventiva",
                 "tipoAlerta": "Caída de energía eléctrica",
-                "descripcion": f"Todos los sensores en {direccion} están inactivos. Posible caída de energía.",
+                "descripcion": descripcion_alerta,
                 "mensajeAlerta": "Caída de energía eléctrica",
                 "fechaHoraAlerta": datetime.utcnow(),
                 "estadoAlerta": "abierta",
