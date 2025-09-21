@@ -100,3 +100,11 @@ def get_alertas_sensor(mongo, id_empresa, sensor_id):
         "idEmpresa": id_empresa,
         "idSensor": {"$in": [sensor_id]}
     }).sort("fechaHoraAlerta", -1))
+
+def update_description_offline(mongo, alerta_id, descripcion):
+    mongo.db.alertas.update_one(
+        {"_id": alerta_id},
+        {"$set": {
+            "descripcionAlerta": descripcion
+        }}
+    )

@@ -10,7 +10,8 @@ from models.alerta import (
     get_checkpoint,
     update_checkpoint_informativas,
     get_alertas_sensor,
-    update_checkpoint)
+    update_checkpoint,
+    update_description_offline)
 from models.sensor import(
     get_mediciones,
     get_ultima_medicion,
@@ -311,7 +312,7 @@ def _enviar_mail_alerta(emails, tipo_alerta, descripcion, criticidad, sensor, me
             <span class="label">Descripción:</span> {descripcion}
         </div>
         <div class="info">
-            <span class="label">Fecha y hora:</span> {fecha_actual}
+            <span class="label">Fecha y hora:</span> {fecha_actual} hs
         </div>
         <div class="info">
             <span class="label">Criticidad:</span> {criticidad}
@@ -553,26 +554,26 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
     if gap >= timedelta(minutes=10):
         print(f"⚠️ ALERTA: sensor {sensor['nroSensor']} sin mediciones por {gap}")
 
+        # Definir la zona horaria de Buenos Aires
+        tz_buenos_aires = pytz.timezone('America/Argentina/Buenos_Aires')
+
+        # Convertir las fechas UTC a la zona horaria de Buenos Aires
+        fecha_med_local = prev_med['fechaHoraMed'].astimezone(tz_buenos_aires)
+        fecha_actual_local = fecha_actual.astimezone(tz_buenos_aires)
+        
+        # Formatear las fechas a un formato legible de 24 horas (ej. 2025-09-20 10:30)
+        fecha_med_str = fecha_med_local.strftime('%Y-%m-%d %H:%M:%S')
+        fecha_actual_str = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
+
         # Si NO hay una alerta abierta, es la primera vez que se detecta el problema.
         if not alerta_abierta:
-
-            # Definir la zona horaria de Buenos Aires
-            tz_buenos_aires = pytz.timezone('America/Argentina/Buenos_Aires')
-
-            # Convertir las fechas UTC a la zona horaria de Buenos Aires
-            fecha_med_local = prev_med['fechaHoraMed'].astimezone(tz_buenos_aires)
-            fecha_actual_local = fecha_actual.astimezone(tz_buenos_aires)
-            
-            # Formatear las fechas a un formato legible de 24 horas (ej. 2025-09-20 10:30)
-            fecha_med_str = fecha_med_local.strftime('%Y-%m-%d %H:%M:%S')
-            fecha_actual_str = fecha_actual_local.strftime('%Y-%m-%d %H:%M:%S')
 
             alerta_data = {
                 "idSensor": str(sensor["nroSensor"]),
                 "idEmpresa": id_empresa,
                 "criticidad": "Crítica",
                 "tipoAlerta": "Sensor offline",
-                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {fecha_med_str} y {fecha_actual_str}.",
+                "descripcion": f"El sensor {sensor['nroSensor']} no envió datos entre {fecha_med_str} hs y {fecha_actual_str} hs.",
                 "mensajeAlerta": "Sensor offline (sin mediciones)",
                 "fechaHoraAlerta": fecha_actual,
                 "duracionMinutos": None,
@@ -605,6 +606,10 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         else:
             # Si ya hay una alerta abierta, no hacemos nada y devolvemos 0
             print(f"La alerta offline para el sensor {sensor['nroSensor']} ya está activa.")
+            # Reconstruir la descripción con la fecha_med_str original y la nueva fecha_actual_str
+            nueva_descripcion = f"El sensor {sensor['nroSensor']} no envió datos entre {fecha_med_local} hs y {fecha_actual_str} hs."
+            # Actualizar solo el campo descripcion en la alerta abierta
+            update_description_offline(mongo, alerta_abierta["_id"], nueva_descripcion)
             return 0
     else: # El sensor está online (con mediciones recientes)
         # Si había una alerta abierta, la cerramos
@@ -612,11 +617,14 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             inicio = alerta_abierta["fechaHoraAlerta"]
             duracion = (fecha_actual - inicio).total_seconds() / 60
             duracion = round(duracion, 1)
+            nueva_descripcion = f"El sensor {sensor['nroSensor']} no envió datos entre {fecha_med_local} hs y {fecha_actual_str} hs."
 
-            # Actualizar la alerta con la duración
+            # Actualizar la alerta con la duración y descripcion
             updateDuracion(mongo, alerta_abierta["_id"], duracion)
-            print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
+            update_description_offline(mongo, alerta_abierta["_id"], nueva_descripcion)
+            print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min y descripción: {nueva_descripcion}")
 
+            # Actualizar estado del sensor a active
             updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
             print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
         return 0  # Devuelve 0 si no se insertó alerta
@@ -957,9 +965,9 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             sensores_str = ", ".join(sensores_inactivos)
 
             if cantidad_sensores == 1:
-                descripcion_alerta = f"El sensor {sensores_str} en {direccion} está inactivo. Posible caída de energía."
+                descripcion_alerta = f"Se detectó una posible interrupción del servicio eléctrico en la dirección {direccion}. El sensor ({sensores_str}) se encuentra inactivo."
             else:
-                descripcion_alerta = f"Todos los {cantidad_sensores} sensores ({sensores_str}) en {direccion} están inactivos. Posible caída de energía."
+                descripcion_alerta = f"Se detectó una posible interrupción del servicio eléctrico en la dirección {direccion}. Los {cantidad_sensores} sensores ({sensores_str}) se encuentran inactivos."
 
             alerta_data = {
                 "idSensor": sensores_inactivos,
