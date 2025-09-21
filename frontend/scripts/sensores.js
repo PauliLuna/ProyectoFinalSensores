@@ -105,7 +105,7 @@ async function cargarSensores() {
                 <img class="corner-icon" src="https://png.pngtree.com/png-vector/20221115/ourmid/pngtree-ultra-cold-storage-temperature-rgb-color-icon-equipment-storage-temperature-vector-png-image_41145610.jpg" alt="Sensor Icon">    
                 <div class="sensor-status ${sensor.estado === 'ONLINE' ? 'status-online' : 'status-offline'}">● ${sensor.estado}</div>
                 <div class="sensor-info">
-                    <strong>${sensor.alias}</strong><br>
+                    <strong>[${sensor.nroSensor}] ${sensor.alias}</strong><br>
                     Temperatura Interna: ${sensor.temperaturaInterna !== null ? sensor.temperaturaInterna + ' °C' : ' -- °C'}<br>
                     Temperatura Externa: ${sensor.temperaturaExterna !== null ? sensor.temperaturaExterna + ' °C' : ' -- °C'}<br><br>
                     <span style="color:${sensor.enRango ? '#10b981' : '#FF6F5E'}; font-weight: bold">${sensor.enRango ? 'En rango' : 'Fuera de rango'}</span>
