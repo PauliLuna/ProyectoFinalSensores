@@ -160,8 +160,7 @@ def generar_mediciones(mongo, id_empresa=None, incluir_inactivos=False):
     q = {}
     if id_empresa:
         q["idEmpresa"] = id_empresa
-    if not incluir_inactivos:
-        q["estado"] = {"$ne": "inactive"}
+    # Traer TODOS los sensores para poder simular vuelta online
     sensores = get_sensores_para_mediciones(mongo, q)
     if not sensores:
         return 0
@@ -176,16 +175,15 @@ def generar_mediciones(mongo, id_empresa=None, incluir_inactivos=False):
             # Buscar alerta crítica abierta de offline
             from models.alerta import q_alerta_abierta_offline
             alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], sensor["idEmpresa"])
-            if alerta_abierta:
-                if random.random() < P_VUELTA_ONLINE:
-                    # Simular medición para volver online
-                    med, _ = _simular_medicion(sensor, fecha)
-                    if med:
-                        docs.append(med)
-                        # Actualizar estado del sensor a active
-                        from models.sensor import updateStatus
-                        updateStatus(mongo, sensor["nroSensor"], sensor["idEmpresa"], "active")
-                continue  # No simular medición normal para sensores inactivos
+            if alerta_abierta and random.random() < P_VUELTA_ONLINE:
+                # Simular medición para volver online
+                med, _ = _simular_medicion(sensor, fecha)
+                if med:
+                    docs.append(med)
+                    # Actualizar estado del sensor a active
+                    from models.sensor import updateStatus
+                    updateStatus(mongo, sensor["nroSensor"], sensor["idEmpresa"], "active")
+            continue  # No simular medición normal para sensores inactivos
 
         # --- Simulación normal ---
         med, fecha_offline = _simular_medicion(sensor, fecha)
