@@ -10,7 +10,7 @@ P_PUERTA_ABIERTA = 0.07
 P_OFFLINE = 0.05  # Probabilidad de simular un hueco offline
 P_CICLO_DESCONGELAMIENTO = 0.08  # Probabilidad de simular inicio de ciclo de descongelamiento
 P_CICLO_ASINCRONICO = 0.03  # Probabilidad de simular ciclo asincrónico
-P_VUELTA_ONLINE = 0.10  # Probabilidad de que un sensor offline vuelva online
+P_VUELTA_ONLINE = 0.30  # Probabilidad de que un sensor offline vuelva online
 
 DEFAULT_EXT_BY_TIPO = {
     "congelado": (27, 32),
@@ -38,14 +38,41 @@ def _normalize(s: str) -> str:
     for a,b in repl: s = s.replace(a,b)
     return s
 
-def _tipo_from_alias(alias: str):
-    #Espera alias como 'Blvd. Oroño - Congelados' → 'congelados'
-    if not alias: return None
+def _deducir_tipo(sensor_doc):
+    """
+    Deducción robusta del tipo de cámara/sensor.
+    Prioriza el campo 'notas', luego el alias.
+    """
+    notas = _normalize(sensor_doc.get("notas", ""))
+    alias = _normalize(sensor_doc.get("alias", ""))
+    # Buscar palabras clave en notas
+    if "congelad" in notas:
+        return "congelado"
+    if "helad" in notas:
+        return "helados"
+    if "frut" in notas:
+        return "frutas"
+    if "verdur" in notas:
+        return "verduras"
+    if "carne" in notas:
+        return "carnes frescas"
+    # Si no se encontró en notas, buscar en alias
+    if "congelad" in alias:
+        return "congelado"
+    if "helad" in alias:
+        return "helados"
+    if "frut" in alias:
+        return "frutas"
+    if "verdur" in alias:
+        return "verduras"
+    if "carne" in alias:
+        return "carnes frescas"
+    # Fallback: lo que haya en alias (última palabra)
     parts = alias.split("-")
-    if len(parts) < 2: return None
-    tipo = _normalize(parts[-1]).strip()
-    tipo = re.sub(r"\s+", " ", tipo)
-    return tipo
+    if len(parts) >= 2:
+        tipo = parts[-1].strip()
+        return tipo
+    return ""
 
 def _rng_dentro(a, b):
     a, b = float(a), float(b)
@@ -66,7 +93,7 @@ def _simular_medicion(sensor_doc, fecha_base=None, offline_gap_min=15):
     - fecha_base: si se pasa, se usa como fecha de la medición (útil para simular gaps).
     - offline_gap_min: minutos de hueco para simular offline.
     """
-    tipo = _tipo_from_alias(sensor_doc.get("alias")) or ""
+    tipo = _deducir_tipo(sensor_doc)
     vmin = sensor_doc.get("valorMin")
     vmax = sensor_doc.get("valorMax")
     if vmin is None or vmax is None:
