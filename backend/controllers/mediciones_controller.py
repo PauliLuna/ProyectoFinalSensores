@@ -180,9 +180,6 @@ def generar_mediciones(mongo, id_empresa=None, incluir_inactivos=False):
                 med, _ = _simular_medicion(sensor, fecha)
                 if med:
                     docs.append(med)
-                    # Actualizar estado del sensor a active
-                    from models.sensor import updateStatus
-                    updateStatus(mongo, sensor["nroSensor"], sensor["idEmpresa"], "active")
             continue  # No simular medición normal para sensores inactivos
 
         # --- Simulación normal ---
