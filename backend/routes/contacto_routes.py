@@ -7,6 +7,4 @@ contacto_bp = Blueprint('contacto', __name__)
 def submit_form():
     data = request.get_json()
     mongo = current_app.mongo
-    mail = current_app.mail
-    app = current_app
-    return handle_contact_submission(mongo, mail, app, data)
+    return handle_contact_submission(mongo, data)

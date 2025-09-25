@@ -1,8 +1,7 @@
-from flask_mail import Message
-from flask import jsonify
+from flask import jsonify, current_app
 from models.contacto import save_contacto
 
-def enviar_mail_contacto(mail, app, name, email, message):
+def enviar_mail_contacto(name, email, message):
     html_template = """
     <!DOCTYPE html>
     <html>
@@ -31,15 +30,44 @@ def enviar_mail_contacto(mail, app, name, email, message):
     </html>
     """.format(name=name, email=email, message=message)
 
-    msg = Message(
-        subject=f"Nuevo mensaje de {name}",
-        sender="no-reply@sensia.com",
-        recipients=[app.config['MAIL_USERNAME']],
-        html=html_template
-    )
-    mail.send(msg)
+    # Obtener el cliente de la API de Mailjet de la configuración de la app
+    mailjet = current_app.config['MAILJET_CLIENT']
+    subject=f"Nuevo mensaje de {name}"
+    
+    # Obtener el email del remitente de la configuración de la app
+    sender_email = current_app.config['MAIL_FROM_EMAIL']
 
-def handle_contact_submission(mongo, mail, app, data):
+    # Crear la carga útil (payload) para la API
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": sender_email,
+                    "Name": "SensIA"
+                },
+                "To": sender_email,
+                "Subject": subject,
+                "HTMLPart": html_template
+            }
+        ]
+    }
+
+    try:
+        # Enviar el correo usando la API de Mailjet
+        result = mailjet.send.create(data=data)
+        
+        # Verificar si la respuesta fue exitosa
+        if result.status_code == 200:
+            print(sender_email)
+            return jsonify({"message": f"Se envió un correo de alerta de seguridad a {sender_email}"}), 200
+        else:
+            return jsonify({"error": f"Error al enviar el correo: {result.json()}"}), 500
+    except Exception as e:
+        # Captura cualquier excepción de red o de la librería
+        return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
+
+
+def handle_contact_submission(mongo, data):
     name = data.get('name')
     email = data.get('email')
     message = data.get('message')
@@ -49,7 +77,7 @@ def handle_contact_submission(mongo, mail, app, data):
 
     try:
         save_contacto(mongo, name, email, message)
-        enviar_mail_contacto(mail, app, name, email, message)
+        enviar_mail_contacto(name, email, message)
         return jsonify({'success': 'Correo enviado correctamente'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
