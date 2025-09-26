@@ -570,7 +570,13 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
             
             print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'inactive'")
 
-            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+            # Obtener los emails de los usuarios asignados y de los superadmins
+            emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+            emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")
+            
+            # Unir ambas listas de emails y eliminar duplicados
+            emails = list(set(emails_asignados + emails_super_admins))
+
             print(f"[DEBUG] Emails asignados para alerta: {emails}")
             if emails:
                 print(f"[DEBUG] Enviando mail de alerta a: {emails}")
@@ -629,7 +635,12 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
         alertas_generadas = 1
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+
+        emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+        emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")    
+        # Unir ambas listas de emails y eliminar duplicados
+        emails = list(set(emails_asignados + emails_super_admins))
+
         print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
@@ -681,7 +692,11 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"✅ Alerta temp fuera de rango en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
-            emails = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+            emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+            emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")    
+            # Unir ambas listas de emails y eliminar duplicados
+            emails = list(set(emails_asignados + emails_super_admins))
+
             if emails:
                 _enviar_mail_alerta(
                     emails, 
@@ -728,7 +743,11 @@ def _alerta_ciclo_asincronico(mongo, sensor, en_ciclo, inicio_ciclo, temp, valor
         alerta_id = insert_alerta(mongo, alerta_data)
         print(f"✅ Alerta ciclo asincrónico en sensor {sensor['nroSensor']} -> ID {alerta_id}")
 
-        emails = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+        emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"],alerta_data["criticidad"])
+        emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")    
+        # Unir ambas listas de emails y eliminar duplicados
+        emails = list(set(emails_asignados + emails_super_admins))
+        
         print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
@@ -849,7 +868,11 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
         print(f"✅ Alerta preventiva insertada para sensor {nro_sensor} -> ID {alerta_id}")
 
         # 3️⃣ Notificar
-        emails = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
+        emails_asignados = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
+        emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "preventiva")    
+        # Unir ambas listas de emails y eliminar duplicados
+        emails = list(set(emails_asignados + emails_super_admins))
+
         print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
@@ -895,7 +918,11 @@ def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
         print(f"✅ Alerta preventiva (puerta recurrente) insertada -> ID {alerta_id}")
 
         # Notificar por mail
-        emails = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
+        emails_asignados = _obtener_emails_asignados(mongo, nro_sensor, alerta_data["criticidad"])
+        emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "preventiva")    
+        # Unir ambas listas de emails y eliminar duplicados
+        emails = list(set(emails_asignados + emails_super_admins))
+
         print(f"[DEBUG] Emails asignados para alerta: {emails}")
         if emails:
             _enviar_mail_alerta(
@@ -971,7 +998,11 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
             emails = []
             for s in sensores_misma_dir:
                 emails.extend(_obtener_emails_asignados(mongo, s["nroSensor"], alerta_data["criticidad"]))
-            emails = list(set(emails))
+            emails_asignados = list(set(emails))
+
+            emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "preventiva")    
+            # Unir ambas listas de emails y eliminar duplicados
+            emails = list(set(emails_asignados + emails_super_admins))
 
             if emails:
                 _enviar_mail_alerta(
@@ -1116,8 +1147,14 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"⚠️Alerta inicio ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_inicio_ciclo}")
 
+            # Notificar por mail
+            emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+            emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "informativa")    
+            # Unir ambas listas de emails y eliminar duplicados
+            emails = list(set(emails_asignados + emails_super_admins))
+
             _enviar_mail_alerta(
-                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"]),
+                emails= emails,
                 tipo_alerta="Inicio de ciclo de descongelamiento",
                 descripcion=alerta_data["descripcion"],
                 criticidad="Informativa",
@@ -1151,8 +1188,14 @@ def _alerta_inicio_fin_ciclo(mongo, sensor, id_empresa, temp, valor_min, valor_m
             alerta_id = insert_alerta(mongo, alerta_data)
             print(f"⚠️ Alerta fin ciclo para sensor {sensor['nroSensor']} -> ID {alerta_id} con fecha {fecha_actual}")
 
+            # Notificar por mail
+            emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+            emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "informativa")    
+            # Unir ambas listas de emails y eliminar duplicados
+            emails = list(set(emails_asignados + emails_super_admins))
+
             _enviar_mail_alerta(
-                emails=_obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"]),
+                emails= emails,
                 tipo_alerta="Fin de ciclo de descongelamiento",
                 descripcion=descripcion_fin,
                 criticidad="Informativa",
