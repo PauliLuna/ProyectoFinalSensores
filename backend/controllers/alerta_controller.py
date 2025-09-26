@@ -19,6 +19,7 @@ from models.sensor import(
 from bson import ObjectId
 from datetime import datetime, timedelta
 from controllers.sensor_controller import get_all_sensors_empresa
+from models.usuario import get_super_admins_by_criticidad
 import pytz
 
 # Tabla de referencia de parámetros por tipo de cámara
@@ -460,25 +461,6 @@ def _enviar_mail_alerta_seguridad(emails, tipo_alerta, descripcion, criticidad, 
         # Captura cualquier excepción de red o de la librería
         return jsonify({"error": f"Error de conexión: {str(e)}"}), 500
 
-def _obtener_emails_admins(mongo, empresa, criticidad):
-    """Obtiene los emails de los usuarios asignados a un sensor
-    y que desean recibir ese tipo de alerta"""
-    usuarios = list(mongo.db.usuarios.find({
-        "idEmpresa": empresa,
-        "roles": "superAdmin",
-        "estado": "Active"
-    }))
-    emails = []
-    print(f"[DEBUG] Usuarios encontrados: {len(usuarios)} para empresa {empresa} con criticidad {criticidad}")
-    for u in usuarios:
-        print(f"[DEBUG] Usuario encontrada: {u}")
-        prefs = u.get("notificacionesAlertas", {})
-        print(f"[DEBUG] Preferencias de notificación: {prefs}")
-        crit_key = criticidad.lower()
-        if prefs.get(crit_key, False):
-            emails.append(u["email"])
-    return emails
-
 def _alerta_acceso_nocturno(mongo, email, hora_local_dt, usuario):
     now = datetime.utcnow()
     alerta_data = {
@@ -495,7 +477,7 @@ def _alerta_acceso_nocturno(mongo, email, hora_local_dt, usuario):
     # Obtener emails de admins de la empresa
     emails_admins = []
     if usuario and usuario.get('idEmpresa'):
-        emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa') ,"seguridad")
+        emails_admins = get_super_admins_by_criticidad(mongo, usuario.get('idEmpresa') ,"seguridad")
 
     # Enviar mail
     if emails_admins:
@@ -527,7 +509,7 @@ def _alerta_bloqueo_cuenta(mongo, email, usuario):
     # Obtener emails de admins para notificar el bloqueo
     emails_admins = []
     if usuario and usuario.get('idEmpresa'):
-        emails_admins = _obtener_emails_admins(mongo, usuario.get('idEmpresa'), "seguridad")
+        emails_admins = get_super_admins_by_criticidad(mongo, usuario.get('idEmpresa'), "seguridad")
 
     hora_local_dt = now - timedelta(hours=3)  # Ajusta a tu zona
     if emails_admins:

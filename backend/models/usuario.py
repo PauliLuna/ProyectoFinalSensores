@@ -73,3 +73,17 @@ def get_ultimas_conexiones(mongo, id_empresa):
         ).sort("fechaUltimoAcceso", -1).limit(10)
     )
     return usuarios
+
+def get_super_admins_by_criticidad(mongo, id_empresa, criticidad):
+    # Se construye la clave de la preferencia dinámicamente
+    crit_key = "notificacionesAlertas." + criticidad.lower()
+    
+    # Se realiza la consulta directamente en la base de datos para filtrar por la criticidad
+    return list(mongo.db.usuarios.find({
+        "idEmpresa": id_empresa,
+        "roles": "superAdmin",
+        "estado": "Active",
+        crit_key: True
+    }, {
+        "email": 1
+    }))
