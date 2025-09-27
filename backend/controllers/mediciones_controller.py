@@ -5,11 +5,11 @@ from models.mediciones import insert_many_mediciones
 from models.sensor import get_sensores_para_mediciones
 
 # Probabilidades de patrones especiales (puedes ajustar estos valores)
-P_FALLO_GLOBAL = 0.10
-P_PUERTA_ABIERTA = 0.07
-P_OFFLINE = 0.20  # Probabilidad de simular un hueco offline
-P_CICLO_DESCONGELAMIENTO = 0.08  # Probabilidad de simular inicio de ciclo de descongelamiento
-P_CICLO_ASINCRONICO = 0.03  # Probabilidad de simular ciclo asincrónico
+P_FALLO_GLOBAL = 0.08
+P_PUERTA_ABIERTA = 0.08
+P_OFFLINE = 0.15  # Probabilidad de simular un hueco offline
+P_CICLO_DESCONGELAMIENTO = 0.10  # Probabilidad de simular inicio de ciclo de descongelamiento
+P_CICLO_ASINCRONICO = 0.10  # Probabilidad de simular ciclo asincrónico
 P_VUELTA_ONLINE = 0.10  # Probabilidad de que un sensor offline vuelva online
 
 DEFAULT_EXT_BY_TIPO = {
