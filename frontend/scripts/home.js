@@ -90,6 +90,13 @@ async function cargarKPIs() {
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarKPIs();
+
+    document.getElementById('periodSelectHome').addEventListener('change', function() {
+        const periodo = this.value;
+        // Filtra y renderiza todo el contenido filtrable según la fecha seleccionada
+        renderContenidoFiltrable(periodo);
+    });
+
     cargarUltimasConexiones();
     cargarRankingUsuariosActivos();
     cargarPiePermisosUsuarios();
@@ -365,83 +372,7 @@ function filtrarPorPeriodo(rango) {
     renderUserTable(filteredUserTableData);
 }
 
-async function cargarRankingUsuariosActivos() {
-    const res = await fetch('/ultimas_conexiones', {
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const conexiones = await res.json();
 
-    // Filtrar conexiones del último mes
-    const hoy = new Date();
-    const haceUnMes = new Date(hoy.getFullYear(), hoy.getMonth() - 1, hoy.getDate());
-    const ingresosPorUsuario = {};
-
-    conexiones.forEach(u => {
-        if (!u.fechaUltimoAcceso || !u.username) return;
-        const [d, m, yAndTime] = u.fechaUltimoAcceso.split('/');
-        const [y, time] = yAndTime.split(' ');
-        const fecha = new Date(`${y}-${m}-${d}T${time || '00:00'}`);
-        if (fecha >= haceUnMes && fecha <= hoy) {
-            ingresosPorUsuario[u.username] = (ingresosPorUsuario[u.username] || 0) + 1;
-        }
-    });
-
-    // Top 3 usuarios
-    const topUsuarios = Object.entries(ingresosPorUsuario)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3);
-
-    // Renderizar tabla
-    const tbody = document.getElementById('top-users-table');
-    tbody.innerHTML = '';
-    topUsuarios.forEach(([usuario, ingresos]) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${usuario}</td><td>${ingresos}</td>`;
-        tbody.appendChild(tr);
-    });
-}
-
-async function cargarPiePermisosUsuarios() {
-    const res = await fetch('/asignaciones_empresa', {
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const asignaciones = await res.json();
-
-    let read = 0, edit = 0;
-    asignaciones.forEach(a => {
-        if (a.permiso && a.permiso.toLowerCase() === 'read') read++;
-        else if (a.permiso && a.permiso.toLowerCase() === 'edit') edit++;
-    });
-
-    const ctxPermisos = document.getElementById('chart-permisos').getContext('2d');
-    if (window.chartPermisos) window.chartPermisos.destroy();
-    window.chartPermisos = new Chart(ctxPermisos, {
-        type: 'pie',
-        data: {
-            labels: ['Read', 'Edit'],
-            datasets: [{
-                data: [read, edit],
-                backgroundColor: ['#A8DADC', '#457B9D'],
-                borderColor: '#fff',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'right',
-                    labels: {
-                        color: '#1D3557',
-                        font: { size: 13 },
-                        boxWidth: 15
-                    }
-                }
-            }
-        }
-    });
-}
 
 // Variable global para almacenar el gráfico
 let alertasSucursalesChart = null;

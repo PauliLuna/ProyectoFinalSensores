@@ -26,70 +26,91 @@
     <div id="sidebar-container"></div>
     <div id="top-banner-container"></div>
 
+    
+
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Estado General del Sistema -->
-        <h1 class="centered-title">Executive Dashboard</h1>
-        <div class="row">
-            <!-- Columna de KPIs Operativos -->
-            <div class="col-md-6">
-                <h5 class="mb-3">KPIs Operativos</h5>
-                
-                <div class="kpi-cards">
-                      <div class="kpi-card kpi-resumen">
-                        <div class="kpi-principal">
-                            <p id="total-sensores" class="kpi-numero"></p>
-                            <p class="kpi-texto">Total Sensores Instalados</p>
-                        </div>
-                        <div class="kpi-detalles">
-                            <div class="kpi-detalle">
-                                <span>% Sensores Fuera de Rango</span>
-                                <span><strong id="porcentaje-fuera-rango">--%</strong></span>
-                            </div>
-                            <div class="kpi-detalle">
-                                <span>% Sensores Activos</span>
-                                <span><strong id="porcentaje-activos">--%</strong></span>
-                            </div>
-                            <div class="kpi-detalle">
-                                <span>% Sensores con Retraso en Envío de datos</span>
-                                <span><strong id="porcentaje-retraso-envio">--%</strong></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="kpi-cards" style="max-width: 1000px;">
-                      <div class="kpi-card success kpi-home" >
-                        <p id="sensores-en-rango" class="kpi-alerta-numero" style="cursor: pointer;"></p>
-                        <div class="kpi-alerta-texto" style="cursor: pointer;">
-                            <h3>Sensores en Rango</h3>
-                        </div>
-                    </div>
-                    <div class="kpi-card warning kpi-home">
-                      <p id="sensores-fuera-rango" class="kpi-alerta-numero" style="cursor: pointer;"></p>
-                      <div class="kpi-alerta-texto" style="cursor: pointer;">
-                          <h3>Sensores Fuera de Rango</h3>
-                      </div>
-                  </div>
-                  <div class="kpi-card offline kpi-home">
-                      <p id="sensores-fallo" class="kpi-alerta-numero" style="cursor: pointer;"></p>
-                      <div class="kpi-alerta-texto"style="cursor: pointer;">
-                          <h3>Sensores sin Señal (offline)</h3>
-                      </div>
-                  </div>
-                </div>
-                <!--
-                <div class="kpi-cards">
-                    <div class="kpi-card kpi-home">
-                      <p id="frecuencia-aperturas" class="kpi-alerta-numero"></p>
-                      <div class="kpi-alerta-texto">
-                          <h3>Frecuencia de Aperturas</h3>
-                      </div>
-                  </div>
-                </div>
-                -->
+      <!-- Título centrado -->
+      <h1 class="centered-title" style="margin-top: 30px;">Executive Dashboard</h1>
 
-                <h5 class="mb-3" style="margin-bottom: 3px !important;">KPIs Seguimiento</h5>
+      <!-- Filtros y KPIs -->
+      <div class="filterContainer" style="margin-bottom: 30px;">
+          <!-- KPIs alineados al centro -->
+          <div class="kpi-cards alertas" id="kpi-cards-container" style="margin: 0 auto;">
+              <div class="kpi-card resumen kpi-home" style="min-width: 220px;">
+                  <p id="total-sensores" class="kpi-alerta-numero"></p>
+                  <div class="kpi-alerta-texto">
+                      <h3>Total Sensores Instalados</h3>
+                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative; z-index: 100;">
+                          <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                          <span class="alias-tooltip-text">
+                              <span class="alias-tooltip-arrow"></span>
+                              Cantidad total de sensores registrados en la empresa.
+                          </span>
+                      </span>
+                  </div>
+              </div>
+              <div class="kpi-card success kpi-home" style="min-width: 220px;">
+                  <p id="sensores-en-rango" class="kpi-alerta-numero"></p>
+                  <div class="kpi-alerta-texto">
+                      <h3>Sensores en Rango</h3>
+                      <span id="porcentaje-en-rango" class="legend-pct"></span>
+                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px;position: relative;">
+                          <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                          <span class="alias-tooltip-text">
+                              <span class="alias-tooltip-arrow"></span>
+                              Porcentaje de sensores que actualmente están dentro de su rango de temperatura.
+                          </span>
+                      </span>
+                  </div>
+              </div>
+              <div class="kpi-card warning kpi-home" style="min-width: 220px;">
+                  <p id="sensores-fuera-rango" class="kpi-alerta-numero"></p>
+                  <div class="kpi-alerta-texto">
+                      <h3>Sensores Fuera de Rango</h3>
+                      <span id="porcentaje-fuera-rango" class="legend-pct"></span>
+                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px;position: relative;">
+                          <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                          <span class="alias-tooltip-text">
+                              <span class="alias-tooltip-arrow"></span>
+                              Porcentaje de sensores que actualmente están fuera de su rango de temperatura.
+                          </span>
+                      </span>
+                  </div>
+              </div>
+              <div class="kpi-card offline kpi-home" style="min-width: 220px;">
+                  <p id="sensores-fallo" class="kpi-alerta-numero"></p>
+                  <div class="kpi-alerta-texto">
+                      <h3>Sensores sin Señal (offline)</h3>
+                      <span id="porcentaje-retraso-envio" class="legend-pct"></span>
+                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px;position: relative;">
+                          <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                          <span class="alias-tooltip-text">
+                              <span class="alias-tooltip-arrow"></span>
+                              Porcentaje de sensores que no han enviado datos en el tiempo esperado (offline).
+                          </span>
+                      </span>
+                  </div>
+              </div>
+          </div>
+          <!-- Filtro global de fecha alineado a la derecha -->
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+              <label for="periodSelectHome" style="font-size: 1.05rem;">Fecha</label>
+              <select id="periodSelectHome">
+                  <option value="24h">Últimas 24 hs</option>
+                  <option value="7d">Últimos 7 días</option>
+                  <option value="30d">Último mes</option>
+                  <option value="todos" selected>Todos</option>
+              </select>
+          </div>
+      </div>
+
+      <!-- Todo lo de abajo se filtra por la fecha seleccionada -->
+      <div class="row">
+          <!-- Columna izquierda: KPIs Operativos, gráficos, etc. -->
+          <div class="col-md-6">
+              <h5 class="mb-3" style="margin-bottom: 3px !important;">KPIs Seguimiento</h5>
 
                 <div id="chart-tendencia-alertas" class="charts-section" style="margin-bottom: -3px !important;">
                   <div class="chart-container" style="border: 0px;">
@@ -97,7 +118,14 @@
                     <!-- Encabezado con título y dropdown alineados -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
                       <h5 class="block-title mb-0" style="margin-right: 15px;">Tendencia de Alertas en el Tiempo</h5>
-                      <div class="dropdown">
+                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                        <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                        <span class="alias-tooltip-text">
+                            <span class="alias-tooltip-arrow"></span>
+                            Evolución de la cantidad de alertas detectadas en el período seleccionado.
+                            </span>
+                        </span>
+                     <!-- <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownPeriodoAlertas" data-bs-toggle="dropdown" aria-expanded="false">
                           Últimas 24 hs
                         </button>
@@ -107,7 +135,7 @@
                           <li><a class="dropdown-item" href="#" data-period="30d">Últimos 30 días</a></li>
                           <li><a class="dropdown-item" href="#" data-period="90d">Últimos 3 meses</a></li>
                         </ul>
-                      </div>
+                      </div> -->
                     </div>
 
                     <!-- Gráfico -->
@@ -115,7 +143,6 @@
 
                   </div>
                 </div>
-
 
                 <!-- Gráfico de Tendencia de Temperatura Promedio -->
                 <div id="chart-section" class="charts-section" style=" margin-bottom: -3px !important;" >
@@ -125,11 +152,10 @@
                     </div>
                 </div>
 
-            </div>
-
-            <!-- Columna de Alertas -->
-            <div class="col-md-6">
-                <h5 class="mb-3">Alertas y Seguridad</h5>
+          </div>
+          <!-- Columna derecha: Alertas, rankings, etc. -->
+          <div class="col-md-6">
+              <h5 class="mb-3">Alertas y Seguridad</h5>
                 <div class="alert-kpi-card">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Alertas de la Empresa</h5>
@@ -200,84 +226,83 @@
                             <tr><td>Sensor Z</td><td>132</td><td>18.7%</td></tr>
                         </tbody>
                     </table>
-                </div>
-
-            </div>
-        </div>
-
-         <!-- KPIs de Alertas por sucursal y de usuario -->
-        <div class="contenedor-tablas" style="margin-top: 0px !important;">
-          <div class="ranking-card tabla-2-3">
-              <h6>Top 3 sucursales con más alertas y sus tipos más recurrentes</h6>
-              <table class="ranking-table">
-                  <thead>
-                      <tr>
-                          <th>Sucursal</th>
-                          <th>Tipo de Alerta más Común</th>
-                          <th>Criticidad</th>
-                      </tr>
-                  </thead>
-                  <tbody id="ranking-alertas-recurrentes-tbody">
-                      </tbody>
-              </table>
+              </div>
           </div>
-          <div class="ranking-card tabla-1-3">
-              <h6>Top 3 usuarios con más alertas de seguridad</h6>
-              <table class="ranking-table">
-                  <thead>
-                      <tr>
-                          <th>ID Usuario</th>
-                          <th style="width: 35%;">Tipo Alerta</th>
-                          <th>Cantidad</th>
-                      </tr>
-                  </thead>
-                  <tbody id="ranking-alertas-seguridad-tbody">
-                      </tbody>
-              </table>
-          </div>
+      </div>
 
-        </div>
-
-        <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
-        <div class="recent-activity" style="margin-top: 20px;">
-            <h5 style="margin-bottom: 15px;">Últimas Conexiones de Usuarios</h5>
-            <div class="table-wrapper" style="position: relative; min-height: 340px; max-height: 340px; overflow-y: auto; padding-bottom: 10px;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th id="th-fecha" style="position:relative;">
-                                <span id="fecha-sort-label" style="cursor:pointer; text-align:right;">Fecha</span>
-                                <button class="accordion-button" id="fechaAccordionBtn" type="button" aria-expanded="false" aria-controls="collapseFecha" style="position: absolute; right: 0; transform:translateY(20%); display:inline-block; width:auto; background:none; border:none; box-shadow:none; padding:0 8px; font-size:1.1em; vertical-align:middle; color:#1D3557;">
-                                    &#9660;
-                                </button>
-                                <div id="collapseFecha" class="accordion-collapse collapse" style="position:absolute; right:0; top:100%; min-width:160px; background:#fff; border:1px solid #A8DADC; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.08); z-index:9999; display:none;">
-                                    <a class="dropdown-item" href="#" data-range="hoy">Hoy</a>
-                                    <a class="dropdown-item" href="#" data-range="ayer">Ayer</a>
-                                    <a class="dropdown-item" href="#" data-range="ultimos7">Últimos 7 días</a>
-                                    <a class="dropdown-item" href="#" data-range="ultimos30">Últimos 30 días</a>
-                                    <a class="dropdown-item" href="#" data-range="estemes">Este mes</a>
-                                    <a class="dropdown-item" href="#" data-range="mespasado">Mes pasado</a>
-                                    <a class="dropdown-item" href="#" data-range="todos">Todos</a>
-                                </div>
-                            </th>
-                            <th id="th-estado" style="cursor:pointer;">Estado &#8597;</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-activity-table">
-                        <!-- Aquí se insertarán las filas dinámicamente -->
+        <!-- KPIs de Alertas por sucursal y de usuario -->
+      <div class="contenedor-tablas" style="margin-top: 0px !important;">
+        <div class="ranking-card tabla-2-3">
+            <h6>Top 3 sucursales con más alertas y sus tipos más recurrentes</h6>
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>Sucursal</th>
+                        <th>Tipo de Alerta más Común</th>
+                        <th>Criticidad</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-alertas-recurrentes-tbody">
                     </tbody>
-                </table>
-                <div class="table-pagination-row">
-                    <div class="pagination-info">
-                        Mostrando <span id="current-results-showing">0</span> de <span id="total-results">0</span> resultados
-                    </div>
-                    <ul class="pagination" id="user-table-pagination">
-                        <!-- Las páginas se generan dinámicamente -->
-                    </ul>
-                </div>
-            </div>
+            </table>
+        </div>
+        <div class="ranking-card tabla-1-3">
+            <h6>Top 3 usuarios con más alertas de seguridad</h6>
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>ID Usuario</th>
+                        <th style="width: 35%;">Tipo Alerta</th>
+                        <th>Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-alertas-seguridad-tbody">
+                    </tbody>
+            </table>
+        </div>
+
+      </div>
+
+      <!-- Uso de la plataforma: Últimas conexiones de usuarios -->
+      <div class="recent-activity" style="margin-top: 20px;">
+          <h5 style="margin-bottom: 15px;">Últimas Conexiones de Usuarios</h5>
+          <div class="table-wrapper" style="position: relative; min-height: 340px; max-height: 340px; overflow-y: auto; padding-bottom: 10px;">
+              <table>
+                  <thead>
+                      <tr>
+                          <th>Username</th>
+                          <th>Email</th>
+                          <th id="th-fecha" style="position:relative;">
+                              <span id="fecha-sort-label" style="cursor:pointer; text-align:right;">Fecha</span>
+                              <button class="accordion-button" id="fechaAccordionBtn" type="button" aria-expanded="false" aria-controls="collapseFecha" style="position: absolute; right: 0; transform:translateY(20%); display:inline-block; width:auto; background:none; border:none; box-shadow:none; padding:0 8px; font-size:1.1em; vertical-align:middle; color:#1D3557;">
+                                  &#9660;
+                              </button>
+                              <div id="collapseFecha" class="accordion-collapse collapse" style="position:absolute; right:0; top:100%; min-width:160px; background:#fff; border:1px solid #A8DADC; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.08); z-index:9999; display:none;">
+                                  <a class="dropdown-item" href="#" data-range="hoy">Hoy</a>
+                                  <a class="dropdown-item" href="#" data-range="ayer">Ayer</a>
+                                  <a class="dropdown-item" href="#" data-range="ultimos7">Últimos 7 días</a>
+                                  <a class="dropdown-item" href="#" data-range="ultimos30">Últimos 30 días</a>
+                                  <a class="dropdown-item" href="#" data-range="estemes">Este mes</a>
+                                  <a class="dropdown-item" href="#" data-range="mespasado">Mes pasado</a>
+                                  <a class="dropdown-item" href="#" data-range="todos">Todos</a>
+                              </div>
+                          </th>
+                          <th id="th-estado" style="cursor:pointer;">Estado &#8597;</th>
+                      </tr>
+                  </thead>
+                  <tbody id="user-activity-table">
+                      <!-- Aquí se insertarán las filas dinámicamente -->
+                  </tbody>
+              </table>
+              <div class="table-pagination-row">
+                  <div class="pagination-info">
+                      Mostrando <span id="current-results-showing">0</span> de <span id="total-results">0</span> resultados
+                  </div>
+                  <ul class="pagination" id="user-table-pagination">
+                      <!-- Las páginas se generan dinámicamente -->
+                  </ul>
+              </div>
+          </div>
     
         </div>
 
@@ -289,53 +314,6 @@
     <script src="scripts/utils.js"></script>
     <script src="scripts/home.js"></script>
 
-    <script>
-      const ctxTendencia = document.getElementById('chart-tendencia-temp').getContext('2d');
-      new Chart(ctxTendencia, {
-        type: 'line',
-        data: {
-          labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-          datasets: [{
-            label: 'Temp. Promedio (°C)',
-            data: [-18.2, -18.4, -18.1, -18.3, -18.0, -18.5, -18.2],
-            fill: false,
-            borderColor: '#1D3557',
-            backgroundColor: '#457B9D',
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              suggestedMin: -20,
-              suggestedMax: -17,
-              ticks: {
-                color: '#1D3557'
-              }
-            },
-            x: {
-              ticks: {
-                color: '#1D3557'
-              }
-            }
-          }
-        }
-      });
-        function cambiarPeriodo(periodo) {
-          if (periodo === '7d') {
-            console.log("Mostrar datos de los últimos 7 días");
-            // aquí iría lógica para actualizar los datos del gráfico
-          } else if (periodo === '30d') {
-            console.log("Mostrar datos de los últimos 30 días");
-            // lógica similar para otro periodo
-          }
-        }
-    </script>
+   
 </body>
 </html>
