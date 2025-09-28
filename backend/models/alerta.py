@@ -105,6 +105,6 @@ def update_description_offline(mongo, alerta_id, descripcion):
     mongo.db.alertas.update_one(
         {"_id": alerta_id},
         {"$set": {
-            "descripcionAlerta": descripcion
+            "descripcion": descripcion
         }}
     )
