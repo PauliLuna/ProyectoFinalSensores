@@ -184,6 +184,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
                 if prev_med is None:
                     # Si el sensor está inactivo y hay alerta offline abierta, cerrarla y reactivar sensor
                     alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
+                    print(f"[DEBUG] Alerta abierta offline para sensor {sensor['nroSensor']}: {alerta_abierta}")
                     if sensor.get("estado") == "inactive" and alerta_abierta:
                         inicio = alerta_abierta["fechaHoraAlerta"]
                         duracion = (fecha_actual - inicio).total_seconds() / 60
