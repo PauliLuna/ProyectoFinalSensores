@@ -76,14 +76,21 @@ def get_ultimas_conexiones(mongo, id_empresa):
 
 def get_super_admins_by_criticidad(mongo, id_empresa, criticidad):
     # Se construye la clave de la preferencia dinámicamente
-    crit_key = "notificacionesAlertas." + criticidad.lower()
+    crit_key_normalized = criticidad.lower().replace("í", "i").replace("á", "a")
+    crit_key = "notificacionesAlertas." + crit_key_normalized
     
-    # Se realiza la consulta directamente en la base de datos para filtrar por la criticidad
-    return list(mongo.db.usuarios.find({
+    # Se realiza la consulta
+    usuarios = list(mongo.db.usuarios.find({
         "idEmpresa": id_empresa,
         "roles": "superAdmin",
         "estado": "Active",
         crit_key: True
     }, {
-        "email": 1
+        "email": 1,
+        "_id": 0 # No necesitamos el _id
     }))
+
+    # Extraemos solo el email de cada objeto (esto produce una lista de strings)
+    emails = [user["email"] for user in usuarios if "email" in user]
+    
+    return emails
