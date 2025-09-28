@@ -43,6 +43,7 @@ async function initHome() {
 
     // fetch data and render KPI cards (these always reflect current state)
     await cargarKPIs();
+    renderPorcentajeAlertasMes(alertasData);
 
     // initial filtered render (uses selected period or default 'todos')
     const periodSelect = document.getElementById('periodSelectHome');
@@ -119,7 +120,7 @@ function renderKPIs(sensores, alertas) {
     document.getElementById('porcentaje-fuera-rango').textContent = porcentajeFueraRango + "%";
     // b) % activos (estado === 'ONLINE')
     const porcentajeActivos = total ? ((sensores.filter(s => s.estado && s.estado.toUpperCase() === 'ONLINE').length / total) * 100).toFixed(1) : 0;
-    document.getElementById('porcentaje-activos').textContent = porcentajeActivos + "%";
+    document.getElementById('porcentaje-en-rango').textContent = porcentajeActivos + "%";
     // c) % con retraso de envío de datos (estado === 'OFFLINE')
     const porcentajeRetraso = total ? ((offline / total) * 100).toFixed(1) : 0;
     document.getElementById('porcentaje-retraso-envio').textContent = porcentajeRetraso + "%";
@@ -155,7 +156,7 @@ function renderContenidoFiltrable(periodo) {
     renderAlertaSucursalesChart(alertasFiltradas, sensoresData);
     renderAlertasRecurrentesTable(alertasFiltradas, sensoresData);
     renderRankingSensores(alertasFiltradas);
-    renderPorcentajeAlertasMes(alertasFiltradas);
+
     cargarAlertasParaBarra(alertasFiltradas);
     renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
 }
