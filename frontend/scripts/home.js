@@ -35,6 +35,12 @@ if (!token || isTokenExpired(token)) {
 document.addEventListener('DOMContentLoaded', initHome);
 
 async function initHome() {
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (el) {
+        return new bootstrap.Tooltip(el);
+    });
+
     // fetch data and render KPI cards (these always reflect current state)
     await cargarKPIs();
 
@@ -151,6 +157,7 @@ function renderContenidoFiltrable(periodo) {
     renderRankingSensores(alertasFiltradas);
     renderPorcentajeAlertasMes(alertasFiltradas);
     cargarAlertasParaBarra(alertasFiltradas);
+    renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
 }
 
 // ------------------- Bar (alert distribution) -------------------
@@ -267,88 +274,114 @@ function renderRankingSensores(alertasFiltradas) {
 }
 
 // ------------------- Alertas tendencia (line chart) -------------------
-function renderAlertasTendenciaChart(periodo, alertas) {
-    const ahora = new Date();
-    let fechaInicio, pasoMs;
 
-    switch (periodo) {
+function toLocalAR(date) {
+    // Convierte una fecha a Argentina (UTC-3) sin cambiar el valor original
+    return new Date(date.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+}
+
+function renderAlertasTendenciaChart(periodo, alertasFiltradas) {
+    const ahora = new Date();
+    let fechaInicio, fechaFin = ahora;
+    let intervaloMs, usarHoras = false;
+
+    switch(periodo) {
         case '24h':
             fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000);
-            pasoMs = 60 * 60 * 1000; // 1 hora
+            intervaloMs = 60 * 60 * 1000;
+            usarHoras = true;
             break;
         case '7d':
             fechaInicio = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
-            pasoMs = 24 * 60 * 60 * 1000; // 1 día
+            intervaloMs = 24 * 60 * 60 * 1000;
             break;
-        case '30d':
-            fechaInicio = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
-            pasoMs = 24 * 60 * 60 * 1000;
+        case 'mes':
+            fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+            intervaloMs = 24 * 60 * 60 * 1000;
             break;
-        case '90d':
-            fechaInicio = new Date(ahora.getTime() - 90 * 24 * 60 * 60 * 1000);
-            pasoMs = 30 * 24 * 60 * 60 * 1000; // ~1 mes
+        case 'todos':
+            const fechasValidas = alertasFiltradas
+                .map(a => new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta))
+                .filter(f => !isNaN(f));
+            if (!fechasValidas.length) return;
+            fechaInicio = new Date(Math.min(...fechasValidas));
+            fechaFin = new Date(Math.max(...fechasValidas));
+            intervaloMs = 24 * 60 * 60 * 1000;
             break;
-        default:
-            fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000);
-            pasoMs = 60 * 60 * 1000;
     }
+    
+    
 
-    // Clave estable: HH:00 para 24h, YYYY-MM-DD para otros periodos
-    const keyFromDate = (d) => {
-        if (periodo === '24h') return d.getHours().toString().padStart(2, '0') + ':00';
-        return d.toISOString().slice(0, 10);
-    };
-
-    // Inicializar ejes con todo el rango (así la línea no "salta")
-    const labels = [];
+    // 2. Inicializar dataAgrupada
     const dataAgrupada = {};
-    for (let t = new Date(fechaInicio); t <= ahora; t = new Date(t.getTime() + pasoMs)) {
-        const k = keyFromDate(t);
-        labels.push(k);
-        dataAgrupada[k] = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
+    const labels = [];
+
+    for (let d = new Date(fechaInicio); d <= fechaFin; d.setTime(d.getTime() + intervaloMs)) {
+        let etiqueta;
+         if (usarHoras) {
+            etiqueta = d.toLocaleString("es-AR", { 
+                day: 'numeric', month: 'short', hour: '2-digit', timeZone: "America/Argentina/Buenos_Aires" 
+            });
+        } else {
+            etiqueta = d.toLocaleDateString("es-AR", { 
+                day: 'numeric', month: 'short', timeZone: "America/Argentina/Buenos_Aires" 
+            });
+        }
+        labels.push(etiqueta);
+        dataAgrupada[etiqueta] = { critica: 0, preventiva: 0, informativa: 0, seguridad: 0 };
     }
 
-    // Contar por criticidad
-    const tipos = ['critica', 'informativa', 'preventiva', 'seguridad'];
+    // 3. Contar alertas
     alertasData.forEach(alerta => {
-        const rawFecha = alerta.fechaHoraAlerta?.$date || alerta.fechaHoraAlerta;
-        const fechaAlerta = new Date(rawFecha);
-        if (isNaN(fechaAlerta.getTime()) || fechaAlerta < fechaInicio || fechaAlerta > ahora) return;
+        const fechaAlerta = toLocalAR(new Date(alerta.fechaHoraAlerta?.$date || alerta.fechaHoraAlerta));
+        if (isNaN(fechaAlerta.getTime()) || fechaAlerta < fechaInicio || fechaAlerta > fechaFin) return;
 
-        const k = keyFromDate(fechaAlerta);
-        const crit = (alerta.criticidad || '')
-            .toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        let etiqueta;
+        if (usarHoras) {
+            etiqueta = fechaAlerta.toLocaleString("es-AR", { 
+                day: 'numeric', month: 'short', hour: '2-digit', timeZone: "America/Argentina/Buenos_Aires" 
+            });
+        } else {
+            etiqueta = fechaAlerta.toLocaleDateString("es-AR", { 
+                day: 'numeric', month: 'short', timeZone: "America/Argentina/Buenos_Aires" 
+            });
+        }
 
-        if (dataAgrupada[k] && tipos.includes(crit)) {
-            dataAgrupada[k][crit]++;
+
+        const crit = (alerta.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (dataAgrupada[etiqueta]) {
+            if (crit === 'critica') dataAgrupada[etiqueta].critica++;
+            else if (crit === 'preventiva') dataAgrupada[etiqueta].preventiva++;
+            else if (crit === 'informativa') dataAgrupada[etiqueta].informativa++;
+            else if (crit === 'seguridad') dataAgrupada[etiqueta].seguridad++;
         }
     });
 
-    // Datasets
-    const datasets = [
+    // 4. Datasets
+     const datasets = [
         { label: 'Críticas',     data: labels.map(l => dataAgrupada[l].critica),     borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.2)', fill: true, tension: 0.4 },
         { label: 'Informativas', data: labels.map(l => dataAgrupada[l].informativa), borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,0.2)', fill: true, tension: 0.4 },
         { label: 'Preventivas',  data: labels.map(l => dataAgrupada[l].preventiva),  borderColor: '#6c757d', backgroundColor: 'rgba(108,117,125,0.2)', fill: true, tension: 0.4 },
         { label: 'Seguridad',    data: labels.map(l => dataAgrupada[l].seguridad),   borderColor: '#17a2b8', backgroundColor: 'rgba(23,162,184,0.2)', fill: true, tension: 0.4 }
     ];
 
-    // Render
+    // 5. Render Chart.js
     const ctx = document.getElementById('alertasTendenciaChart').getContext('2d');
     if (alertasTendenciaChart) alertasTendenciaChart.destroy();
     alertasTendenciaChart = new Chart(ctx, {
         type: 'line',
-        data: { labels, datasets },
+        data: { labels: labels, datasets: datasets },
         options: {
             responsive: true,
             plugins: { legend: { position: 'bottom' } },
             scales: {
                 y: { beginAtZero: true, title: { display: true, text: 'Cantidad de Alertas' } },
-                x: { title: { display: true, text: 'Fecha' } }
+                x: { title: { display: true, text: usarHoras ? 'Hora' : 'Fecha' } }
             }
         }
     });
 }
+
 
 // ------------------- Small helpers kept from original -------------------
 function addBarTooltips(counts) {

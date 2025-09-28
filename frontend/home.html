@@ -42,7 +42,7 @@
                   <p id="total-sensores" class="kpi-alerta-numero"></p>
                   <div class="kpi-alerta-texto">
                       <h3>Total Sensores Instalados</h3>
-                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative; z-index: 100;">
+                      <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; ">
                           <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
                           <span class="alias-tooltip-text">
                               <span class="alias-tooltip-arrow"></span>
@@ -96,13 +96,23 @@
           </div>
           <!-- Filtro global de fecha alineado a la derecha -->
           <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-              <label for="periodSelectHome" style="font-size: 1.05rem;">Fecha</label>
+              <label for="periodSelectHome" style="font-size: 1.05rem;">Fecha
+                  <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                    <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                    <span class="alias-tooltip-text">
+                      <span class="alias-tooltip-arrow"></span>
+                      "Mes actual" incluye desde el 1° del mes hasta hoy.
+                    </span>
+                  </span>
+              </label>
+
               <select id="periodSelectHome">
                   <option value="24h">Últimas 24 hs</option>
                   <option value="7d">Últimos 7 días</option>
-                  <option value="30d">Último mes</option>
+                  <option value="mes">Mes actual</option>
                   <option value="todos" selected>Todos</option>
               </select>
+              
           </div>
       </div>
 

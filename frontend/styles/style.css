@@ -2543,7 +2543,7 @@ select {
     font-size: 13px;
     min-width: 250px;
     box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-    z-index: 10;
+    z-index: 9999 !important;
     line-height: 1.3;
     text-align: left;
     white-space: normal;
