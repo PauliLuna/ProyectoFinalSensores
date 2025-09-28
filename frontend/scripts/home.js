@@ -43,7 +43,7 @@ async function initHome() {
 
     // fetch data and render KPI cards (these always reflect current state)
     await cargarKPIs();
-    renderPorcentajeAlertasMes(alertasData);
+    renderPorcentajeAlertasMes();
 
     // initial filtered render (uses selected period or default 'todos')
     const periodSelect = document.getElementById('periodSelectHome');
@@ -193,32 +193,32 @@ function cargarAlertasParaBarra(alertas) {
 }
 
 // ------------------- Porcentaje alertas mes (usando alertas filtradas) -------------------
-function renderPorcentajeAlertasMes(alertas) {
+function renderPorcentajeAlertasMes() {
     // Calcula el porcentaje de alertas del mes actual vs anterior
-
-
-    if (!alertas || alertas.length === 0) {
+    // Usa SIEMPRE alertasData (todas las alertas)
+        if (!alertasData || alertasData.length === 0) {
         document.getElementById('porcentajeAlertasMes').textContent = '';
         return;
     }
     const meses = {};
-    alertas.forEach(a => {
+    alertasData.forEach(a => {
         const fecha = new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta);
         if (isNaN(fecha.getTime())) return;
         const key = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2,'0')}`;
         meses[key] = (meses[key] || 0) + 1;
     });
     const keys = Object.keys(meses).sort().reverse(); // newest first
-    if (keys.length < 2) {
-        document.getElementById('porcentajeAlertasMes').textContent = '';
+    const spanPct = document.getElementById('porcentajeAlertasMes');
+    if (keys.length < 2 || !meses[keys[1]]) {
+        spanPct.textContent = "No se cuenta con datos del mes anterior para calcular el porcentaje de variación.";
+        spanPct.classList.remove("text-success", "text-danger");
         return;
     }
 
     const actual = meses[keys[0]];
     const anterior = meses[keys[1]];
-    const pct = anterior ? (((actual - anterior) / anterior) * 100).toFixed(1) : 0;
-    const spanPct = document.getElementById('porcentajeAlertasMes');
-    
+    const pct = (((actual - anterior) / anterior) * 100).toFixed(1);
+
     if (pct > 0) {
         spanPct.textContent = `⬆ ${pct}% respecto al mes anterior`;
         spanPct.classList.remove("text-success");
