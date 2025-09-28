@@ -185,7 +185,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
                     # Si el sensor está inactivo y hay alerta offline abierta, cerrarla y reactivar sensor
                     alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
                     print(f"[DEBUG] Alerta abierta offline para sensor {sensor['nroSensor']} - {sensor['estado']}: {alerta_abierta}")
-                    if sensor['estado'] == "inactive" and alerta_abierta:
+                    if sensor['estado'] == "OFFLINE" and alerta_abierta:
                         inicio = alerta_abierta["fechaHoraAlerta"]
                         duracion = (fecha_actual - inicio).total_seconds() / 60
                         duracion = round(duracion, 1)
@@ -964,7 +964,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
 
     # 1. Caso: Todos los sensores están inactivos
-    if all(s["estado"] == "inactive" for s in sensores_misma_dir):
+    if all(s["estado"] == "OFFLINE" for s in sensores_misma_dir):
         if not alerta_existente:
             # Si no existe una alerta pendiente, se crea una nueva.
             print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
