@@ -29,6 +29,10 @@ function normalizarAlerta(alerta) {
         alerta.idSensor = "N/A";
         alerta.alias = "N/A";
     }
+    // Si idSensor es un array, conviértelo a string para mostrarlo
+    if (Array.isArray(alerta.idSensor)) {
+        alerta.idSensor = alerta.idSensor.filter(x => x).join(", ");
+    }
     // Si no tiene alias pero sí idSensor, podés dejarlo vacío o buscarlo si tenés el mapeo
     if (!alerta.alias) alerta.alias = alerta.idSensor ? "" : "N/A";
     return alerta;
@@ -646,26 +650,6 @@ function renderAlertasPagination(totalPages) {
     });
     pagination.appendChild(nextItem);
 }
-
-// Ordenamiento por fecha
-
-let fechaAsc = true;
-document.getElementById('fecha-sort-label').addEventListener('click', () => {
-    let sorted;
-    if (filtroFechaActivo) {
-        sorted = [...filteredalertasData];
-    } else {
-        sorted = [...alertasData];
-    }
-    sorted.sort((a, b) => {
-        const fa = a.fechaHoraAlerta ? new Date(a.fechaHoraAlerta) : new Date(0);
-        const fb = b.fechaHoraAlerta ? new Date(b.fechaHoraAlerta) : new Date(0);
-        return fechaAsc ? fa - fb : fb - fa;
-    });
-    renderAlertasTable(sorted);
-    if (filtroFechaActivo) filteredalertasData = sorted;
-    fechaAsc = !fechaAsc;
-});
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', cargarAlertas);
