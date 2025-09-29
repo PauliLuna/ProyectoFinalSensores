@@ -198,7 +198,7 @@ function renderContenidoFiltrable(periodo) {
     renderAlertaSucursalesChart(alertasFiltradas, sensoresData);
     renderAlertasRecurrentesTable(alertasFiltradas, sensoresData);
     renderRankingSensores(alertasFiltradas);
-
+    renderRankingFueraRango(alertasFiltradas)
     cargarAlertasParaBarra(alertasFiltradas);
     renderKPITiempos(alertasFiltradas);
     renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
@@ -312,6 +312,57 @@ function renderRankingSensores(alertasFiltradas) {
         `;
         tbody.innerHTML += row;
     });
+}
+
+function renderRankingFueraRango(alertasFiltradas) {
+    // Agrupa por sensor: suma minutos de alertas cerradas de tipo "Temperatura fuera de rango"
+    const porSensor = {};
+    alertasFiltradas.forEach(a => {
+        if (a.tipoAlerta === "Temperatura fuera de rango" &&
+            a.estadoAlerta === "cerrada" &&
+            a.duracionMinutos != null
+        ) {
+            const id = a.idSensor || "Desconocido";
+            porSensor[id] = (porSensor[id] || 0) + Math.max(0, Number(a.duracionMinutos));
+        }
+    });
+
+    // Para calcular %: se necesita el período total observado
+    const ahora = new Date();
+    const fechaMin = alertasFiltradas.reduce((min, a) => {
+        const f = new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta);
+        return (!isNaN(f) && f < min) ? f : min;
+    }, ahora);
+    const minutosTotales = Math.max(1, (ahora - fechaMin) / 60000); // minutos observados
+
+    // Ranking top 3
+    const ranking = Object.entries(porSensor)
+        .map(([id, min]) => ({
+            sensor: id,
+            minutos: min,
+            porcentaje: Math.min(100, (min / minutosTotales) * 100).toFixed(1)
+        }))
+        .sort((a, b) => b.minutos - a.minutos)
+        .slice(0, 3);
+
+    // Render en la tabla
+    const tbody = document.getElementById("ranking-sensores-fuera-tiempo");
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (ranking.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">No hay datos</td></tr>';
+    } else {
+        ranking.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.sensor}</td>
+                    <td>${item.minutos}</td>
+                    <td>${item.porcentaje}%</td>
+                </tr>
+            `;
+        });
+    }
 }
 
 // ------------------- Alertas tendencia (line chart) -------------------

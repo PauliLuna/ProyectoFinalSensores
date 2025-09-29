@@ -247,13 +247,18 @@
                             <tr>
                                 <th>Sensor</th>
                                 <th>Minutos</th>
-                                <th>%</th>
+                                <th>%
+                                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                                        <img src="assets/informacion.png" alt="info" style="width: 14px; height: 14px;">
+                                        <span class="alias-tooltip-text" style="width: 220px;">
+                                            <span class="alias-tooltip-arrow"></span>
+                                            Porcentaje de tiempo observado en que el sensor estuvo fuera de su rango de temperatura.
+                                        </span>
+                                    </span>
+                                </th>
                             </tr>
                             </thead>
-                            <tbody>
-                                <tr><td>Sensor X</td><td>180</td><td>26.4%</td></tr>
-                                <tr><td>Sensor Y</td><td>145</td><td>21.3%</td></tr>
-                                <tr><td>Sensor Z</td><td>132</td><td>18.7%</td></tr>
+                            <tbody id="ranking-sensores-fuera-tiempo">
                             </tbody>
                         </table>
                 </div>
