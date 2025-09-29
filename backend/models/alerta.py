@@ -38,7 +38,7 @@ def q_alerta_abierta_temp(mongo, nro_sensor, id_empresa):
     filtro = {
         "idSensor": str(nro_sensor),
         "tipoAlerta": "Temperatura fuera de rango",
-        "idEmpresa": str(id_empresa),
+        "idEmpresa": id_empresa,
         "estadoAlerta": "abierta",
         "$or": [
             {"duracionMinutos": None},
@@ -60,7 +60,7 @@ def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
     filtro = {
         "idSensor": str(nro_sensor),
         "tipoAlerta": "Sensor offline",
-        "idEmpresa": str(id_empresa),
+        "idEmpresa": id_empresa,
         "estadoAlerta": "abierta",
         "$or": [
             {"duracionMinutos": None},
@@ -105,6 +105,6 @@ def update_description_offline(mongo, alerta_id, descripcion):
     mongo.db.alertas.update_one(
         {"_id": alerta_id},
         {"$set": {
-            "descripcionAlerta": descripcion
+            "descripcion": descripcion
         }}
     )

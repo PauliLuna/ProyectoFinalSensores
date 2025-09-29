@@ -154,7 +154,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
             # 2️⃣ Obtener mediciones no analizadas
             last_date = checkpoint["fechaUltimaAnalizada"] if checkpoint else None
             print(f"[DEBUG] Checkpoint para sensor {nro_sensor}: {last_date}")
-            mediciones = get_mediciones(mongo, nro_sensor, last_date)
+            mediciones = get_mediciones(mongo, nro_sensor, last_date) #Forma ascendente
 
             print(f"[DEBUG] Sensor {sensor['nroSensor']} - Mediciones encontradas: {len(mediciones)}")
 
@@ -184,7 +184,8 @@ def chequear_alertas_criticas(mongo, id_empresa):
                 if prev_med is None:
                     # Si el sensor está inactivo y hay alerta offline abierta, cerrarla y reactivar sensor
                     alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
-                    if sensor.get("estado") == "inactive" and alerta_abierta:
+                    print(f"[DEBUG] Alerta abierta offline para sensor {sensor['nroSensor']} - {sensor['estado']}: {alerta_abierta}")
+                    if sensor['estado'] == "OFFLINE" and alerta_abierta:
                         inicio = alerta_abierta["fechaHoraAlerta"]
                         duracion = (fecha_actual - inicio).total_seconds() / 60
                         duracion = round(duracion, 1)
@@ -274,7 +275,7 @@ def _obtener_emails_asignados(mongo, nro_sensor, criticidad):
         if usuario and usuario.get("email"):
             prefs = usuario.get("notificacionesAlertas", {})
             print(f"[DEBUG] Preferencias de notificación: {prefs}")
-            # criticidad puede ser "Crítica", "Preventiva", etc.
+            # criticidad puede ser "Crítica", "Preventiva", etc. --> AQUI 
             crit_key = criticidad.lower().replace("í", "i").replace("á", "a")
             if prefs.get(crit_key, False):
                 emails.append(usuario["email"])
@@ -663,6 +664,8 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
     # 1) Buscar la última alerta abierta una única vez
     alerta_abierta = q_alerta_abierta_temp(mongo, sensor["nroSensor"], id_empresa)
 
+    print(f"[DEBUG] Alerta abierta temp para sensor {sensor['nroSensor']}: {alerta_abierta}")
+
     # 2) ¿Está la temperatura fuera de rango?
     if temp > valor_max or temp < valor_min:
         print(f"⚠️ ALERTA: temp={temp}°C fuera de rango ({valor_min}, {valor_max}) para sensor {sensor['nroSensor']}")
@@ -694,7 +697,7 @@ def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_ac
 
             emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
             emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")    
-            # Unir ambas listas de emails y eliminar duplicados
+            # Unir ambas listas de emails y eliminar duplicados --> AQUI
             emails = list(set(emails_asignados + emails_super_admins))
 
             if emails:
@@ -961,7 +964,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
 
     # 1. Caso: Todos los sensores están inactivos
-    if all(s["estado"] == "inactive" for s in sensores_misma_dir):
+    if all(s["estado"] == "OFFLINE" for s in sensores_misma_dir):
         if not alerta_existente:
             # Si no existe una alerta pendiente, se crea una nueva.
             print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
