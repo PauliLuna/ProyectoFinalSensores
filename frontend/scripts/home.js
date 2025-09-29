@@ -478,37 +478,94 @@ function renderAlertasTendenciaChart(periodo, alertasFiltradas) {
 
 // ------------------- Small helpers kept from original -------------------
 function addBarTooltips(counts) {
-    const bar = document.querySelector('.bar');
-    if (!bar) return;
+  const bar = document.querySelector('.bar');
+  if (!bar) return;
 
-    // Elimina tooltips previos
-    document.querySelectorAll('.bar-tooltip').forEach(t => t.remove());
+  const tipos = ['critica', 'informativa', 'preventiva', 'seguridad'];
 
-    ['critica', 'informativa', 'preventiva', 'seguridad'].forEach(tipo => {
-        const el = bar.querySelector('.' + tipo);
-        if (!el) return;
+  tipos.forEach(tipo => {
+    const el = bar.querySelector('.' + tipo);
+    if (!el) return;
 
-        el.addEventListener('mouseenter', function(e) {
-            let tooltip = document.createElement('div');
-            tooltip.className = 'bar-tooltip';
-            tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
-            document.body.appendChild(tooltip);
+    // Si ya había handlers, los removemos primero (para evitar duplicados)
+    if (el._barHandlers) {
+      el.removeEventListener('pointerenter', el._barHandlers.onEnter);
+      el.removeEventListener('pointerleave', el._barHandlers.onLeave);
+      el.removeEventListener('pointermove', el._barHandlers.onMove);
+      window.removeEventListener('scroll', el._barHandlers.onScroll);
+      window.removeEventListener('resize', el._barHandlers.onScroll);
+      if (el._barTooltip) { el._barTooltip.remove(); el._barTooltip = null; }
+      el._barHandlers = null;
+    }
 
-            // Posiciona el tooltip cerca del mouse
-            const rect = el.getBoundingClientRect();
-            tooltip.style.left = (rect.left + rect.width / 3 - tooltip.offsetWidth / 2) + 'px';
-            tooltip.style.top = (rect.top - 32) + 'px';
-            tooltip.style.opacity = 1;
-            el._barTooltip = tooltip;
-        });
+    // Handlers
+    const onEnter = (ev) => {
+      // debug
+      // console.log('ENTER', tipo);
 
-        el.addEventListener('mouseleave', function(e) {
-            if (el._barTooltip) {
-                el._barTooltip.remove();
-                el._barTooltip = null;
-            }
-        });
-    });
+      // crear tooltip
+      const tooltip = document.createElement('div');
+      tooltip.className = 'bar-tooltip';
+      tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
+      tooltip.style.position = 'absolute';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.opacity = '1';
+
+      // append to body para que no lo recorte ningún contenedor
+      document.body.appendChild(tooltip);
+      el._barTooltip = tooltip;
+
+      // posición inicial
+      positionTooltip(el, tooltip);
+    };
+
+    const onMove = (ev) => {
+      // reposicionar mientras mueves dentro del segmento
+      if (el._barTooltip) positionTooltip(el, el._barTooltip, ev);
+    };
+
+    const onLeave = () => {
+      // debug
+      // console.log('LEAVE', tipo);
+      if (el._barTooltip) {
+        el._barTooltip.remove();
+        el._barTooltip = null;
+      }
+    };
+
+    const onScrollOrResize = () => {
+      if (el._barTooltip) {
+        el._barTooltip.remove();
+        el._barTooltip = null;
+      }
+    };
+
+    // attach
+    el.addEventListener('pointerenter', onEnter);
+    el.addEventListener('pointerleave', onLeave);
+    el.addEventListener('pointermove', onMove);
+    window.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize);
+
+    el._barHandlers = { onEnter, onLeave, onMove, onScroll: onScrollOrResize };
+  });
+
+  // helper: posiciona tooltip respecto al segmento (usa page coords)
+  function positionTooltip(el, tooltip, ev) {
+    const rect = el.getBoundingClientRect();
+    // centro del segmento
+    const centerX = rect.left + rect.width / 2 + window.scrollX;
+    // colocarlo encima del segmento (8px de separación)
+    // medimos altura del tooltip (puede ser 0 antes de render)
+    tooltip.style.left = centerX + 'px';
+    // dejar tiempo al navegador para calcular tamaño si aún no está
+    const tRect = tooltip.getBoundingClientRect();
+    const top = rect.top + window.scrollY - tRect.height - 8;
+    tooltip.style.top = top + 'px';
+    // centrar horizontalmente
+    tooltip.style.transform = 'translateX(-50%)';
+    tooltip.style.zIndex = '2147483647';
+  }
 }
 
 // ------------------- UTIL: Fecha accordion & user table functions kept -------------------
