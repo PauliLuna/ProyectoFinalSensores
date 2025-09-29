@@ -32,7 +32,7 @@
     <div class="main-content">
 
         <!-- Título centrado -->
-        <h1 class="centered-title" style="margin-top: 30px; margin-bottom: 15px;">Executive Dashboard</h1>
+        <h1 class="centered-title" style="margin-top: 30px; margin-bottom: 15px;">Dashboard Ejecutivo</h1>
 
         <div class="filterContainer" style="margin-bottom: 30px; display: flex; flex-direction: column; gap: 12px;">
             <!-- 1° fila: KPIs -->
@@ -45,7 +45,7 @@
                         <div style="font-size:1rem; font-weight:500;">Total Sensores Instalados</div>
                         <div style="margin-top:6px;">
                             <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
-                                <span id="porcentaje-total-sensores" class="legend-pct" style="color: #444;"></span>
+                                <span id="porcentaje-total-sensores" class="legend-pct" style="color: #FFF;"></span>
                                 <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
                                 <span class="alias-tooltip-text">
                                     <span class="alias-tooltip-arrow"></span>
@@ -60,7 +60,7 @@
                         <div style="font-size:1rem; font-weight:500;">Sensores en Rango</div>
                         <div style="margin-top:6px;">
                             <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
-                                <span id="porcentaje-en-rango" class="legend-pct" style="color: #fff;"></span>
+                                <span id="porcentaje-en-rango" class="legend-pct" style="color: #444;"></span>
                                 <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
                                 <span class="alias-tooltip-text">
                                     <span class="alias-tooltip-arrow"></span>
@@ -86,11 +86,11 @@
                     </div>
                     <!-- Sensores sin Señal (offline) -->
                     <div class="kpi-card kpi-card-home offline" style="min-width:250px; max-width:250px; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
-                        <p id="sensores-fallo" class="kpi-alerta-numero" style="margin-bottom: 0;"></p>
-                        <div style="font-size:1rem; font-weight:500;">Sensores sin Señal (offline)</div>
+                        <p id="sensores-fallo" class="kpi-alerta-numero" style="margin-bottom: 0; color:  #444;"></p>
+                        <div style="font-size:1rem; font-weight:500; color:  #444;">Sensores sin Señal (offline)</div>
                         <div style="margin-top:6px;">
                             <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
-                                <span id="porcentaje-retraso-envio" class="legend-pct" style="color: #fff;"></span>
+                                <span id="porcentaje-retraso-envio" class="legend-pct" style="color:  #444;"></span>
                                 <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
                                 <span class="alias-tooltip-text">
                                     <span class="alias-tooltip-arrow"></span>
@@ -105,7 +105,7 @@
             <!-- 2° fila: porcentaje de alertas del mes + Filtro de fecha a la derecha -->
             <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                 <!-- Porcentaje de alertas del mes a la izquierda -->
-                <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative !important;">
                     <strong id="porcentajeAlertasMes"></strong>
                     <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px; margin-left: 6px;">
                     <span class="alias-tooltip-text">
@@ -209,13 +209,30 @@
                         </div>
 
                         <div class="mt-4">
-                            <div class="d-flex justify-content-between">
+                            <!-- Tiempo Promedio Fuera de Rango -->
+                            <div class="d-flex justify-content-between align-items-center">
                                 <span>Tiempo Promedio Fuera de Rango</span>
-                                <span><strong>-- min</strong></span>
+                                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                                        <strong id="tiempoPromFueraRango">109.0 min</strong>
+                                        <img src="assets/informacion.png" alt="info" style="width: 14px; height: 14px; margin-left: 6px;">
+                                        <span class="alias-tooltip-text" style="width: 220px;">
+                                            <span class="alias-tooltip-arrow"></span>
+                                            Promedio de minutos que los sensores permanecieron fuera de su rango de temperatura por alerta cerrada.
+                                    </span>
+                                </span>
                             </div>
-                            <div class="d-flex justify-content-between">
+
+                            <!-- Tiempo Promedio desde Última Medición -->
+                            <div class="d-flex justify-content-between align-items-center">
                                 <span>Tiempo Promedio desde Última Medición</span>
-                                <span><strong>-- min</strong></span>
+                                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                                        <strong id="tiempoPromUltimaMed">68.5 min</strong>
+                                        <img src="assets/informacion.png" alt="info" style="width: 14px; height: 14px; margin-left: 6px;">
+                                        <span class="alias-tooltip-text" style="width: 220px;">
+                                            <span class="alias-tooltip-arrow"></span>
+                                            Promedio de minutos transcurridos desde la última medición recibida de cada sensor.
+                                        </span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -247,13 +264,18 @@
                             <tr>
                                 <th>Sensor</th>
                                 <th>Minutos</th>
-                                <th>%</th>
+                                <th>%
+                                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                                        <img src="assets/informacion.png" alt="info" style="width: 14px; height: 14px;">
+                                        <span class="alias-tooltip-text" style="width: 220px;">
+                                            <span class="alias-tooltip-arrow"></span>
+                                            Porcentaje de tiempo observado en que el sensor estuvo fuera de su rango de temperatura.
+                                        </span>
+                                    </span>
+                                </th>
                             </tr>
                             </thead>
-                            <tbody>
-                                <tr><td>Sensor X</td><td>180</td><td>26.4%</td></tr>
-                                <tr><td>Sensor Y</td><td>145</td><td>21.3%</td></tr>
-                                <tr><td>Sensor Z</td><td>132</td><td>18.7%</td></tr>
+                            <tbody id="ranking-sensores-fuera-tiempo">
                             </tbody>
                         </table>
                 </div>

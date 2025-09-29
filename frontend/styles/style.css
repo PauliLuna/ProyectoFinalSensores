@@ -1192,21 +1192,33 @@ button[disabled] {
     background: #3b82f6;
   }
 
+  .bar {
+    
+    display: flex;
+    height: 20px; /* ajustá según tu diseño */
+    overflow: visible; /* importante que no recorte */
+   }
+
   .bar-tooltip {
-    position: absolute;
+
+    transform: translateX(-50%);
     background: #1D3557;
     color: #fff;
     padding: 6px 12px;
     border-radius: 6px;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     white-space: nowrap;
-    z-index: 100;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
+    z-index: 9999; /* ponelo bien alto */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25); 
+
 }
+
 .bar .critica, .bar .informativa, .bar .preventiva, .bar .seguridad {
-    position: relative;
+
+    min-width: 12px; /* 👈 evita que se queden en 0 y no puedas hacer hover */
+    height: 100%;
+
 }
 
   .legend-alerts {

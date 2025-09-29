@@ -43,7 +43,7 @@ async function initHome() {
 
     // fetch data and render KPI cards (these always reflect current state)
     await cargarKPIs();
-    renderPorcentajeAlertasMes(alertasData);
+    renderPorcentajeAlertasMes();
 
     // initial filtered render (uses selected period or default 'todos')
     const periodSelect = document.getElementById('periodSelectHome');
@@ -126,6 +126,48 @@ function renderKPIs(sensores, alertas) {
     document.getElementById('porcentaje-retraso-envio').textContent = porcentajeRetraso + "%";
 }
 
+// ------------------- Porcentaje alertas mes  -------------------
+function renderPorcentajeAlertasMes() {
+    // Calcula el porcentaje de alertas del mes actual vs anterior
+    // Usa SIEMPRE alertasData (todas las alertas)
+        if (!alertasData || alertasData.length === 0) {
+        document.getElementById('porcentajeAlertasMes').textContent = '';
+        return;
+    }
+    const meses = {};
+    alertasData.forEach(a => {
+        const fecha = new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta);
+        if (isNaN(fecha.getTime())) return;
+        const key = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2,'0')}`;
+        meses[key] = (meses[key] || 0) + 1;
+    });
+    const keys = Object.keys(meses).sort().reverse(); // newest first
+    const spanPct = document.getElementById('porcentajeAlertasMes');
+    if (keys.length < 2 || !meses[keys[1]]) {
+        spanPct.textContent = "No se cuenta con datos del mes anterior para calcular el porcentaje de variación.";
+        spanPct.classList.remove("text-success", "text-danger");
+        return;
+    }
+
+    const actual = meses[keys[0]];
+    const anterior = meses[keys[1]];
+    const pct = (((actual - anterior) / anterior) * 100).toFixed(1);
+
+    if (pct > 0) {
+        spanPct.textContent = `⬆ ${pct}% respecto al mes anterior`;
+        spanPct.classList.remove("text-success");
+        spanPct.classList.add("text-danger");
+    } else if (pct < 0) {
+        spanPct.textContent = `⬇ ${Math.abs(pct)}% respecto al mes anterior`;
+        spanPct.classList.remove("text-danger");
+        spanPct.classList.add("text-success");
+    } else {
+        spanPct.textContent = `= ${pct}% respecto al mes anterior`;
+        spanPct.classList.remove("text-success", "text-danger");
+    }
+}
+
+
 // ------------------- Global date-filtering logic -------------------
 function getFilteredAlertasForPeriod(periodo) {
     if (!alertasData || alertasData.length === 0) return [];
@@ -156,8 +198,9 @@ function renderContenidoFiltrable(periodo) {
     renderAlertaSucursalesChart(alertasFiltradas, sensoresData);
     renderAlertasRecurrentesTable(alertasFiltradas, sensoresData);
     renderRankingSensores(alertasFiltradas);
-
+    renderRankingFueraRango(alertasFiltradas)
     cargarAlertasParaBarra(alertasFiltradas);
+    renderKPITiempos(alertasFiltradas);
     renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
 }
 
@@ -192,44 +235,42 @@ function cargarAlertasParaBarra(alertas) {
     addBarTooltips(counts);
 }
 
-// ------------------- Porcentaje alertas mes (usando alertas filtradas) -------------------
-function renderPorcentajeAlertasMes(alertas) {
-    // Calcula el porcentaje de alertas del mes actual vs anterior
+function renderKPITiempos(alertasFiltradas) {
+    // Filtra solo alertas cerradas de tipo "Temperatura fuera de rango"
+    const fueraRango = alertasFiltradas.filter(a =>
+        a.tipoAlerta === "Temperatura fuera de rango" &&
+        a.estadoAlerta === "cerrada" &&
+        a.duracionMinutos != null
+    );
 
+    // Promedio fuera de rango (minutos)
+    const promFueraRango = fueraRango.length
+        ? (fueraRango.reduce((acc, a) => acc + Math.max(0, Number(a.duracionMinutos)), 0) / fueraRango.length).toFixed(1)
+        : '--';
 
-    if (!alertas || alertas.length === 0) {
-        document.getElementById('porcentajeAlertasMes').textContent = '';
-        return;
-    }
-    const meses = {};
-    alertas.forEach(a => {
+    // Tiempo Promedio desde Última Medición (minutos)
+    const ahora = new Date();
+    const ultimasPorSensor = {};
+    alertasFiltradas.forEach(a => {
+        const id = a.idSensor;
         const fecha = new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta);
-        if (isNaN(fecha.getTime())) return;
-        const key = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2,'0')}`;
-        meses[key] = (meses[key] || 0) + 1;
+        if (!id || isNaN(fecha.getTime())) return;
+        if (!ultimasPorSensor[id] || fecha > ultimasPorSensor[id]) {
+            ultimasPorSensor[id] = fecha;
+        }
     });
-    const keys = Object.keys(meses).sort().reverse(); // newest first
-    if (keys.length < 2) {
-        document.getElementById('porcentajeAlertasMes').textContent = '';
-        return;
-    }
 
-    const actual = meses[keys[0]];
-    const anterior = meses[keys[1]];
-    const pct = anterior ? (((actual - anterior) / anterior) * 100).toFixed(1) : 0;
-    const spanPct = document.getElementById('porcentajeAlertasMes');
-    
-    if (pct > 0) {
-        spanPct.textContent = `⬆ ${pct}% respecto al mes anterior`;
-        spanPct.classList.remove("text-success");
-        spanPct.classList.add("text-danger");
-    } else if (pct < 0) {
-        spanPct.textContent = `⬇ ${Math.abs(pct)}% respecto al mes anterior`;
-        spanPct.classList.remove("text-danger");
-        spanPct.classList.add("text-success");
-    } else {
-        spanPct.textContent = `= ${pct}% respecto al mes anterior`;
-        spanPct.classList.remove("text-success", "text-danger");
+    const difs = Object.values(ultimasPorSensor).map(f => Math.max(0, (ahora - f) / 60000));
+    const promUltimaMed = difs.length
+        ? (difs.reduce((acc, v) => acc + v, 0) / difs.length).toFixed(1)
+        : '--';
+
+    // Render en el HTML
+    const kpiCard = document.querySelector('.alert-kpi-card');
+    if (kpiCard) {
+        const dFlexs = kpiCard.querySelectorAll('.d-flex');
+        if (dFlexs[1]) dFlexs[1].querySelector('strong').textContent = `${promFueraRango} min`;
+        if (dFlexs[2]) dFlexs[2].querySelector('strong').textContent = `${promUltimaMed} min`;
     }
 }
 
@@ -272,6 +313,57 @@ function renderRankingSensores(alertasFiltradas) {
         `;
         tbody.innerHTML += row;
     });
+}
+
+function renderRankingFueraRango(alertasFiltradas) {
+    // Agrupa por sensor: suma minutos de alertas cerradas de tipo "Temperatura fuera de rango"
+    const porSensor = {};
+    alertasFiltradas.forEach(a => {
+        if (a.tipoAlerta === "Temperatura fuera de rango" &&
+            a.estadoAlerta === "cerrada" &&
+            a.duracionMinutos != null
+        ) {
+            const id = a.idSensor || "Desconocido";
+            porSensor[id] = (porSensor[id] || 0) + Math.max(0, Number(a.duracionMinutos));
+        }
+    });
+
+    // Para calcular %: se necesita el período total observado
+    const ahora = new Date();
+    const fechaMin = alertasFiltradas.reduce((min, a) => {
+        const f = new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta);
+        return (!isNaN(f) && f < min) ? f : min;
+    }, ahora);
+    const minutosTotales = Math.max(1, (ahora - fechaMin) / 60000); // minutos observados
+
+    // Ranking top 3
+    const ranking = Object.entries(porSensor)
+        .map(([id, min]) => ({
+            sensor: id,
+            minutos: min,
+            porcentaje: Math.min(100, (min / minutosTotales) * 100).toFixed(1)
+        }))
+        .sort((a, b) => b.minutos - a.minutos)
+        .slice(0, 3);
+
+    // Render en la tabla
+    const tbody = document.getElementById("ranking-sensores-fuera-tiempo");
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (ranking.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">No hay datos</td></tr>';
+    } else {
+        ranking.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.sensor}</td>
+                    <td>${item.minutos}</td>
+                    <td>${item.porcentaje}%</td>
+                </tr>
+            `;
+        });
+    }
 }
 
 // ------------------- Alertas tendencia (line chart) -------------------
@@ -386,37 +478,94 @@ function renderAlertasTendenciaChart(periodo, alertasFiltradas) {
 
 // ------------------- Small helpers kept from original -------------------
 function addBarTooltips(counts) {
-    const bar = document.querySelector('.bar');
-    if (!bar) return;
+  const bar = document.querySelector('.bar');
+  if (!bar) return;
 
-    // Elimina tooltips previos
-    document.querySelectorAll('.bar-tooltip').forEach(t => t.remove());
+  const tipos = ['critica', 'informativa', 'preventiva', 'seguridad'];
 
-    ['critica', 'informativa', 'preventiva', 'seguridad'].forEach(tipo => {
-        const el = bar.querySelector('.' + tipo);
-        if (!el) return;
+  tipos.forEach(tipo => {
+    const el = bar.querySelector('.' + tipo);
+    if (!el) return;
 
-        el.addEventListener('mouseenter', function(e) {
-            let tooltip = document.createElement('div');
-            tooltip.className = 'bar-tooltip';
-            tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
-            document.body.appendChild(tooltip);
+    // Si ya había handlers, los removemos primero (para evitar duplicados)
+    if (el._barHandlers) {
+      el.removeEventListener('pointerenter', el._barHandlers.onEnter);
+      el.removeEventListener('pointerleave', el._barHandlers.onLeave);
+      el.removeEventListener('pointermove', el._barHandlers.onMove);
+      window.removeEventListener('scroll', el._barHandlers.onScroll);
+      window.removeEventListener('resize', el._barHandlers.onScroll);
+      if (el._barTooltip) { el._barTooltip.remove(); el._barTooltip = null; }
+      el._barHandlers = null;
+    }
 
-            // Posiciona el tooltip cerca del mouse
-            const rect = el.getBoundingClientRect();
-            tooltip.style.left = (rect.left + rect.width / 3 - tooltip.offsetWidth / 2) + 'px';
-            tooltip.style.top = (rect.top - 32) + 'px';
-            tooltip.style.opacity = 1;
-            el._barTooltip = tooltip;
-        });
+    // Handlers
+    const onEnter = (ev) => {
+      // debug
+      // console.log('ENTER', tipo);
 
-        el.addEventListener('mouseleave', function(e) {
-            if (el._barTooltip) {
-                el._barTooltip.remove();
-                el._barTooltip = null;
-            }
-        });
-    });
+      // crear tooltip
+      const tooltip = document.createElement('div');
+      tooltip.className = 'bar-tooltip';
+      tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
+      tooltip.style.position = 'absolute';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.opacity = '1';
+
+      // append to body para que no lo recorte ningún contenedor
+      document.body.appendChild(tooltip);
+      el._barTooltip = tooltip;
+
+      // posición inicial
+      positionTooltip(el, tooltip);
+    };
+
+    const onMove = (ev) => {
+      // reposicionar mientras mueves dentro del segmento
+      if (el._barTooltip) positionTooltip(el, el._barTooltip, ev);
+    };
+
+    const onLeave = () => {
+      // debug
+      // console.log('LEAVE', tipo);
+      if (el._barTooltip) {
+        el._barTooltip.remove();
+        el._barTooltip = null;
+      }
+    };
+
+    const onScrollOrResize = () => {
+      if (el._barTooltip) {
+        el._barTooltip.remove();
+        el._barTooltip = null;
+      }
+    };
+
+    // attach
+    el.addEventListener('pointerenter', onEnter);
+    el.addEventListener('pointerleave', onLeave);
+    el.addEventListener('pointermove', onMove);
+    window.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize);
+
+    el._barHandlers = { onEnter, onLeave, onMove, onScroll: onScrollOrResize };
+  });
+
+  // helper: posiciona tooltip respecto al segmento (usa page coords)
+  function positionTooltip(el, tooltip, ev) {
+    const rect = el.getBoundingClientRect();
+    // centro del segmento
+    const centerX = rect.left + rect.width / 2 + window.scrollX;
+    // colocarlo encima del segmento (8px de separación)
+    // medimos altura del tooltip (puede ser 0 antes de render)
+    tooltip.style.left = centerX + 'px';
+    // dejar tiempo al navegador para calcular tamaño si aún no está
+    const tRect = tooltip.getBoundingClientRect();
+    const top = rect.top + window.scrollY - tRect.height - 8;
+    tooltip.style.top = top + 'px';
+    // centrar horizontalmente
+    tooltip.style.transform = 'translateX(-50%)';
+    tooltip.style.zIndex = '2147483647';
+  }
 }
 
 // ------------------- UTIL: Fecha accordion & user table functions kept -------------------
