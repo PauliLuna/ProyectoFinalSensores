@@ -242,13 +242,13 @@ function renderKPITiempos(alertasFiltradas) {
         a.estadoAlerta === "cerrada" &&
         a.duracionMinutos != null
     );
-    // Promedio fuera de rango
+
+    // Promedio fuera de rango (minutos)
     const promFueraRango = fueraRango.length
-        ? (fueraRango.reduce((acc, a) => acc + Number(a.duracionMinutos), 0) / fueraRango.length).toFixed(1)
+        ? (fueraRango.reduce((acc, a) => acc + Math.max(0, Number(a.duracionMinutos)), 0) / fueraRango.length).toFixed(1)
         : '--';
 
-    // Para "Tiempo Promedio desde Última Medición" por sensor:
-    // Tomá la última alerta de cada sensor (de cualquier tipo), calculá minutos desde ahora
+    // Tiempo Promedio desde Última Medición (minutos)
     const ahora = new Date();
     const ultimasPorSensor = {};
     alertasFiltradas.forEach(a => {
@@ -259,7 +259,8 @@ function renderKPITiempos(alertasFiltradas) {
             ultimasPorSensor[id] = fecha;
         }
     });
-    const difs = Object.values(ultimasPorSensor).map(f => (ahora - f) / 60000);
+
+    const difs = Object.values(ultimasPorSensor).map(f => Math.max(0, (ahora - f) / 60000));
     const promUltimaMed = difs.length
         ? (difs.reduce((acc, v) => acc + v, 0) / difs.length).toFixed(1)
         : '--';

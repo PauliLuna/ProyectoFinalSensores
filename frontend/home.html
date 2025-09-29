@@ -209,13 +209,30 @@
                         </div>
 
                         <div class="mt-4">
-                            <div class="d-flex justify-content-between">
+                            <!-- Tiempo Promedio Fuera de Rango -->
+                            <div class="d-flex justify-content-between align-items-center">
                                 <span>Tiempo Promedio Fuera de Rango</span>
-                                <span><strong>-- min</strong></span>
+                                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                                        <strong id="tiempoPromFueraRango">109.0 min</strong>
+                                        <img src="assets/informacion.png" alt="info" style="width: 14px; height: 14px; margin-left: 6px;">
+                                        <span class="alias-tooltip-text" style="width: 220px;">
+                                            <span class="alias-tooltip-arrow"></span>
+                                            Promedio de minutos que los sensores permanecieron fuera de su rango de temperatura por alerta cerrada.
+                                    </span>
+                                </span>
                             </div>
-                            <div class="d-flex justify-content-between">
+
+                            <!-- Tiempo Promedio desde Última Medición -->
+                            <div class="d-flex justify-content-between align-items-center">
                                 <span>Tiempo Promedio desde Última Medición</span>
-                                <span><strong>-- min</strong></span>
+                                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative;">
+                                        <strong id="tiempoPromUltimaMed">68.5 min</strong>
+                                        <img src="assets/informacion.png" alt="info" style="width: 14px; height: 14px; margin-left: 6px;">
+                                        <span class="alias-tooltip-text" style="width: 220px;">
+                                            <span class="alias-tooltip-arrow"></span>
+                                            Promedio de minutos transcurridos desde la última medición recibida de cada sensor.
+                                        </span>
+                                </span>
                             </div>
                         </div>
                     </div>
