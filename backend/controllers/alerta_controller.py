@@ -11,7 +11,8 @@ from models.alerta import (
     update_checkpoint_informativas,
     get_alertas_sensor,
     update_checkpoint,
-    update_description_offline)
+    update_description_offline,
+    get_alertas_seguridad)
 from models.sensor import(
     get_mediciones,
     get_ultima_medicion,
@@ -38,27 +39,18 @@ def obtener_alertas(mongo):
     tipo = request.args.get("tipoAlerta")
     alertas = get_alertas_filtradas(mongo, id_empresa, tipo)
     
-    # Convertir idSensor a int para el join
+    # Recolectar IDs válidos para join con sensores
     sensores_ids_validos = set()
     for alerta in alertas:
-        # Asegurarse de que el campo 'idSensor' existe en la alerta
-        if "idSensor" in alerta:
-            valor_sensor = alerta["idSensor"]
-            
-            # Caso 1: el valor es un array (list) de IDs
-            if isinstance(valor_sensor, list):
-                for sensor_id in valor_sensor:
-                    # Verificar que el elemento del array es un string de dígitos
-                    if isinstance(sensor_id, str) and sensor_id.isdigit():
-                        sensores_ids_validos.add(int(sensor_id))
-            
-            # Caso 2: el valor es un solo ID como string
-            elif isinstance(valor_sensor, str) and valor_sensor.isdigit():
-                sensores_ids_validos.add(int(valor_sensor))
+        valor_sensor = alerta.get("idSensor")
+        if isinstance(valor_sensor, list):
+            for sensor_id in valor_sensor:
+                if sensor_id is not None and isinstance(sensor_id, str) and sensor_id.isdigit():
+                    sensores_ids_validos.add(int(sensor_id))
+        elif valor_sensor is not None and isinstance(valor_sensor, str) and valor_sensor.isdigit():
+            sensores_ids_validos.add(int(valor_sensor))
     
     sensores_ids = list(sensores_ids_validos)
-
-
     sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
     sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
     sensor_direccion = {int(s["nroSensor"]): s.get("direccion", "") for s in sensores}
@@ -70,13 +62,36 @@ def obtener_alertas(mongo):
     for alerta in alertas:
         try:
             alerta["_id"] = str(alerta["_id"])
-            # Solo asigna alias y direccion si la alerta NO es "Caída de energía eléctrica"
-            if alerta.get("tipoAlerta") == "Caída de energía eléctrica":
-                # Ya tiene 'direccion' en la alerta, no sobrescribir
-                pass
+
+            # Seguridad: no tiene idSensor, alias ni direccion
+            if alerta.get("criticidad", "").lower() == "seguridad":
+                alerta["idSensor"] = "N/A"
+                alerta["alias"] = "N/A"
+                alerta["direccion"] = ""
+            # Caída de energía eléctrica: idSensor es array
+            elif alerta.get("tipoAlerta") == "Caída de energía eléctrica":
+                sensores_info = []
+                valor_sensor = alerta.get("idSensor", [])
+                for sensor_id in valor_sensor:
+                    if sensor_id is not None and isinstance(sensor_id, str) and sensor_id.isdigit():
+                        sid = int(sensor_id)
+                        sensores_info.append({
+                            "idSensor": sensor_id,
+                            "alias": sensor_alias.get(sid, ""),
+                            "direccion": sensor_direccion.get(sid, "")
+                        })
+                alerta["sensores_info"] = sensores_info
+                # No sobrescribas 'direccion' si ya existe en la alerta
+            # Alertas normales: idSensor único
             else:
-                alerta["alias"] = sensor_alias.get(int(alerta.get("idSensor")), "")
-                alerta["direccion"] = sensor_direccion.get(int(alerta.get("idSensor")), "")
+                valor_sensor = alerta.get("idSensor")
+                if valor_sensor is not None and isinstance(valor_sensor, str) and valor_sensor.isdigit():
+                    sid = int(valor_sensor)
+                    alerta["alias"] = sensor_alias.get(sid, "")
+                    alerta["direccion"] = sensor_direccion.get(sid, "")
+                else:
+                    alerta["alias"] = ""
+                    alerta["direccion"] = ""
 
             # Convertir fechaHoraAlerta a zona local
             fecha_utc = alerta["fechaHoraAlerta"]
@@ -97,7 +112,11 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
         return jsonify({"error": "Empresa no encontrada"}), 401
 
     # Busca solo las alertas de ese sensor y empresa
-    alertas = get_alertas_sensor(mongo, id_empresa, sensor_id)
+    alertas_sensor = get_alertas_sensor(mongo, id_empresa, sensor_id) # ACA
+
+    alertas_seguridad = get_alertas_seguridad(mongo, id_empresa)
+
+    alertas = alertas_sensor + alertas_seguridad   
 
     # Definimos la zona horaria UTC y la zona de Argentina.
     zona_utc = pytz.timezone('UTC')

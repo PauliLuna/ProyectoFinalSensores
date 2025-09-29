@@ -98,7 +98,16 @@ def update_checkpoint_informativas(mongo, id_empresa, nro_sensor, fecha_ultima_a
 def get_alertas_sensor(mongo, id_empresa, sensor_id):
     return list(mongo.db.alertas.find({
         "idEmpresa": id_empresa,
-        "idSensor": {"$in": [sensor_id]}
+        "$or": [
+            {"idSensor": str(sensor_id)},
+            {"idSensor": {"$elemMatch": {"$eq": str(sensor_id)}}}
+        ]
+    }).sort("fechaHoraAlerta", -1))
+
+def get_alertas_seguridad(mongo, id_empresa):
+    return list(mongo.db.alertas.find({
+        "idEmpresa": id_empresa,
+        "criticidad": "Seguridad"
     }).sort("fechaHoraAlerta", -1))
 
 def update_description_offline(mongo, alerta_id, descripcion):
