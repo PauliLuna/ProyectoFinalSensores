@@ -126,73 +126,7 @@ function renderKPIs(sensores, alertas) {
     document.getElementById('porcentaje-retraso-envio').textContent = porcentajeRetraso + "%";
 }
 
-// ------------------- Global date-filtering logic -------------------
-function getFilteredAlertasForPeriod(periodo) {
-    if (!alertasData || alertasData.length === 0) return [];
-
-    const ahora = new Date();
-    let fechaInicio = null;
-    switch (periodo) {
-        case '24h': fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000); break;
-        case '7d': fechaInicio = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-        case '30d': fechaInicio = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-        default: fechaInicio = null;
-    }
-    if (!fechaInicio) return [...alertasData];
-
-    return alertasData.filter(a => {
-        const raw = a.fechaHoraAlerta?.$date || a.fechaHoraAlerta;
-        const fecha = new Date(raw);
-        if (isNaN(fecha.getTime())) return false;
-        return fecha >= fechaInicio && fecha <= ahora;
-    });
-}
-
-function renderContenidoFiltrable(periodo) {
-    const alertasFiltradas = getFilteredAlertasForPeriod(periodo);
-
-    // all components below depend on this filtered set
-    renderAlertasTendenciaChart(periodo, alertasFiltradas);
-    renderAlertaSucursalesChart(alertasFiltradas, sensoresData);
-    renderAlertasRecurrentesTable(alertasFiltradas, sensoresData);
-    renderRankingSensores(alertasFiltradas);
-
-    cargarAlertasParaBarra(alertasFiltradas);
-    renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
-}
-
-// ------------------- Bar (alert distribution) -------------------
-function cargarAlertasParaBarra(alertas) {
-    // consumes filtered alerts (no fetch inside)
-    const counts = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
-    if (!alertas) alertas = [];
-
-    alertas.forEach(a => {
-        let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        if (crit === 'critica') counts.critica++;
-        else if (crit === 'informativa') counts.informativa++;
-        else if (crit === 'preventiva') counts.preventiva++;
-        else if (crit === 'seguridad') counts.seguridad++;
-    });
-
-    const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
-    document.getElementById('total_alertas').textContent = total;
-    const pct = t => (total ? (counts[t] / total) * 100 : 0);
-    document.querySelector('.bar .critica').style.width = pct('critica') + "%";
-    document.querySelector('.bar .informativa').style.width = pct('informativa') + "%";
-    document.querySelector('.bar .preventiva').style.width = pct('preventiva') + "%";
-    document.querySelector('.bar .seguridad').style.width = pct('seguridad') + "%";
-
-     // Mostrar porcentajes en la leyenda
-    document.getElementById('pct-critica').textContent = `(${pct('critica').toFixed(1)}%)`;
-    document.getElementById('pct-informativa').textContent = `(${pct('informativa').toFixed(1)}%)`;
-    document.getElementById('pct-preventiva').textContent = `(${pct('preventiva').toFixed(1)}%)`;
-    document.getElementById('pct-seguridad').textContent = `(${pct('seguridad').toFixed(1)}%)`;
-
-    addBarTooltips(counts);
-}
-
-// ------------------- Porcentaje alertas mes (usando alertas filtradas) -------------------
+// ------------------- Porcentaje alertas mes  -------------------
 function renderPorcentajeAlertasMes() {
     // Calcula el porcentaje de alertas del mes actual vs anterior
     // Usa SIEMPRE alertasData (todas las alertas)
@@ -230,6 +164,112 @@ function renderPorcentajeAlertasMes() {
     } else {
         spanPct.textContent = `= ${pct}% respecto al mes anterior`;
         spanPct.classList.remove("text-success", "text-danger");
+    }
+}
+
+
+// ------------------- Global date-filtering logic -------------------
+function getFilteredAlertasForPeriod(periodo) {
+    if (!alertasData || alertasData.length === 0) return [];
+
+    const ahora = new Date();
+    let fechaInicio = null;
+    switch (periodo) {
+        case '24h': fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000); break;
+        case '7d': fechaInicio = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+        case '30d': fechaInicio = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+        default: fechaInicio = null;
+    }
+    if (!fechaInicio) return [...alertasData];
+
+    return alertasData.filter(a => {
+        const raw = a.fechaHoraAlerta?.$date || a.fechaHoraAlerta;
+        const fecha = new Date(raw);
+        if (isNaN(fecha.getTime())) return false;
+        return fecha >= fechaInicio && fecha <= ahora;
+    });
+}
+
+function renderContenidoFiltrable(periodo) {
+    const alertasFiltradas = getFilteredAlertasForPeriod(periodo);
+
+    // all components below depend on this filtered set
+    renderAlertasTendenciaChart(periodo, alertasFiltradas);
+    renderAlertaSucursalesChart(alertasFiltradas, sensoresData);
+    renderAlertasRecurrentesTable(alertasFiltradas, sensoresData);
+    renderRankingSensores(alertasFiltradas);
+
+    cargarAlertasParaBarra(alertasFiltradas);
+    renderKPITiempos(alertasFiltradas);
+    renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
+}
+
+// ------------------- Bar (alert distribution) -------------------
+function cargarAlertasParaBarra(alertas) {
+    // consumes filtered alerts (no fetch inside)
+    const counts = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
+    if (!alertas) alertas = [];
+
+    alertas.forEach(a => {
+        let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (crit === 'critica') counts.critica++;
+        else if (crit === 'informativa') counts.informativa++;
+        else if (crit === 'preventiva') counts.preventiva++;
+        else if (crit === 'seguridad') counts.seguridad++;
+    });
+
+    const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
+    document.getElementById('total_alertas').textContent = total;
+    const pct = t => (total ? (counts[t] / total) * 100 : 0);
+    document.querySelector('.bar .critica').style.width = pct('critica') + "%";
+    document.querySelector('.bar .informativa').style.width = pct('informativa') + "%";
+    document.querySelector('.bar .preventiva').style.width = pct('preventiva') + "%";
+    document.querySelector('.bar .seguridad').style.width = pct('seguridad') + "%";
+
+     // Mostrar porcentajes en la leyenda
+    document.getElementById('pct-critica').textContent = `(${pct('critica').toFixed(1)}%)`;
+    document.getElementById('pct-informativa').textContent = `(${pct('informativa').toFixed(1)}%)`;
+    document.getElementById('pct-preventiva').textContent = `(${pct('preventiva').toFixed(1)}%)`;
+    document.getElementById('pct-seguridad').textContent = `(${pct('seguridad').toFixed(1)}%)`;
+
+    addBarTooltips(counts);
+}
+
+function renderKPITiempos(alertasFiltradas) {
+    // Filtra solo alertas cerradas de tipo "Temperatura fuera de rango"
+    const fueraRango = alertasFiltradas.filter(a =>
+        a.tipoAlerta === "Temperatura fuera de rango" &&
+        a.estadoAlerta === "cerrada" &&
+        a.duracionMinutos != null
+    );
+    // Promedio fuera de rango
+    const promFueraRango = fueraRango.length
+        ? (fueraRango.reduce((acc, a) => acc + Number(a.duracionMinutos), 0) / fueraRango.length).toFixed(1)
+        : '--';
+
+    // Para "Tiempo Promedio desde Última Medición" por sensor:
+    // Tomá la última alerta de cada sensor (de cualquier tipo), calculá minutos desde ahora
+    const ahora = new Date();
+    const ultimasPorSensor = {};
+    alertasFiltradas.forEach(a => {
+        const id = a.idSensor;
+        const fecha = new Date(a.fechaHoraAlerta?.$date || a.fechaHoraAlerta);
+        if (!id || isNaN(fecha.getTime())) return;
+        if (!ultimasPorSensor[id] || fecha > ultimasPorSensor[id]) {
+            ultimasPorSensor[id] = fecha;
+        }
+    });
+    const difs = Object.values(ultimasPorSensor).map(f => (ahora - f) / 60000);
+    const promUltimaMed = difs.length
+        ? (difs.reduce((acc, v) => acc + v, 0) / difs.length).toFixed(1)
+        : '--';
+
+    // Render en el HTML
+    const kpiCard = document.querySelector('.alert-kpi-card');
+    if (kpiCard) {
+        const dFlexs = kpiCard.querySelectorAll('.d-flex');
+        if (dFlexs[1]) dFlexs[1].querySelector('strong').textContent = `${promFueraRango} min`;
+        if (dFlexs[2]) dFlexs[2].querySelector('strong').textContent = `${promUltimaMed} min`;
     }
 }
 
