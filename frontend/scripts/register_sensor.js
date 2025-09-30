@@ -166,7 +166,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert(result.message);
+                document.getElementById('successMessage').textContent =
+                `El sensor "${alias}" se ha registrado correctamente.`;
+                document.getElementById('successModal').style.display = 'block';
                 const tbody = document.querySelector('.user-assignment-table tbody');
                 if (tbody) tbody.innerHTML = '';
                 if (aliasHelp) aliasHelp.style.display = 'none';
@@ -196,6 +198,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+    window.location.href = "sensores.html";
+};
 
 // Oculto por defecto los mensajes de error
 const aliasInput = document.getElementById('alias');
