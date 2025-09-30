@@ -140,7 +140,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 filteredalertasData = [...alertasData];
                 currentPage = 1;
                 renderAll(filteredalertasData);
-                alert(result.message || "Alertas reanalizadas correctamente.");
+                document.getElementById('successMessage').textContent =
+                result.message || "Alertas reanalizadas correctamente.";
+                document.getElementById('successModal').style.display = 'block';
             } catch (error) {
                 alert("No se pudieron reanalizar las alertas.");
                 console.error(error);
@@ -161,6 +163,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Error al cargar alertas:", error);
     }
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+};
 
 function updateKPICards(data) {
     // Inicializa los contadores en 0
