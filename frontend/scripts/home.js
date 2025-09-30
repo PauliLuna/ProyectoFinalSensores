@@ -68,8 +68,6 @@ async function initHome() {
     });
 
     cargarUltimasConexiones();
-    cargarRankingUsuariosActivos();
-    cargarPiePermisosUsuarios();
 
     setupFechaAccordion();
 
