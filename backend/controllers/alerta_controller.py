@@ -112,7 +112,7 @@ def obtener_alertas_por_sensor(mongo, sensor_id):
         return jsonify({"error": "Empresa no encontrada"}), 401
 
     # Busca solo las alertas de ese sensor y empresa
-    alertas_sensor = get_alertas_sensor(mongo, id_empresa, sensor_id) # ACA
+    alertas_sensor = get_alertas_sensor(mongo, id_empresa, sensor_id)
 
     alertas_seguridad = get_alertas_seguridad(mongo, id_empresa)
 

@@ -14,12 +14,15 @@ function isTokenExpired(token) {
 }
 
 const token = sessionStorage.getItem('authToken');
-if (!token || isTokenExpired(token)) {
-    alert('Por favor, inicia sesión para acceder a esta página.');
+if (!token) {
+    // No existe token → acceso denegado
+    window.location.href = 'acceso_denegado.html';
+} 
+else if (isTokenExpired(token)) {
+    // Token existente pero caducó → sesión expirada
     sessionStorage.removeItem('authToken');
-    window.location.href = 'signin.html';
+    window.location.href = 'sesion_expired.html';
 }
-
 
 let alertasData = [];
 
@@ -140,7 +143,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 filteredalertasData = [...alertasData];
                 currentPage = 1;
                 renderAll(filteredalertasData);
-                alert(result.message || "Alertas reanalizadas correctamente.");
+                document.getElementById('successMessage').textContent =
+                result.message || "Alertas reanalizadas correctamente.";
+                document.getElementById('successModal').style.display = 'block';
             } catch (error) {
                 alert("No se pudieron reanalizar las alertas.");
                 console.error(error);
@@ -161,6 +166,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Error al cargar alertas:", error);
     }
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+};
 
 function updateKPICards(data) {
     // Inicializa los contadores en 0

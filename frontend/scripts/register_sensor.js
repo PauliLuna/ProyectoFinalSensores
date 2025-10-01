@@ -12,10 +12,14 @@ function isTokenExpired(token) {
 }
 
 const token = sessionStorage.getItem('authToken');
-if (!token || isTokenExpired(token)) {
-    alert('Por favor, inicia sesión para acceder a esta página.');
+if (!token) {
+    // No existe token → acceso denegado
+    window.location.href = 'acceso_denegado.html';
+} 
+else if (isTokenExpired(token)) {
+    // Token existente pero caducó → sesión expirada
     sessionStorage.removeItem('authToken');
-    window.location.href = 'signin.html';
+    window.location.href = 'sesion_expired.html';
 }
 
 // Mostrar/ocultar el dropdown de añadir usuario
@@ -166,7 +170,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert(result.message);
+                document.getElementById('successMessage').textContent =
+                `El sensor "${alias}" se ha registrado correctamente.`;
+                document.getElementById('successModal').style.display = 'block';
                 const tbody = document.querySelector('.user-assignment-table tbody');
                 if (tbody) tbody.innerHTML = '';
                 if (aliasHelp) aliasHelp.style.display = 'none';
@@ -196,6 +202,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+    window.location.href = "sensores.html";
+};
 
 // Oculto por defecto los mensajes de error
 const aliasInput = document.getElementById('alias');

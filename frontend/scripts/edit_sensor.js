@@ -12,10 +12,14 @@ function isTokenExpired(token) {
 }
 
 const token = sessionStorage.getItem('authToken');
-if (!token || isTokenExpired(token)) {
-    alert('Por favor, inicia sesión para acceder a esta página.');
+if (!token) {
+    // No existe token → acceso denegado
+    window.location.href = 'acceso_denegado.html';
+} 
+else if (isTokenExpired(token)) {
+    // Token existente pero caducó → sesión expirada
     sessionStorage.removeItem('authToken');
-    window.location.href = 'signin.html';
+    window.location.href = 'sesion_expired.html';
 }
 
 // Mostrar/ocultar el dropdown de añadir usuario
@@ -239,8 +243,9 @@ async function submitEditSensorForm(e) {
         const result = await response.json();
         
         if (response.ok) {
-            alert("Sensor actualizado correctamente");
-            window.location.href = "sensores.html";
+            document.getElementById('successMessage').textContent =
+                `Sensor actualizado correctamente`;
+            document.getElementById('successModal').style.display = 'block';
         } else {
                 // Validación de error de dirección
                 if (
@@ -265,6 +270,12 @@ async function submitEditSensorForm(e) {
         console.error(error);
     }
 }
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+    window.location.href = "sensores.html";
+};
 
 // Confirmar cambios al volver
 function handleBtnVolver() {
