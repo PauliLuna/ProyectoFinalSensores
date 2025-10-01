@@ -743,9 +743,13 @@ document.getElementById('refreshIcon').addEventListener('click', async() => {
         // Chequear si hay nuevas mediciones
         const ultimaMed = await getUltimaMedicion(sensor.nroSensor);
         if (!ultimaMed || !ultimaMed.fechaHoraMed) {
-            alert('No hay nuevas mediciones para este sensor.');
+            document.getElementById('successMessage').textContent =
+            "No hay nuevas mediciones para este sensor.";
+            document.getElementById('successModal').style.display = 'block';
         } else {
-            alert('Datos actualizados correctamente.');
+            document.getElementById('successMessage').textContent =
+            "Datos actualizados correctamente.";
+            document.getElementById('successModal').style.display = 'block';
         }
     } catch (err) {
         alert('Error al refrescar los datos.');
@@ -754,6 +758,11 @@ document.getElementById('refreshIcon').addEventListener('click', async() => {
         document.getElementById('loading-overlay').style.display = 'none';
     }
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+};
 
 // Botón Volver
 document.getElementById('btnVolver').addEventListener('click', () => {
