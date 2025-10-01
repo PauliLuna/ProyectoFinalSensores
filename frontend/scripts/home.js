@@ -277,23 +277,40 @@ function renderRankingSensores(alertasFiltradas) {
     // Agrupar por sensor
     const agrupado = {};
     alertasFiltradas.forEach(alerta => {
-
-        // Ignorar alertas de seguridad (no tienen idSensor válido)
-        if (alerta.criticidad === "Seguridad" || !alerta.idSensor) return;
-
-        const idSensor = alerta.idSensor;
-        let crit = (alerta.criticidad || "")
+        const tipo = (alerta.tipoAlerta || "")
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
-            
-        if (!agrupado[idSensor]) {
-            agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, total: 0 };
+
+        // Ignorar alertas que no aplican
+        if (
+            (alerta.criticidad || "").toLowerCase() === "seguridad" ||
+            tipo === "caida de energia electrica" ||
+            !alerta.idSensor
+        ) {
+            return;
         }
-        if (crit === "critica") agrupado[idSensor].criticas++;
-        else if (crit === "informativa") agrupado[idSensor].informativas++;
-        else if (crit === "preventiva") agrupado[idSensor].preventivas++;
-        agrupado[idSensor].total++;
+
+        const crit = (alerta.criticidad || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+        // Manejo uniforme de idSensor (puede ser string, number o array)
+        const sensores = Array.isArray(alerta.idSensor)
+            ? alerta.idSensor
+            : [alerta.idSensor];
+
+        sensores.forEach(idSensor => {
+            if (!idSensor) return;
+            if (!agrupado[idSensor]) {
+                agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, total: 0 };
+            }
+            if (crit === "critica") agrupado[idSensor].criticas++;
+            else if (crit === "informativa") agrupado[idSensor].informativas++;
+            else if (crit === "preventiva") agrupado[idSensor].preventivas++;
+            agrupado[idSensor].total++;
+        });
     });
     
     // Convertir a array y ordenar por total
