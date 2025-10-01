@@ -12,10 +12,14 @@ function isTokenExpired(token) {
 }
 
 const token = sessionStorage.getItem('authToken');
-if (!token || isTokenExpired(token)) {
-    alert('Por favor, inicia sesión para acceder a esta página.');
+if (!token) {
+    // No existe token → acceso denegado
+    window.location.href = 'acceso_denegado.html';
+} 
+else if (isTokenExpired(token)) {
+    // Token existente pero caducó → sesión expirada
     sessionStorage.removeItem('authToken');
-    window.location.href = 'signin.html';
+    window.location.href = 'sesion_expired.html';
 }
 
 const map = L.map('map').setView([-32.9442, -60.6505], 12); // Ejemplo: Rosario
