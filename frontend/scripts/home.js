@@ -277,11 +277,16 @@ function renderRankingSensores(alertasFiltradas) {
     // Agrupar por sensor
     const agrupado = {};
     alertasFiltradas.forEach(alerta => {
-        const idSensor = alerta.idSensor || "Desconocido";
+
+        // Ignorar alertas de seguridad (no tienen idSensor válido)
+        if (alerta.criticidad === "Seguridad" || !alerta.idSensor) return;
+
+        const idSensor = alerta.idSensor;
         let crit = (alerta.criticidad || "")
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
+            
         if (!agrupado[idSensor]) {
             agrupado[idSensor] = { criticas: 0, informativas: 0, preventivas: 0, total: 0 };
         }
@@ -290,11 +295,13 @@ function renderRankingSensores(alertasFiltradas) {
         else if (crit === "preventiva") agrupado[idSensor].preventivas++;
         agrupado[idSensor].total++;
     });
+    
     // Convertir a array y ordenar por total
     const ranking = Object.entries(agrupado)
         .map(([idSensor, data]) => ({ idSensor, ...data }))
         .sort((a, b) => b.total - a.total)
         .slice(0, 3); // Top 3
+
     // Renderizar filas
     const tbody = document.getElementById("ranking-sensores");
     if (!tbody) return;
