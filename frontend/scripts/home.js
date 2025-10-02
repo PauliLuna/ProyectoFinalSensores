@@ -859,15 +859,23 @@ function renderAlertasRecurrentesTable(alertas, sensores) {
  * @param {Array} usuarios - Array de objetos de usuario.
  */
 function renderAlertasSeguridadTable(alertas, usuarios) {
-    if (!alertas || alertas.length === 0 || !usuarios || usuarios.length === 0) {
+     if (!alertas || alertas.length === 0 || !usuarios || usuarios.length === 0) {
         document.getElementById('ranking-alertas-seguridad-tbody').innerHTML = '<tr><td colspan="3" class="text-center">No hay datos suficientes para mostrar las alertas de seguridad.</td></tr>';
         return;
     }
 
+    // ----------------------------------------------------
+    // Diagnóstico de Data: Verificamos qué IDs se están cargando
+    const loadedUserIds = usuarios.map(u => String(u._id));
+    console.log(`[DIAGNOSTICO] Total de usuarios en el array: ${usuarios.length}`);
+    console.log(`[DIAGNOSTICO] IDs cargados para el mapa: ${loadedUserIds.join(', ')}`);
+    // ----------------------------------------------------
+
     // 1. Crear un mapa para vincular idUsuario con el nombre del usuario
     const usuariosMap = usuarios.reduce((map, usuario) => {
         if (usuario._id) {
-            map[usuario._id] = usuario.username || usuario.email || 'Desconocido';
+            const userIdString = String(usuario._id); 
+            map[userIdString] = usuario.username || usuario.email || 'Desconocido';
         }
         return map;
     }, {});
@@ -879,12 +887,17 @@ function renderAlertasSeguridadTable(alertas, usuarios) {
             return crit === 'seguridad' && alerta.idUsuario;
         })
         .reduce((acc, alerta) => {
-            const idUsuario = alerta.idUsuario;
-            const tipoAlerta = alerta.tipoAlerta || 'Desconocido';
+            const idUsuario = String(alerta.idUsuario); 
+            
+            if (!idUsuario || idUsuario === 'null' || idUsuario === 'undefined') {
+                return acc;
+            }
 
             if (!acc[idUsuario]) {
                 acc[idUsuario] = {};
             }
+            
+            const tipoAlerta = alerta.tipoAlerta || 'Desconocido';
 
             if (!acc[idUsuario][tipoAlerta]) {
                 acc[idUsuario][tipoAlerta] = 0;
@@ -893,9 +906,9 @@ function renderAlertasSeguridadTable(alertas, usuarios) {
             return acc;
         }, {});
     
-    // 3. Renderizar la tabla con la estructura solicitada
+    // 3. Renderizar la tabla (El resto del código se mantiene igual y es correcto)
     const tbody = document.getElementById('ranking-alertas-seguridad-tbody');
-    tbody.innerHTML = ''; // Limpiar contenido previo
+    tbody.innerHTML = ''; 
 
     const usuariosConAlertas = Object.keys(dataAgrupada);
     if (usuariosConAlertas.length === 0) {
@@ -905,14 +918,20 @@ function renderAlertasSeguridadTable(alertas, usuarios) {
 
     usuariosConAlertas.forEach(idUsuario => {
         let primeraFilaUsuario = true;
+        
         const nombreUsuario = usuariosMap[idUsuario] || idUsuario;
+        
+        // Mantenemos el logging de error solo si falla
+        if (nombreUsuario === idUsuario) {
+             console.warn(`[DATA ERROR] No se encontró usuario para el ID de alerta: ${idUsuario}.`);
+        }
+        
         const tiposAlertas = Object.keys(dataAgrupada[idUsuario]);
 
         tiposAlertas.forEach(tipoAlerta => {
             const count = dataAgrupada[idUsuario][tipoAlerta];
             const row = document.createElement('tr');
             if (primeraFilaUsuario) {
-                // Primera fila para el usuario, con rowspan
                 row.innerHTML = `
                     <td rowspan="${tiposAlertas.length}">${nombreUsuario}</td>
                     <td>${tipoAlerta}</td>
@@ -920,7 +939,6 @@ function renderAlertasSeguridadTable(alertas, usuarios) {
                 `;
                 primeraFilaUsuario = false;
             } else {
-                // Filas subsiguientes, solo con los datos de la alerta
                 row.innerHTML = `
                     <td>${tipoAlerta}</td>
                     <td>${count}</td>
@@ -930,7 +948,6 @@ function renderAlertasSeguridadTable(alertas, usuarios) {
         });
     });
 }
-
 
 /**
  * Filtra las alertas por el período seleccionado y renderiza todos los componentes dependientes de la fecha.

@@ -12,8 +12,8 @@ def get_usuario_by_email(mongo, email):
 
 def get_usuarios_by_empresa(mongo, id_empresa):
     usuarios = list(mongo.db.usuarios.find(
-        {"idEmpresa": id_empresa, "roles": "usuario"},
-        {"email": 1}
+        {"idEmpresa": id_empresa},
+        {"email": 1, "username": 1, "_id": 1}
     ))
     for usuario in usuarios:
         usuario["_id"] = str(usuario["_id"])
