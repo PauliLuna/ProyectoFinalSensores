@@ -474,6 +474,11 @@ document.getElementById('closeNoDatosModal').onclick = function() {
     document.getElementById('noDatosModal').style.display = 'none';
 };
 
+// Cerrar el modal de no hay mediciones para ese rango
+document.getElementById('closeNoDatosRangoModal').onclick = function() {
+    document.getElementById('noDatosRangoModal').style.display = 'none';
+};
+
 document.getElementById('btnGraficar').addEventListener('click', async () => {
     const fromDate = document.getElementById('desde').value;
     const toDate = document.getElementById('hasta').value;
@@ -504,7 +509,9 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     const graficasDiv = document.getElementById('graficas');
     if (!Array.isArray(mediciones) || mediciones.length === 0) {
         graficasDiv.style.display = 'none';
-        alert('No hay mediciones para ese rango.');
+        document.getElementById('noDatosRangoMessage').textContent =
+                "No hay mediciones para ese rango.";
+            document.getElementById('noDatosRangoModal').style.display = 'block';
         return; // <-- salimos para evitar render vacío
     } else {
         graficasDiv.style.display = 'block';
