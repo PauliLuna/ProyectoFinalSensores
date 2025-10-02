@@ -431,6 +431,7 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
             document.getElementById('noDatosMessage').textContent =
                 "No hay datos cargados para analizar";
             document.getElementById('noDatosModal').style.display = 'block';
+            return;
         }
 
         const alias = sessionStorage.getItem('sensor_alias');
