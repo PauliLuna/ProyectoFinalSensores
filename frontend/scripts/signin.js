@@ -12,12 +12,20 @@ document.getElementById('signin-form').addEventListener('submit', async function
             sessionStorage.setItem('authToken', result.token);
             window.location.href = "home.html";
         } else {
-            alert(result.error || "Credenciales inválidas");
+            document.getElementById('invalidMessage').textContent =
+                "Credenciales inválidas. Por favor, inténtalo de nuevo.";
+            document.getElementById('invalidModal').style.display = 'block';
         }
     } catch (error) {
         alert("Error de conexión con el servidor.");
     }
 });
+
+// Cerrar el modal de credenciales inválidas
+document.getElementById('closeInvalidModal').onclick = function() {
+    document.getElementById('invalidModal').style.display = 'none';
+    location.reload();
+};
 
 // Mostrar modal
 document.querySelector('.forgot-link a').addEventListener('click', function(e) {
