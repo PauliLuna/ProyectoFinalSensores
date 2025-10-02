@@ -380,10 +380,12 @@ function renderRankingFueraRango(alertasFiltradas) {
         tbody.innerHTML = '<tr><td colspan="3">No hay datos</td></tr>';
     } else {
         ranking.forEach(item => {
+            const horas = (item.minutos / 60).toFixed(1); // convertir a horas con 1 decimal
             tbody.innerHTML += `
                 <tr>
                     <td>${item.sensor}</td>
                     <td>${item.minutos}</td>
+                    <td>${horas} h</td>
                     <td>${item.porcentaje}%</td>
                 </tr>
             `;
