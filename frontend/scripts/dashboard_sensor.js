@@ -428,8 +428,9 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
     document.getElementById('loading-overlay').style.display = 'flex';
     try{
         if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
-            alert('No hay datos cargados para analizar');
-            return;
+            document.getElementById('noDatosMessage').textContent =
+                "No hay datos cargados para analizar";
+            document.getElementById('noDatosModal').style.display = 'block';
         }
 
         const alias = sessionStorage.getItem('sensor_alias');
@@ -466,6 +467,11 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
         document.getElementById('loading-overlay').style.display = 'none';
     }
 });
+
+// Cerrar el modal de no datos cargados para analizar
+document.getElementById('closeNoDatosModal').onclick = function() {
+    document.getElementById('noDatosModal').style.display = 'none';
+};
 
 document.getElementById('btnGraficar').addEventListener('click', async () => {
     const fromDate = document.getElementById('desde').value;
