@@ -179,6 +179,7 @@ function getFilteredAlertasForPeriod(periodo) {
         case '24h': fechaInicio = new Date(ahora.getTime() - 24 * 60 * 60 * 1000); break;
         case '7d': fechaInicio = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000); break;
         case '30d': fechaInicio = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+        case 'mes': fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1); break;
         default: fechaInicio = null;
     }
     if (!fechaInicio) return [...alertasData];
