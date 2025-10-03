@@ -428,7 +428,9 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
     document.getElementById('loading-overlay').style.display = 'flex';
     try{
         if (!window.ultimaMediciones || window.ultimaMediciones.length === 0) {
-            alert('No hay datos cargados para analizar');
+            document.getElementById('noDatosMessage').textContent =
+                "No hay datos cargados para analizar";
+            document.getElementById('noDatosModal').style.display = 'block';
             return;
         }
 
@@ -467,12 +469,19 @@ document.getElementById('btnAnalizar').addEventListener('click', async () => {
     }
 });
 
+// Cerrar el modal de no datos cargados para analizar
+document.getElementById('closeNoDatosModal').onclick = function() {
+    document.getElementById('noDatosModal').style.display = 'none';
+};
+
 document.getElementById('btnGraficar').addEventListener('click', async () => {
     const fromDate = document.getElementById('desde').value;
     const toDate = document.getElementById('hasta').value;
 
     if (!fromDate || !toDate || new Date(fromDate) > new Date(toDate)) {
-        alert('Por favor seleccioná un rango de fechas válido.');
+        document.getElementById('noDatosMessage').textContent =
+                "Por favor seleccioná un rango de fechas válido.";
+        document.getElementById('noDatosModal').style.display = 'block';
         return;
     }
 
@@ -497,7 +506,9 @@ document.getElementById('btnGraficar').addEventListener('click', async () => {
     const graficasDiv = document.getElementById('graficas');
     if (!Array.isArray(mediciones) || mediciones.length === 0) {
         graficasDiv.style.display = 'none';
-        alert('No hay mediciones para ese rango.');
+        document.getElementById('noDatosMessage').textContent =
+                "No hay mediciones para ese rango.";
+            document.getElementById('noDatosModal').style.display = 'block';
         return; // <-- salimos para evitar render vacío
     } else {
         graficasDiv.style.display = 'block';
