@@ -97,7 +97,7 @@ document.getElementById('profileForm').addEventListener('submit', async function
     }
 });
 
-// 3. Cerrar el modal de éxito
+// Cerrar el modal de éxito
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
 };
