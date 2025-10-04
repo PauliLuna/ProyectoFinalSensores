@@ -217,7 +217,9 @@ async function submitEditSensorForm(e) {
     }
 
     if (hasError) {
-        alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+        document.getElementById('errorMessage').textContent =
+            "Por favor, revisá los datos ingresados. Hay campos con errores.";
+        document.getElementById('errorModal').style.display = 'block';
         return; // NO se envía nada al backend si hay errores
     }
 
@@ -262,11 +264,15 @@ async function submitEditSensorForm(e) {
             }
 
             if (hasError) {
-                alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+                document.getElementById('errorMessage').textContent =
+            "Por favor, revisá los datos ingresados. Hay campos con errores.";
+        document.getElementById('errorModal').style.display = 'block';
                 return;
             }
     } catch (error) {
-        alert("Error de red al actualizar el sensor.");
+        document.getElementById('errorMessage').textContent =
+            "Error de red al actualizar el sensor.";
+        document.getElementById('errorModal').style.display = 'block';
         console.error(error);
     }
 }
@@ -275,6 +281,11 @@ async function submitEditSensorForm(e) {
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
     window.location.href = "sensores.html";
+};
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
 };
 
 // Confirmar cambios al volver
