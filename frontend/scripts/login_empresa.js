@@ -135,8 +135,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('errorModal').style.display = 'block';
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Error de conexión con el servidor.");
+            document.getElementById('errorMessage').textContent =
+                'Error de conexión con el servidor.';
+            document.getElementById('errorModal').style.display = 'block';
         }
     });
 });
