@@ -144,7 +144,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (hasError) {
-                alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+                document.getElementById('errorMessage').textContent =
+                "Por favor, revisá los datos ingresados. Hay campos con errores.";
+                document.getElementById('errorModal').style.display = 'block';
                 return; // NO se envía nada al backend si hay errores
             }
 
@@ -195,7 +197,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (hasError) {
-                alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+                document.getElementById('errorMessage').textContent =
+                "Por favor, revisá los datos ingresados. Hay campos con errores.";
+                document.getElementById('errorModal').style.display = 'block';
                 return;
             }
 
@@ -208,6 +212,12 @@ document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
     window.location.href = "sensores.html";
 };
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
+};
+
 
 // Oculto por defecto los mensajes de error
 const aliasInput = document.getElementById('alias');
