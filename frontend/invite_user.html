@@ -12,20 +12,67 @@
     <div id="sidebar-container"></div>
     <div id="top-banner-container"></div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="form-container">
-            <div class="form-card">
-                <h1>Invitar Usuario</h1>
-                <form id="inviteForm" action="/invite_user" method="POST" class="form">
-                <div class="form-group">
-                    <label for="mail">Correo Electrónico</label>
-                    <input type="email" id="mail" name="mail" style="margin-bottom: 15px;" placeholder="Ingrese su correo electrónico" required>
+    <!-- START: Invite User page content -->
+    <div id="invite-page" class="main-content">
+        <div class="form-container" style="max-width:900px; margin: 0 auto;">
+
+            <div class="card" style="margin: 12px 0;">
+                <div class="card-body p-4">
+
+                    <!-- TOP ROW: Invitar Usuario (input + botón en la misma línea) -->
+                    <div class="top-row">
+                        <h1 style="text-align:center; margin-bottom:12px;">Invitar Usuario</h1>
+
+                        <form id="inviteForm" class="invite-form" style="width:100%; display:flex; justify-content:center;">
+                            <div class="form-row invite-row" style="width:100%; max-width:640px; display:flex; gap:10px; align-items:center;">
+                            <div class="form-group" style="flex:1;">
+                                <label for="inviteEmail" style="display:block; margin-bottom:6px;">Correo Electrónico</label>
+                                <input id="inviteEmail" name="inviteEmail" type="email" placeholder="usuario@ejemplo.com" style="width:100%;" required />
+                            </div>
+                            <div class="form-group" style="flex:0 0 auto; align-self:flex-end;">
+                                <button id="inviteBtn" class="btn-primary invite-btn" type="submit" style="white-space:nowrap;">Invitar</button>
+                            </div>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /TOP ROW -->
+
+                    <!-- BOTTOM ROW: Tabla de usuarios + paginación (dentro del mismo wrapper) -->
+                    <div class="bottom-row" style="margin-top:28px;">
+                        <h2 style="text-align:center; margin-bottom:12px;">Lista de Usuarios</h2>
+
+                        <div class="table-wrapper" style="width:100%; overflow:auto;">
+                            <table id="usuariosTable" class="styled-table" style="width:100%; margin:0 auto;">
+                            <thead>
+                                <tr>
+                                <th>Email</th>
+                                <th>Nombre</th>
+                                <th>Estado</th>
+                                <th style="text-align:center; width:90px;">Acción</th>
+                                <th style="text-align:center; width:70px;">Borrar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuariosTableBody">
+                                <!-- filas dinámicas -->
+                            </tbody>
+                            </table>
+
+                            <!-- Pagination & info (DENTRO del wrapper, inmediatamente abajo de la tabla) -->
+                            <div class="table-pagination-row" style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px;">
+                            <div class="pagination-info" style="font-size:0.95rem; color:#555;">
+                                Mostrando <span id="current-results-showing">0</span> de <span id="total-results">0</span> resultados
+                            </div>
+                            <ul id="usuariosPagination" class="pagination" style="display:flex; gap:6px; list-style:none; margin:0; padding:0;">
+                                <!-- botones de paginado -->
+                            </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /BOTTOM ROW -->
+
                 </div>
-                <button type="submit" class="btn-primary submit-btn">Invitar</button>
-            </form>
             </div>
-            <!-- Modal de éxito -->
+            <!-- Modales de éxito y error (sin cambios) -->
             <div id="successModal" class="modal">
                 <div class="modal-content">
                     <span id="closeModal" class="close">&times;</span>
@@ -33,8 +80,17 @@
                     <p id="successMessage"></p>
                 </div>
             </div>
+            <div id="errorModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeErrorModal" class="close">&times;</span>
+                    <img src="assets/termi-alerta.png" alt="Error" class="modal-success-icon">
+                    <p id="errorMessage"></p>
+                </div>
+            </div>
         </div>
     </div>
+    <!-- END: Invite User page content -->
+
     <script src="scripts/utils.js"></script>
     <script src="scripts/usuarios.js"></script>
     <script src="scripts/invite_user.js"></script>

@@ -33,10 +33,14 @@ document.getElementById('inviteForm').addEventListener('submit', async function(
                 `Se mandó un correo de invitación a ${formData.get('mail')}`;
             document.getElementById('successModal').style.display = 'block';
         } else {
-            alert(result.error || "Error al invitar usuario");
+            document.getElementById('errorMessage').textContent =
+               result.error || "Error al invitar usuario";
+            document.getElementById('errorModal').style.display = 'block';
         }
     } catch (error) {
-        alert("Error de conexión con el servidor.");
+        document.getElementById('errorMessage').textContent =
+            "Error de conexión con el servidor.";
+        document.getElementById('errorModal').style.display = 'block';
     }
 });
 
@@ -45,6 +49,12 @@ document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
     location.reload();
 };
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
+};
+
 
 window.onclick = function(event) {
     const modal = document.getElementById('successModal');

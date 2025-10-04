@@ -2585,3 +2585,45 @@ select {
 .alias-tooltip-icon:focus .alias-tooltip-text {
     display: block;
 }
+
+/* invite_usuarios */
+
+/* 1. Centra el grupo de Input + Botón y los pone en línea */
+/* Scoped to this page only */
+#invite-page .form-container { max-width: 900px; margin: 0 auto; }
+
+/* Top row: input + button stay inline, centered inside the card */
+#invite-page .top-row .invite-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Ensure the input takes available width and doesn't overflow */
+#invite-page .top-row .invite-row .form-group { flex: 1 1 auto; min-width: 0; }
+
+/* Button sizing */
+#invite-page .invite-btn { padding: 8px 14px; }
+
+/* Bottom row: table wrapper centered and pagination INSIDE wrapper */
+#invite-page .bottom-row { margin-top: 24px; width: 100%; }
+#invite-page .table-wrapper { width: 100%; overflow-x: auto; }
+
+/* Make the table full width of wrapper */
+#invite-page table.styled-table { width: 100%; border-collapse: collapse; }
+
+/* Small responsive tweaks */
+@media (max-width: 640px) {
+  #invite-page .top-row .invite-row { flex-direction: column; align-items: stretch; }
+  #invite-page .top-row .invite-row .form-group { width: 100%; }
+  #invite-page .top-row .invite-row .form-group + .form-group { margin-top: 8px; }
+}
+
+/* Pagination inline style */
+#invite-page .pagination { display:flex; gap:6px; align-items:center; }
+#invite-page .pagination li { cursor:pointer; padding:6px 10px; border-radius:6px; background:transparent; border:1px solid transparent; }
+#invite-page .pagination li.active { background:#0d6efd; color:#fff; border-color: #0d6efd; }
+#invite-page .pagination li.disabled { opacity:0.5; cursor:default; }
+
