@@ -285,7 +285,8 @@ def login_usuario_controller(mongo):
             payload = {
                 "user_id": str(usuario['_id']),
                 "idEmpresa": usuario.get('idEmpresa'),
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1) # Sesion de una hora
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1), # Sesion de una hora
+                "entity_type": usuario['roles'] # *** CLAVE DE DIFERENCIACIÓN ***
             }
             token = jwt.encode(payload, SECRET_KEY_TOKEN, algorithm="HS256")
             return jsonify({"message": "Login exitoso", "token": token}), 200

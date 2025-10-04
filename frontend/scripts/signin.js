@@ -8,16 +8,51 @@ document.getElementById('signin-form').addEventListener('submit', async function
 
     try {
         const result = await loginUsuario(formData);
-        if (result.token) {
+        
+        if (result && result.token) {
             sessionStorage.setItem('authToken', result.token);
-            window.location.href = "home.html";
-        } else {
-            document.getElementById('invalidMessage').textContent =
-                "Credenciales inválidas. Por favor, inténtalo de nuevo.";
+            
+            // --- REDIRECCIÓN POR ROL ---
+            try {
+                // 1. Decodificar el token para leer el payload
+                const payload = jwt_decode(result.token); 
+                const userRole = payload.entity_type; // Obtenemos el rol ('superAdmin' o 'usuario')
+                console.log(userRole);
+
+                // 2. Redirección basada en el rol
+                if (userRole === 'superAdmin') {
+                    window.location.href = 'home.html';
+                } else if (userRole === 'usuario') {
+                    window.location.href = 'sensoresUser.html';
+                } else {
+                    // Rol inesperado
+                    sessionStorage.removeItem('authToken');
+                    document.getElementById('invalidMessage').textContent = "Error de autenticación. Tipo de cuenta desconocido.";
+                    document.getElementById('invalidModal').style.display = 'block';
+                }
+
+            } catch (decodeError) {
+                sessionStorage.removeItem('authToken');
+                // Mostrar mensaje de error general
+                document.getElementById('invalidMessage').textContent = "Error de seguridad. Intenta iniciar sesión de nuevo.";
+                document.getElementById('invalidModal').style.display = 'block';
+            }
+
+        } else if (result && result.error) {
+            // Manejo de errores de credenciales, bloqueo, etc. que vienen del servidor
+            document.getElementById('invalidMessage').textContent = result.error;
             document.getElementById('invalidModal').style.display = 'block';
+        } else {
+            // Manejo de respuesta inesperada
+             document.getElementById('invalidMessage').textContent = 
+                 "Credenciales inválidas. Por favor, inténtalo de nuevo.";
+             document.getElementById('invalidModal').style.display = 'block';
         }
     } catch (error) {
-        alert("Error de conexión con el servidor.");
+        // Error de red o conexión
+        console.error("Error en la petición de login:", error);
+        document.getElementById('invalidMessage').textContent = "Error de conexión con el servidor. Verifica tu red.";
+        document.getElementById('invalidModal').style.display = 'block';
     }
 });
 
