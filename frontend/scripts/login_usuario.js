@@ -10,12 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const email = document.getElementById('email').value;
         const codigo = document.getElementById('codigo').value;
 
-        // Validación básica de email en FE
-        if (!email.includes('@')) {
-            alert('Ingrese un correo electrónico válido.');
-            return;
-        }
-
         // Llamada al backend para validar código
         try {
             const res = await fetch('/verificar-codigo', {
@@ -113,3 +107,8 @@ async function registrarUsuario(formData) {
     });
     return response.json();
 }
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
+};
