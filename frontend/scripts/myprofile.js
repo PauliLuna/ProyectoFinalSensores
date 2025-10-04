@@ -55,12 +55,16 @@ document.getElementById('profileForm').addEventListener('submit', async function
     
     if (newPassword || repeatPassword) {
         if (newPassword !== repeatPassword) {
-            alert("Las contraseñas nuevas no coinciden.");
+            document.getElementById('errorMessage').textContent =
+               "Las contraseñas nuevas no coinciden.";
+            document.getElementById('errorModal').style.display = 'block';
             return;
         }
         // Llama a esPasswordFuerte de utils.js (global)
         if (!esPasswordFuerte(newPassword)) {
-            alert("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.");
+            document.getElementById('errorMessage').textContent =
+               "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
+            document.getElementById('errorModal').style.display = 'block';
             return;
         }
     }
@@ -87,7 +91,9 @@ document.getElementById('profileForm').addEventListener('submit', async function
         document.getElementById('newPassword').value = '';
         document.getElementById('repeatPassword').value = '';
     } else {
-        alert(result.error || "Error al actualizar perfil");
+        document.getElementById('errorMessage').textContent =
+               result.error || "Error al actualizar perfil";
+            document.getElementById('errorModal').style.display = 'block';
     }
 });
 
@@ -95,9 +101,15 @@ document.getElementById('profileForm').addEventListener('submit', async function
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
 };
+
 window.onclick = function(event) {
     const modal = document.getElementById('successModal');
     if (event.target === modal) {
         modal.style.display = 'none';
     }
+};
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
 };
