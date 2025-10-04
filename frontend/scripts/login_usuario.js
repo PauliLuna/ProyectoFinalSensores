@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const result = await registrarUsuario(formData);
 
             if (result.message) {
-                document.getElementById('successMessage').innerHTML =
+                document.getElementById('successMessage').innerHTML = // Por el salto de linea
                     result.message + "<br> Mail de usuario: " + result.user_email;
                 document.getElementById('successModal').style.display = 'block';
             } else {
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// 3. Cerrar el modal de éxito
+// Cerrar el modal de éxito
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
     window.location.href = "signin.html"; // Redirige al login después del registro exitoso
