@@ -147,8 +147,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 result.message || "Alertas reanalizadas correctamente.";
                 document.getElementById('successModal').style.display = 'block';
             } catch (error) {
-                alert("No se pudieron reanalizar las alertas.");
-                console.error(error);
+                document.getElementById('errorMessage').textContent =
+                    "No se pudieron reanalizar las alertas.";
+                document.getElementById('errorModal').style.display = 'block';
             } finally {
                 overlay.style.display = 'none';
             }
@@ -161,7 +162,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.body.classList.remove('body-loading');
         // Solo muestra el mensaje si realmente hay un error de red/backend
         setTimeout(() => {
-            alert("No se pudieron cargar las alertas. Intenta nuevamente más tarde.");
+            document.getElementById('errorMessage').textContent =
+               "No se pudieron cargar las alertas. Intenta nuevamente más tarde.";
+            document.getElementById('errorModal').style.display = 'block';
         }, 2500); // Opcional: pequeño delay para evitar que aparezca instantáneamente
         console.error("Error al cargar alertas:", error);
     }
@@ -170,6 +173,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Cerrar el modal de éxito
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
+};
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
 };
 
 function updateKPICards(data) {
