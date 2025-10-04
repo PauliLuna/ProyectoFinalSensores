@@ -62,13 +62,13 @@ function mostrarMensaje(id, mensaje, tipo='info') {
 }
 
 // Verificar código de invitación
-async function verificarCodigo(mailUsuario, codeInvitation) {
+async function verificarCodigo(mailUsuario, codeInvitation, tipoEsperado) {
     const verifyResponse = await fetch('/verificar-codigo', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ mailUsuario: mailUsuario, codigo: codeInvitation })
+        body: JSON.stringify({ mailUsuario: mailUsuario, codigo: codeInvitation, tipoEsperado: tipoEsperado })
     });
     return verifyResponse.json();
 }

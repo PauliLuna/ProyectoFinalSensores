@@ -8,7 +8,7 @@ def verificar_codigo_controller(mongo):
     tipoEsperado = data.get("tipoEsperado")  # <-- viene del FE
 
     if not mailUsuario or not codigo or not tipoEsperado:
-        return jsonify({"valido": False, "motivo": "Faltan datos"}), 400
+        return jsonify({"valido": False, "motivo": 'Faltan datos'}), 400
 
     resultado = verificar_codigo_invitacion(mongo, mailUsuario, codigo, tipoEsperado)
 
