@@ -1,49 +1,60 @@
-// Cargar sidebar y top-banner en paralelo
-Promise.all([
-    fetch('partials/sidebar.html').then(res => res.text()),
-    fetch('partials/top-banner.html').then(res => res.text())
-]).then(([sidebarHtml, topBannerHtml]) => {
-    document.getElementById('sidebar-container').innerHTML = sidebarHtml;
-    resaltarSidebarActivo(); 
-    document.getElementById('top-banner-container').innerHTML = topBannerHtml;
+document.addEventListener('DOMContentLoaded', () => {
+    // Cargar sidebar y top-banner en paralelo
+    Promise.all([
+        fetch('partials/sidebar.html').then(res => res.text()),
+        fetch('partials/sidebarUser.html').then(res => res.text()),
+        fetch('partials/top-banner.html').then(res => res.text())
+    ]).then(([sidebarHtml, sidebarHtmlUser, topBannerHtml]) => {
+        const sidebarAdminContainer = document.getElementById('sidebar-container');
+        const sidebarUserContainer = document.getElementById('sidebar-container-user');
+        if (sidebarAdminContainer) {
+            // Si la página tiene el contenedor de Admin (dashboard_admin.html)
+            sidebarAdminContainer.innerHTML = sidebarHtml;
+        } else {
+            // Si la página tiene el contenedor de Usuario (dashboard_usuario.html)
+            sidebarUserContainer.innerHTML = sidebarHtmlUser;
+        }
+        resaltarSidebarActivo(); 
+        document.getElementById('top-banner-container').innerHTML = topBannerHtml;
 
-    // --- Agregar event listener para logout-link ---
-    const logoutLink = document.getElementById('logout-link');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            sessionStorage.removeItem('authToken');
-            window.location.href = "signin.html";
-        });
-    }
-    
-    // Ahora sí existen ambos en el DOM
-    const toggleSidebarButton = document.getElementById('toggle-sidebar');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    const topBanner = document.querySelector('.top-banner');
+        // --- Agregar event listener para logout-link ---
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                sessionStorage.removeItem('authToken');
+                window.location.href = "signin.html";
+            });
+        }
+        
+        // Ahora sí existen ambos en el DOM
+        const toggleSidebarButton = document.getElementById('toggle-sidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const topBanner = document.querySelector('.top-banner');
 
-    // --- aplicar estado colapsado guardado ---
-    if (localStorage.getItem('sidebarCollapsed') === 'true') {
-        sidebar.classList.add('collapsed');
-        if (mainContent) mainContent.classList.add('sidebar-collapsed');
-        if (topBanner) topBanner.classList.add('sidebar-collapsed');
-    }
+        // --- aplicar estado colapsado guardado ---
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+            if (mainContent) mainContent.classList.add('sidebar-collapsed');
+            if (topBanner) topBanner.classList.add('sidebar-collapsed');
+        }
 
-    if (toggleSidebarButton && sidebar && mainContent && topBanner) {
-        toggleSidebarButton.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('sidebar-collapsed');
-            topBanner.classList.toggle('sidebar-collapsed');
-            // --- guardar estado en localStorage ---
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        });
-    }
+        if (toggleSidebarButton && sidebar && mainContent && topBanner) {
+            toggleSidebarButton.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('sidebar-collapsed');
+                topBanner.classList.toggle('sidebar-collapsed');
+                // --- guardar estado en localStorage ---
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            });
+        }
 
-    // Llamar a la función para actualizar el nombre de la empresa
-    actualizarNombreEmpresa();
-    actualizarUsuarioActual();
-    document.body.classList.remove('body-loading'); // <-- Mostrar todo el contenido una vez cargado el sidebar y top-banner
+        // Llamar a la función para actualizar el nombre de la empresa
+        actualizarNombreEmpresa();
+        actualizarUsuarioActual();
+        document.body.classList.remove('body-loading'); // <-- Mostrar todo el contenido una vez cargado el sidebar y top-banner
+    });
 });
 
 // Función para actualizar el nombre de la empresa en el top-banner
@@ -121,4 +132,26 @@ function esPasswordFuerte(pass) {
         /[a-z]/.test(pass) &&    // al menos una minúscula
         /[^A-Za-z0-9]/.test(pass) // al menos un símbolo
     );
+}
+
+// Verificar si el usuario está autenticado y el token no está expirado
+function isTokenExpired(token) {
+    if (!token) return null;
+
+    try {
+        // 1. Decodificar el token (Base64 URL)
+        const payloadBase64 = token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+
+        // Verificar Expiración
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < now) {
+            return null;
+        }
+        // 3. Si es válido y no expirado, retornar el payload completo
+        return payload;
+
+    } catch (e) {
+        return null;
+    }
 }

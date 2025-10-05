@@ -1,16 +1,3 @@
-// Verificar si el usuario está autenticado y el token no está expirado
-function isTokenExpired(token) {
-    if (!token) return true;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (!payload.exp) return false; // Si no hay expiración, se asume válido
-        const now = Math.floor(Date.now() / 1000);
-        return payload.exp < now;
-    } catch (e) {
-        return true; // Si falla el decode, se considera inválido
-    }
-}
-
 const token = sessionStorage.getItem('authToken');
 if (!token) {
     // No existe token → acceso denegado

@@ -34,7 +34,7 @@ document.getElementById('signin-form').addEventListener('submit', async function
             } catch (decodeError) {
                 sessionStorage.removeItem('authToken');
                 // Mostrar mensaje de error general
-                document.getElementById('invalidMessage').textContent = "Error de seguridad. Intenta iniciar sesión de nuevo.";
+                document.getElementById('invalidMessage').textContent =" Error de seguridad. Intenta iniciar sesión de nuevo.";
                 document.getElementById('invalidModal').style.display = 'block';
             }
 

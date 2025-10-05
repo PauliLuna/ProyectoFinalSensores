@@ -1,26 +1,27 @@
-// Verificar si el usuario está autenticado y el token no está expirado
-function isTokenExpired(token) {
-    if (!token) return true;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (!payload.exp) return false; // Si no hay expiración, se asume válido
-        const now = Math.floor(Date.now() / 1000);
-        return payload.exp < now;
-    } catch (e) {
-        return true; // Si falla el decode, se considera inválido
-    }
-}
+// ------------------- SEGURIDAD -------------------
+const REQUIRED_ROLE = 'superAdmin';
 
 const token = sessionStorage.getItem('authToken');
-if (!token) {
-    // No existe token → acceso denegado
-    window.location.href = 'acceso_denegado.html';
-} 
-else if (isTokenExpired(token)) {
-    // Token existente pero caducó → sesión expirada
+const userData = isTokenExpired(token);
+
+ // 1. Validar Token y Expiración
+if (!userData) {
+    // Si no hay token o está expirado/inválido
     sessionStorage.removeItem('authToken');
-    window.location.href = 'sesion_expired.html';
+
+    if (token) {
+        window.location.href = 'sesion_expired.html';
+    } else {
+        window.location.href = 'acceso_denegado.html';
+    }
 }
+// 2. Validar Rol
+const userRole = userData.entity_type; 
+// Si el usuario no tiene el rol requerido
+if (userRole !== REQUIRED_ROLE) {
+    window.location.href = 'acceso_no_autorizado.html';
+}
+// ------------------- FIN -------------------
 
 function filterSensors() {
     const input = document.getElementById("sensorInput").value.toLowerCase();
