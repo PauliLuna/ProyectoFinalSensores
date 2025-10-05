@@ -8,7 +8,9 @@ from controllers.usuario_controller import (
     login_usuario_controller,
     get_ultimas_conexiones_controller,
     solicitar_reset_password_controller,
-    reset_password_controller
+    reset_password_controller,
+    update_usuario_estado_controller,
+    delete_usuario_controller
 )
 from utils.auth import token_required
 
@@ -71,3 +73,17 @@ def solicitar_reset_password():
 def reset_password():
     mongo = current_app.mongo
     return reset_password_controller(mongo)
+
+# Actualizar estado de usuario en invete_user.html
+@usuario_bp.route('/usuario/<user_id>/estado', methods=['PUT'])
+@token_required
+def update_usuario_estado_route(user_id):
+    mongo = current_app.mongo
+    return update_usuario_estado_controller(mongo, user_id)
+
+# Eliminar usuario en invete_user.html
+@usuario_bp.route('/usuario/<user_id>', methods=['DELETE'])
+@token_required
+def delete_usuario_route(user_id):
+    mongo = current_app.mongo
+    return delete_usuario_controller(mongo, user_id)
