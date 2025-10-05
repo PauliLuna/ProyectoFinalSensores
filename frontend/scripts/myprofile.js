@@ -93,20 +93,13 @@ document.getElementById('profileForm').addEventListener('submit', async function
     } else {
         document.getElementById('errorMessage').textContent =
                result.error || "Error al actualizar perfil";
-            document.getElementById('errorModal').style.display = 'block';
+        document.getElementById('errorModal').style.display = 'block';
     }
 });
 
-// 3. Cerrar el modal de éxito
+// Cerrar el modal de éxito
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
-};
-
-window.onclick = function(event) {
-    const modal = document.getElementById('successModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
 };
 
 // Cerrar el modal de error

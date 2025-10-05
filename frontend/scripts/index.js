@@ -13,11 +13,25 @@ document.getElementById('contact-form').addEventListener('submit', async functio
     const result = await response.json();
     if (response.ok) {
         document.getElementById('contact-form').reset();
-        alert(result.success);
+        document.getElementById('successMessage').textContent =
+            result.success;
+        document.getElementById('successModal').style.display = 'block';
     } else {
-        alert(result.error);
+        document.getElementById('errorMessage').textContent =
+            result.error;
+        document.getElementById('errorModal').style.display = 'block';
     }
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+};
+
+// Cerrar el modal de error
+document.getElementById('closeErrorModal').onclick = function() {
+    document.getElementById('errorModal').style.display = 'none';
+};
 
 // JavaScript to toggle the sidebar
 document.getElementById('registerBtn').addEventListener('click', function(e) {

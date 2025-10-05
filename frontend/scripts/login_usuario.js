@@ -12,12 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Llamada al backend para validar código
         try {
-            const res = await fetch('/verificar-codigo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mailUsuario: email, codigo: codigo, tipoEsperado: "Usuario" })
-            });
-            const data = await res.json();
+            const data = await verificarCodigo(email, codigo, "Usuario")
             if (data.valido) {
                 noMatchCodigo.style.display = 'none';
                 step2.style.display = '';
@@ -27,7 +22,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 noMatchCodigo.style.display = 'block';
             }
         } catch (e) {
-            alert('Error al verificar el código.');
+            document.getElementById('errorMessage').textContent =
+               "Error al verificar el código.";
+            document.getElementById('errorModal').style.display = 'block';
         }
     });
 
@@ -56,7 +53,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (hasError) {
-            alert("Por favor, revisá los datos ingresados. Hay campos con errores.");
+            document.getElementById('errorMessage').textContent =
+               "Por favor, revisá los datos ingresados. Hay campos con errores.";
+            document.getElementById('errorModal').style.display = 'block';
             return;
         }
 
@@ -65,19 +64,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             
-            const verifyResult = await verificarCodigo(mailUsuario, codeInvitation)
+            const verifyResult = await verificarCodigo(mailUsuario, codeInvitation, "Usuario")
             console.log("verifyResult:", verifyResult);
 
             if (!verifyResult.valido || verifyResult.tipoInvitacion !== "Usuario") {
                 noMatchCodigo.style.display = 'block';
-                alert("Código de invitación inválido porque " + verifyResult.motivo);
+                document.getElementById('errorMessage').textContent =
+                    "Código de invitación inválido porque " + verifyResult.motivo;
+                document.getElementById('errorModal').style.display = 'block';
                 return;
             }else {
                 noMatchCodigo.style.display = 'none';
             }
         } catch (error) {
-            console.error("Error al verificar código:", error);
-            alert("Error al verificar el código de invitación.");
+            document.getElementById('errorMessage').textContent =
+                "Error al verificar el código de invitación.";
+            document.getElementById('errorModal').style.display = 'block';
             return;
         }
 
@@ -86,18 +88,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const result = await registrarUsuario(formData);
 
             if (result.message) {
-                alert(result.message + "\nMail de usuario: " + result.user_email);
-                this.reset();
-                window.location.href = "signin.html"; // Redirige al login después del registro exitoso
+                document.getElementById('successMessage').innerHTML = // Por el salto de linea
+                    result.message + "<br> Mail de usuario: " + result.user_email;
+                document.getElementById('successModal').style.display = 'block';
             } else {
-                alert('Error al registrar el usuario: ' + (result.error || 'Inténtelo nuevamente.'));
+                document.getElementById('errorMessage').textContent =
+                    'Error al registrar el usuario: ' + (result.error || 'Inténtelo nuevamente.');
+                document.getElementById('errorModal').style.display = 'block';
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Error de conexión con el servidor.');
+            document.getElementById('errorMessage').textContent =
+                'Error de conexión con el servidor.';
+            document.getElementById('errorModal').style.display = 'block';
         }
     });
 });
+
+// Cerrar el modal de éxito
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('successModal').style.display = 'none';
+    window.location.href = "signin.html"; // Redirige al login después del registro exitoso
+};
 
 // Registro de usuario invitado
 async function registrarUsuario(formData) {
