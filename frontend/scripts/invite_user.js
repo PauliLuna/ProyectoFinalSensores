@@ -98,8 +98,9 @@ function renderUsuariosTable() {
                     </select>
                 </td>
                 <td style="text-align:center;">
-                    <button class="btn-primary btn-sm eliminar-btn" title="Eliminar usuario">
-                        <img src="assets/trash-can.png" alt="Borrar" style="width:20px; height:20px; vertical-align:middle;">
+                    <button class="eliminar-btn" title="Eliminar usuario"
+                        style="background:#FFFFFF; border:none; padding:0; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center;">
+                        <img src="assets/trash-can.png" alt="Borrar" style="width:36px; height:36px; vertical-align:middle;">
                     </button>
                 </td>
             </tr>
@@ -217,8 +218,8 @@ function confirmarEliminarUsuario(userId, email) {
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
             <p>¿Está seguro que quiere eliminar el usuario <b>${email}</b>?</p>
-            <button id="btnEliminarUsuario" class="btn-danger">Eliminar</button>
-            <button onclick="this.parentElement.parentElement.remove()" class="btn-secondary">Cancelar</button>
+            <button id="btnEliminarUsuario" class="btn-danger" style="background-color: #457B9D;color: #FFFFFF;">Eliminar</button>
+            <button onclick="this.parentElement.parentElement.remove()" class="btn-danger">Cancelar</button>
         </div>
     `;
     document.body.appendChild(modal);
