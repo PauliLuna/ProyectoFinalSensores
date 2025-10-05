@@ -456,3 +456,20 @@ def reset_password_controller(mongo):
     update_usuario_password(mongo, email, hashed)
     delete_password_reset(mongo, token)
     return jsonify({"message": "Contraseña restablecida correctamente"})
+
+#Invite_user
+def update_usuario_estado_controller(mongo, user_id):
+    data = request.get_json()
+    nuevo_estado = data.get('estado')
+    if nuevo_estado not in ['Active', 'Inactive']:
+        return jsonify({"error": "Estado inválido"}), 400
+    update_usuario(mongo, user_id, {"estado": nuevo_estado})
+    return jsonify({"message": f"Estado actualizado a {nuevo_estado}"}), 200
+
+def delete_usuario_controller(mongo, user_id):
+    from bson import ObjectId
+    result = mongo.db.usuarios.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count:
+        return jsonify({"message": "Usuario eliminado correctamente"}), 200
+    else:
+        return jsonify({"error": "No se pudo eliminar el usuario"}), 400
