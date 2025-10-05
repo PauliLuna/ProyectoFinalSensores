@@ -86,26 +86,48 @@ function renderUsuariosTable() {
     const pageData = usuariosData.slice(startIdx, endIdx);
 
     pageData.forEach(u => {
-        const estado = u.estado === 'Active' ? 'Activo' : 'Inactivo';
-        tbody.innerHTML += `
-            <tr data-user-id="${u._id}">
-                <td>${u.username || ''}</td>
-                <td>${u.email || ''}</td>
-                <td>
-                    <select class="estado-select" style="min-width:90px;">
-                        <option value="Active" ${u.estado === 'Active' ? 'selected' : ''}>Activo</option>
-                        <option value="Inactive" ${u.estado === 'Inactive' ? 'selected' : ''}>Inactivo</option>
-                    </select>
-                </td>
-                <td style="text-align:center;">
-                    <button class="eliminar-btn" title="Eliminar usuario"
-                        style="background:#FFFFFF; border:none; padding:0; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center;">
-                        <img src="assets/trash-can.png" alt="Borrar" style="width:36px; height:36px; vertical-align:middle;">
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
+    // Normalizar estado
+    const estadoRaw = (u.estado || '').trim().toLowerCase();
+    const isInvitado = (estadoRaw === 'invitado' || !u.username);
+    const estadoLabel = estadoRaw === 'active' ? 'Activo'
+                        : estadoRaw === 'inactive' ? 'Inactivo'
+                        : 'Invitado';
+    tbody.innerHTML += `
+        <tr data-user-id="${u._id}">
+            <td>${u.username || ''}</td>
+            <td>${u.email || ''}</td>
+                        <td style="text-align: center;">
+                ${
+                    isInvitado
+                        ? `
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <span style="color:#888;">Invitado</span>
+                                <span class="alias-tooltip-icon" tabindex="0" style="margin-left:4px; position: relative;">
+                                    <img src="assets/informacion.png" alt="info" style="width:16px; height:16px; cursor:pointer;">
+                                    <span class="alias-tooltip-text" style="min-width:220px;">
+                                        <span class="alias-tooltip-arrow"></span>
+                                        Este usuario aún no completó su registro, por lo que no puede ser activado ni desactivado.
+                                    </span>
+                                </span>
+                            </div>
+                          `
+                        : `
+                            <select class="estado-select" style="min-width: 110px;">
+                                <option value="Active" ${estadoRaw === 'active' ? 'selected' : ''}>Activo</option>
+                                <option value="Inactive" ${estadoRaw === 'inactive' ? 'selected' : ''}>Inactivo</option>
+                            </select>
+                          `
+                }
+            </td>
+            <td style="text-align: center;">
+                <button class="eliminar-btn" title="Eliminar usuario"
+                    style="background:#FFFFFF; border:none; padding:0; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center;">
+                    <img src="assets/trash-can.png" alt="Borrar" style="width:36px; height:36px;">
+                </button>
+            </td>
+        </tr>
+    `;
+});
 
     // Estado dropdown handler
     tbody.querySelectorAll('.estado-select').forEach(select => {
