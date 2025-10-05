@@ -16,12 +16,12 @@
     <div id="invite-page" class="main-content">
         <div class="form-container" style="max-width:900px; margin: 0 auto;">
 
-            <div class="card" style="margin: 12px 0;">
+            <div class="card" style="margin: 12px 0; max-width: 1200px; width: 100%;">
                 <div class="card-body p-4">
 
                     <!-- TOP ROW: Invitar Usuario (input + botón en la misma línea) -->
                     <div class="top-row">
-                        <h1 style="text-align:center; margin-bottom:12px;">Invitar Usuario</h1>
+                        <h1 style="text-align:center; margin-bottom:5px;">Invitar Usuario</h1>
 
                         <form id="inviteForm" class="invite-form" style="width:100%; display:flex; justify-content:center;">
                             <div class="form-row invite-row" style="width:100%; max-width:640px; display:flex; gap:10px; align-items:center;">
@@ -30,7 +30,7 @@
                                 <input id="inviteEmail" name="inviteEmail" type="email" placeholder="usuario@ejemplo.com" style="width:100%;" required />
                             </div>
                             <div class="form-group" style="flex:0 0 auto; align-self:flex-end;">
-                                <button id="inviteBtn" class="btn-primary invite-btn" type="submit" style="white-space:nowrap;">Invitar</button>
+                                <button id="inviteBtn" class="btn-primary invite-btn" type="submit" style="white-space:nowrap; margin-top: 3px; margin-bottom: 3px;">Invitar</button>
                             </div>
                             </div>
                         </form>
@@ -38,36 +38,42 @@
                     <!-- /TOP ROW -->
 
                     <!-- BOTTOM ROW: Tabla de usuarios + paginación (dentro del mismo wrapper) -->
-                    <div class="bottom-row" style="margin-top:28px;">
-                        <h2 style="text-align:center; margin-bottom:12px;">Lista de Usuarios</h2>
-
-                        <div class="table-wrapper" style="width:100%; overflow:auto;">
-                            <table id="usuariosTable" class="styled-table" style="width:100%; margin:0 auto;">
-                            <thead>
-                                <tr>
-                                <th>Email</th>
-                                <th>Nombre</th>
-                                <th>Estado</th>
-                                <th style="text-align:center; width:90px;">Acción</th>
-                                <th style="text-align:center; width:70px;">Borrar</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usuariosTableBody">
-                                <!-- filas dinámicas -->
-                            </tbody>
+                     <div class="recent-activity" style="margin-top: 5px; box-shadow: none; border-width: 0cap;">
+                        <h2 style="text-align:left; margin-bottom:12px;">Lista de Usuarios
+                            <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 10px; position: relative;">
+                                <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
+                                <span class="alias-tooltip-text">
+                                     Muestra la lista de usuarios activos e invitados de tu organización. 
+                                     Desde aquí puedes gestionar el estado (Activo/Inactivo) de cada usuario y eliminarlos de la plataforma.
+                                </span>
+                            </span>
+                        </h2>
+                        <div class="table-wrapper" style="position: relative; min-height: 340px; max-height: 340px; overflow-y: auto; padding-bottom: 10px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th id="th-estado">Estado</th>
+                                        <th id="th-eliminar">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-list-table">
+                                    <!-- Aquí se insertarán las filas dinámicamente -->
+                                </tbody>
                             </table>
-
-                            <!-- Pagination & info (DENTRO del wrapper, inmediatamente abajo de la tabla) -->
-                            <div class="table-pagination-row" style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px;">
-                            <div class="pagination-info" style="font-size:0.95rem; color:#555;">
-                                Mostrando <span id="current-results-showing">0</span> de <span id="total-results">0</span> resultados
-                            </div>
-                            <ul id="usuariosPagination" class="pagination" style="display:flex; gap:6px; list-style:none; margin:0; padding:0;">
-                                <!-- botones de paginado -->
-                            </ul>
+                            <div class="table-pagination-row">
+                                <div class="pagination-info">
+                                    Mostrando <span id="current-results-showing">0</span> de <span id="total-results">0</span> resultados
+                                </div>
+                                <ul class="pagination" id="user-table-pagination">
+                                    <!-- Las páginas se generan dinámicamente -->
+                                </ul>
                             </div>
                         </div>
+                    
                     </div>
+
                     <!-- /BOTTOM ROW -->
 
                 </div>
