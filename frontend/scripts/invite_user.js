@@ -96,7 +96,7 @@ function renderUsuariosTable() {
         <tr data-user-id="${u._id}">
             <td>${u.username || ''}</td>
             <td>${u.email || ''}</td>
-                        <td style="text-align: center;">
+            <td style="text-align: center;">
                 ${
                     isInvitado
                         ? `
@@ -110,13 +110,13 @@ function renderUsuariosTable() {
                                     </span>
                                 </span>
                             </div>
-                          `
+                        `
                         : `
                             <select class="estado-select" style="min-width: 110px;">
-                                <option value="Active" ${estadoRaw === 'active' ? 'selected' : ''}>Activo</option>
-                                <option value="Inactive" ${estadoRaw === 'inactive' ? 'selected' : ''}>Inactivo</option>
+                                <option value="Active" ${(u.estado || '').trim().toLowerCase() === 'active' ? 'selected' : ''}>Activo</option>
+                                <option value="Inactive" ${(u.estado || '').trim().toLowerCase() === 'inactive' ? 'selected' : ''}>Inactivo</option>
                             </select>
-                          `
+                        `
                 }
             </td>
             <td style="text-align: center;">
