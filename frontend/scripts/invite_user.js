@@ -64,16 +64,28 @@ window.onclick = function(event) {
 };
 
 // --- Cargar usuarios y renderizar tabla ---
+const pageSize = 3;
+let currentPage = 1;
+let usuariosData = [];
+
 async function cargarUsuarios() {
     const res = await fetch('/usuarios', { headers: { 'Authorization': 'Bearer ' + token } });
-    const usuarios = await res.json();
-    renderUsuariosTable(usuarios);
+    usuariosData = await res.json();
+    renderUsuariosTable();
 }
 
-function renderUsuariosTable(usuarios) {
+function renderUsuariosTable() {
     const tbody = document.getElementById('user-list-table');
     tbody.innerHTML = '';
-    usuarios.forEach(u => {
+    const totalResults = usuariosData.length;
+    const totalPages = Math.max(1, Math.ceil(totalResults / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalResults);
+    const pageData = usuariosData.slice(startIdx, endIdx);
+
+    pageData.forEach(u => {
         const estado = u.estado === 'Active' ? 'Activo' : 'Inactivo';
         tbody.innerHTML += `
             <tr data-user-id="${u._id}">
@@ -86,16 +98,15 @@ function renderUsuariosTable(usuarios) {
                     </select>
                 </td>
                 <td style="text-align:center;">
-                    <button class="btn-primary btn-sm" onclick="editarUsuario('${u._id}')">Editar</button>
-                </td>
-                <td style="text-align:center;">
-                    <img src="assets/trash-can.png" alt="Borrar" class="table-action-icon" style="width:20px; height:20px; cursor:pointer;" onclick="confirmarEliminarUsuario('${u._id}', '${u.email}')">
+                    <button class="btn-primary btn-sm eliminar-btn" title="Eliminar usuario">
+                        <img src="assets/trash-can.png" alt="Borrar" style="width:20px; height:20px; vertical-align:middle;">
+                    </button>
                 </td>
             </tr>
         `;
     });
 
-    // --- Estado dropdown handler ---
+    // Estado dropdown handler
     tbody.querySelectorAll('.estado-select').forEach(select => {
         select.addEventListener('change', function() {
             const tr = this.closest('tr');
@@ -103,6 +114,72 @@ function renderUsuariosTable(usuarios) {
             actualizarEstadoUsuario(userId, this.value);
         });
     });
+
+    // Eliminar usuario handler
+    tbody.querySelectorAll('.eliminar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tr = this.closest('tr');
+            const userId = tr.getAttribute('data-user-id');
+            const email = tr.children[1].textContent;
+            confirmarEliminarUsuario(userId, email);
+        });
+    });
+
+    // Actualiza texto "mostrando X de Y resultados"
+    document.getElementById('current-results-showing').textContent = pageData.length;
+    document.getElementById('total-results').textContent = totalResults;
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const pagination = document.getElementById('user-table-pagination');
+    pagination.innerHTML = '';
+
+    // Flecha izquierda
+    const prevItem = document.createElement('li');
+    prevItem.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+    prevItem.innerHTML = `<a href="#" class="page-link">&larr;</a>`;
+    prevItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            renderUsuariosTable();
+        }
+    });
+    pagination.appendChild(prevItem);
+
+    // Números de página (máximo 5)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i === currentPage ? ' active' : '');
+        li.innerHTML = `<a href="#" class="page-link">${i}</a>`;
+        li.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage !== i) {
+                currentPage = i;
+                renderUsuariosTable();
+            }
+        });
+        pagination.appendChild(li);
+    }
+
+    // Flecha derecha
+    const nextItem = document.createElement('li');
+    nextItem.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+    nextItem.innerHTML = `<a href="#" class="page-link">&rarr;</a>`;
+    nextItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderUsuariosTable();
+        }
+    });
+    pagination.appendChild(nextItem);
 }
 
 // --- Actualizar estado usuario ---
