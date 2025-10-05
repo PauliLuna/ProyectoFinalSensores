@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, jsonify, request
-from controllers.sensor_controller import register_sensor, update_sensor, get_all_sensors, get_sensor, get_mediciones, procesar_sensor, obtener_ultima_medicion, obtener_cantidad_aperturas, get_duracion_ultima_apertura, analizar_mediciones
+from controllers.sensor_controller import register_sensor, update_sensor, get_all_sensors, get_all_sensors_user, get_sensor, get_mediciones, procesar_sensor, obtener_ultima_medicion, obtener_cantidad_aperturas, get_duracion_ultima_apertura, analizar_mediciones
 from utils.auth import token_required
 
 sensor_bp = Blueprint('sensor_bp', __name__)
@@ -9,6 +9,13 @@ sensor_bp = Blueprint('sensor_bp', __name__)
 def get_all_sensors_route():
     mongo = current_app.mongo
     sensores = get_all_sensors(mongo)
+    return jsonify(sensores)
+
+@sensor_bp.route('/sensoresUser', methods=['GET'])
+@token_required
+def get_all_sensors_user_route():
+    mongo = current_app.mongo
+    sensores = get_all_sensors_user(mongo)
     return jsonify(sensores)
 
 @sensor_bp.route('/mediciones', methods=['GET'])

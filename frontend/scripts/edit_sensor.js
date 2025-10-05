@@ -1,13 +1,27 @@
+// ------------------- SEGURIDAD -------------------
+const REQUIRED_ROLE = 'superAdmin';
+
 const token = sessionStorage.getItem('authToken');
-if (!token) {
-    // No existe token → acceso denegado
-    window.location.href = 'acceso_denegado.html';
-} 
-else if (isTokenExpired(token)) {
-    // Token existente pero caducó → sesión expirada
+const userData = isTokenExpired(token);
+
+ // 1. Validar Token y Expiración
+if (!userData) {
+    // Si no hay token o está expirado/inválido
     sessionStorage.removeItem('authToken');
-    window.location.href = 'sesion_expired.html';
+
+    if (token) {
+        window.location.href = 'sesion_expired.html';
+    } else {
+        window.location.href = 'acceso_denegado.html';
+    }
 }
+// 2. Validar Rol
+const userRole = userData.entity_type; 
+// Si el usuario no tiene el rol requerido
+if (userRole !== REQUIRED_ROLE) {
+    window.location.href = 'acceso_no_autorizado.html';
+}
+// ------------------- FIN -------------------
 
 // Mostrar/ocultar el dropdown de añadir usuario
 function toggleAddUserDropdown() {

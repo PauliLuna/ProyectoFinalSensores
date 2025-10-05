@@ -151,5 +151,4 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('rangoFilter').value = rango;
     }
     filterSensors();
-
 });

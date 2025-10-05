@@ -200,6 +200,100 @@ def get_all_sensors(mongo):
         })
     return result
 
+def get_all_sensors_user(mongo):
+    try:
+        # 1. Obtener ID de Usuario y Empresa desde la sesión
+        idUser = session.get('user_id')
+        idEmpresa = session.get('idEmpresa')
+
+        if not idUser or not idEmpresa:
+            print("[ERROR] idUser o idEmpresa no encontrados en la sesión.")
+            return []
+
+        # 2. Obtener todas las asignaciones activas del usuario
+        asignaciones = list(mongo.db.asignaciones.find(
+            {"idUsuario": idUser, "estadoAsignacion": "Activo"}
+        ))
+
+        # 3. Mapear los IDs de sensor a sus permisos
+        sensor_permisos = {}
+        sensor_ids_to_fetch = set()
+
+        for asignacion in asignaciones:
+            sensor_id = asignacion.get("idSensor") # Integer 
+            permiso = asignacion.get("permiso")
+            
+            if sensor_id and permiso:
+                # Mapeamos el ID del sensor (asumiendo string o int) al permiso
+                sensor_permisos[str(sensor_id)] = permiso
+                sensor_ids_to_fetch.add(sensor_id)
+        
+        # Si no hay IDs para buscar, retornamos una lista vacía
+        if not sensor_ids_to_fetch:
+            return []
+
+        # 4. Obtener los detalles de los sensores (JOIN con 'sensors')
+        # Filtramos por los IDs recolectados Y el idEmpresa de la sesión.
+        sensores_detalles = list(mongo.db.sensors.find({
+            "idEmpresa": idEmpresa,
+            # Usamos "$in" con la lista de IDs de sensores a los que el usuario tiene acceso
+            "nroSensor": {"$in": list(sensor_ids_to_fetch)}
+        }))
+
+        # 5. Combinar los detalles del sensor con el permiso
+        sensores_con_permiso = []
+        for sensor in sensores_detalles:
+            # Aseguramos que la clave de búsqueda en el mapa de permisos sea consistente
+            nro_sensor_str = str(sensor.get("nroSensor"))
+            permiso_asignado = sensor_permisos.get(nro_sensor_str)
+
+            # Obtener la última medición para el sensor
+            last_med = mongo.db.mediciones.find_one(
+            {"idSensor": sensor.get("nroSensor")},
+            sort=[("fechaHoraMed", -1)] # Usamos pymongo.DESCENDING
+            )
+
+            # 6. Procesar datos del sensor y medición
+            alias = sensor.get('alias', '')
+            notas = sensor.get('notas')
+            estado = "ONLINE" if sensor.get('estado') == "active" else "OFFLINE"
+            temp_interna = last_med.get('valorTempInt') if last_med else None
+            temp_externa = last_med.get('valorTempExt') if last_med else None
+            valor_min = sensor.get('valorMin')
+            valor_max = sensor.get('valorMax')
+            latitud = sensor.get('latitud')
+            longitud = sensor.get('longitud')
+            
+            # 7. Comprobar si está en rango
+            en_rango = (
+                temp_interna is not None and valor_min is not None and valor_max is not None
+                and valor_min <= temp_interna <= valor_max
+            )
+            
+            # 8. Añadir los datos al resultado, incluyendo el permiso
+            sensores_con_permiso.append({
+                "nroSensor": sensor.get("nroSensor"),
+                "alias": alias,
+                "notas": notas,
+                "estado": estado,
+                "temperaturaInterna": temp_interna,
+                "temperaturaExterna": temp_externa,
+                "enRango": en_rango,
+                "latitud": latitud,
+                "longitud": longitud,
+                "valorMin": valor_min,
+                "valorMax": valor_max,
+                "direccion": sensor.get('direccion'),
+                "permisoAsignado": permiso_asignado
+            })
+
+        return sensores_con_permiso
+
+    except Exception as e:
+        print(f"[ERROR] Fallo al obtener sensores por usuario: {e}")
+        return []
+
+
 # ALL EMPRESAS
 def get_all_sensors_empresa(mongo, id_empresa):
     # Traer todos los sensores de la empresa
