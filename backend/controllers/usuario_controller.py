@@ -244,6 +244,16 @@ def login_usuario_controller(mongo):
     email = request.form.get('email').strip().lower()
     password = request.form.get('password')
     usuario = get_usuario_by_email(mongo, email)
+
+    # --- Verificación de estado del usuario ---
+    estado = usuario.get("estado", "").lower()
+    if estado == "inactive":
+        return jsonify({"error": "Usuario bloqueado. Contacte al administrador."}), 403
+    elif estado == "invitado":
+        return jsonify({"error": "Usuario invitado. Debe realizar la activación de su cuenta."}), 403
+    elif estado != "active":
+        return jsonify({"error": f"Estado de usuario inválido: {estado}"}), 403
+
     now = datetime.datetime.utcnow()
 
     # --- ALERTA DE INICIO DE SESIÓN NOCTURNO ---
