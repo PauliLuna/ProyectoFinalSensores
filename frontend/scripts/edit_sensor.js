@@ -15,12 +15,6 @@ if (!userData) {
         window.location.href = 'acceso_denegado.html';
     }
 }
-// 2. Validar Rol
-const userRole = userData.entity_type; 
-// Si el usuario no tiene el rol requerido
-if (userRole !== REQUIRED_ROLE) {
-    window.location.href = 'acceso_no_autorizado.html';
-}
 // ------------------- FIN -------------------
 
 // Mostrar/ocultar el dropdown de añadir usuario

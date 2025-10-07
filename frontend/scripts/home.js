@@ -30,7 +30,7 @@ if (!userData) {
 const userRole = userData.entity_type;
 // Si el usuario no tiene el rol requerido
 if (userRole !== REQUIRED_ROLE) {
-    window.location.href = 'acceso_no_autorizado.html';
+    window.location.href = 'acceso_denegado.html';
 }
 // Token válido y el rol correcto. -> guardamos cuando unicia sesión
 sessionStorage.setItem('userData', JSON.stringify(userData));
