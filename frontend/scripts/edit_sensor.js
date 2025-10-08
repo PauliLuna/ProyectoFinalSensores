@@ -3,6 +3,7 @@ const REQUIRED_ROLE = 'superAdmin';
 
 const token = sessionStorage.getItem('authToken');
 const userData = isTokenExpired(token);
+const userRole = userData ? userData.entity_type : null;
 
  // 1. Validar Token y Expiración
 if (!userData) {
@@ -275,7 +276,15 @@ async function submitEditSensorForm(e) {
 // Cerrar el modal de éxito
 document.getElementById('closeModal').onclick = function() {
     document.getElementById('successModal').style.display = 'none';
-    window.location.href = "sensores.html";
+    if (userRole === 'superAdmin') {
+        window.location.href = 'sensores.html';
+    } else if (userRole === 'usuario') {
+        window.location.href = 'sensoresUser.html';
+    } else {
+        // Por si aparece otro rol inesperado
+        console.warn('Rol desconocido:', userRole);
+        window.location.href = 'signin.html';
+    }
 };
 
 // Cerrar el modal de error
@@ -288,10 +297,26 @@ function handleBtnVolver() {
     const currentState = getFormState();
     if (currentState !== initialFormState) {
         if (confirm("Tienes cambios sin guardar. ¿Deseas descartarlos y volver?")) {
-            window.location.href = "sensores.html";
+            if (userRole === 'superAdmin') {
+                window.location.href = 'sensores.html';
+            } else if (userRole === 'usuario') {
+                window.location.href = 'sensoresUser.html';
+            } else {
+                // Por si aparece otro rol inesperado
+                console.warn('Rol desconocido:', userRole);
+                window.location.href = 'signin.html';
+            }
         }
     } else {
-        window.location.href = "sensores.html";
+        if (userRole === 'superAdmin') {
+            window.location.href = 'sensores.html';
+        } else if (userRole === 'usuario') {
+            window.location.href = 'sensoresUser.html';
+        } else {
+            // Por si aparece otro rol inesperado
+            console.warn('Rol desconocido:', userRole);
+            window.location.href = 'signin.html';
+        }
     }
 }
 
