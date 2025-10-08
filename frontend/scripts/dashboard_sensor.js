@@ -3,6 +3,7 @@ const REQUIRED_ROLE = 'superAdmin';
 
 const token = sessionStorage.getItem('authToken');
 const userData = isTokenExpired(token);
+const userRole = userData ? userData.entity_type : null;
 
  // 1. Validar Token y Expiración
 if (!userData) {
@@ -777,7 +778,15 @@ document.getElementById('closeModal').onclick = function() {
 
 // Botón Volver
 document.getElementById('btnVolver').addEventListener('click', () => {
-    window.location.href = 'sensores.html';
+    if (userRole === 'superAdmin') {
+        window.location.href = 'sensores.html';
+    } else if (userRole === 'usuario') {
+        window.location.href = 'sensoresUser.html';
+    } else {
+        // Por si aparece otro rol inesperado
+        console.warn('Rol desconocido:', userRole);
+        window.location.href = 'signin.html';
+    }
 });
 
 // Agrega el HTML para el overlay de carga. Esto se puede poner en el cuerpo de tu HTML.

@@ -1,33 +1,48 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Cargar sidebar y top-banner en paralelo
-    Promise.all([
-        fetch('partials/sidebar.html').then(res => res.text()),
-        fetch('partials/sidebarUser.html').then(res => res.text()),
-        fetch('partials/top-banner.html').then(res => res.text())
-    ]).then(([sidebarHtml, sidebarHtmlUser, topBannerHtml]) => {
-        const sidebarAdminContainer = document.getElementById('sidebar-container');
-        const sidebarUserContainer = document.getElementById('sidebar-container-user');
-        if (sidebarAdminContainer) {
-            // Si la página tiene el contenedor de Admin (dashboard_admin.html)
-            sidebarAdminContainer.innerHTML = sidebarHtml;
-        } else {
-            // Si la página tiene el contenedor de Usuario (dashboard_usuario.html)
-            sidebarUserContainer.innerHTML = sidebarHtmlUser;
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const token = sessionStorage.getItem('authToken');
+        if (!token) {
+            return;
         }
-        resaltarSidebarActivo(); 
+
+        const payload = isTokenExpired(token);
+        const userRole = payload.entity_type;
+
+        // Determinar qué sidebar cargar según el rol
+        let sidebarPath = "";
+        if (userRole === "superAdmin") {
+            sidebarPath = "partials/sidebar.html";
+        } else if (userRole === "usuario") {
+            sidebarPath = "partials/sidebarUser.html";
+        } else {
+            console.warn("Rol desconocido:", userRole);
+            return;
+        }
+
+        // Cargar sidebar y top-banner en paralelo
+        const [sidebarHtml, topBannerHtml] = await Promise.all([
+            fetch(sidebarPath).then(res => res.text()),
+            fetch('partials/top-banner.html').then(res => res.text())
+        ]);
+
+        // Insertar los partials
+        document.getElementById('sidebar-container').innerHTML = sidebarHtml;
         document.getElementById('top-banner-container').innerHTML = topBannerHtml;
 
-        // --- Agregar event listener para logout-link ---
+        // --- Activar funciones de UI ---
+        resaltarSidebarActivo(); 
+
+        // Logout
         const logoutLink = document.getElementById('logout-link');
         if (logoutLink) {
-            logoutLink.addEventListener('click', function(e) {
+            logoutLink.addEventListener('click', e => {
                 e.preventDefault();
                 sessionStorage.removeItem('authToken');
                 window.location.href = "signin.html";
             });
         }
-        
-        // Ahora sí existen ambos en el DOM
+
+        // Toggle Sidebar
         const toggleSidebarButton = document.getElementById('toggle-sidebar');
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
@@ -45,16 +60,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 sidebar.classList.toggle('collapsed');
                 mainContent.classList.toggle('sidebar-collapsed');
                 topBanner.classList.toggle('sidebar-collapsed');
-                // --- guardar estado en localStorage ---
                 localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             });
         }
 
-        // Llamar a la función para actualizar el nombre de la empresa
+        // Actualizar datos de sesión en UI
         actualizarNombreEmpresa();
         actualizarUsuarioActual();
-        document.body.classList.remove('body-loading'); // <-- Mostrar todo el contenido una vez cargado el sidebar y top-banner
-    });
+
+        document.body.classList.remove('body-loading'); // mostrar contenido
+
+    } catch (err) {
+        console.error("Error cargando sidebar/top-banner:", err);
+    }
 });
 
 // Función para actualizar el nombre de la empresa en el top-banner
@@ -134,7 +152,7 @@ function esPasswordFuerte(pass) {
     );
 }
 
-// Verificar si el usuario está autenticado y el token no está expirado
+// Verificar si el usuario está autenticado y el token no está expirado + Decodificar payload
 function isTokenExpired(token) {
     if (!token) return null;
 
