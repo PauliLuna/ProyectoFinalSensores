@@ -180,6 +180,7 @@ def get_all_sensors(mongo):
         valor_max = sensor.get('valorMax')
         latitud = sensor.get('latitud')
         longitud = sensor.get('longitud')
+        completeDireccion = f"{sensor.get('direccion', '')}, {sensor.get('ciudad', '')}, {sensor.get('provincia', '')}, {sensor.get('pais', '')}"
         en_rango = (
             temp_interna is not None and valor_min is not None and valor_max is not None
             and valor_min <= temp_interna <= valor_max
@@ -196,7 +197,8 @@ def get_all_sensors(mongo):
             "longitud": longitud,
             "valorMin": valor_min,
             "valorMax": valor_max,
-            "direccion": sensor.get('direccion')
+            "direccion": sensor.get('direccion'),
+            "completeDireccion": completeDireccion
         })
     return result
 

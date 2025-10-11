@@ -324,7 +324,7 @@ async function cargarCards(sensor){
                 : 'N/A';
 
         // Dirección
-        document.getElementById('sensor-direccion').textContent = sensor.direccion || 'N/A';
+        document.getElementById('sensor-direccion').textContent = sensor.completeDireccion || 'N/A';
 
     }
     catch(err){
