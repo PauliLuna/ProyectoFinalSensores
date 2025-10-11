@@ -19,6 +19,15 @@ def get_usuarios_by_empresa(mongo, id_empresa):
         usuario["_id"] = str(usuario["_id"])
     return usuarios
 
+def get_all_users_by_empresa(mongo, id_empresa):
+    usuarios = list(mongo.db.usuarios.find(
+        {"idEmpresa": id_empresa},
+        {"email": 1, "username": 1, "_id": 1, "estado": 1, "roles": 1}
+    ))
+    for usuario in usuarios:
+        usuario["_id"] = str(usuario["_id"])
+    return usuarios
+
 def get_usuario_by_id(mongo, user_id):
     return mongo.db.usuarios.find_one({"_id": ObjectId(user_id)})
 

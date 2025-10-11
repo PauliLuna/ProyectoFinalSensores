@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app
 from controllers.usuario_controller import (
     get_usuarios_controller,
+    get_all_users_controller,
     usuario_actual_controller,
     register_usuario_controller,
     invite_user_controller,
@@ -22,6 +23,13 @@ usuario_bp = Blueprint('usuario_bp', __name__)
 def get_usuarios():
     mongo = current_app.mongo
     return get_usuarios_controller(mongo)
+
+# Home - todos los usuarios (sin filtrar por estado)
+@usuario_bp.route('/usuarios_all', methods=['GET'])
+@token_required
+def get_all_users():
+    mongo = current_app.mongo
+    return get_all_users_controller(mongo)
 
 # utils GET / myprofile.js (usuarios.js) PUT
 @usuario_bp.route('/usuario_actual', methods=['GET', 'PUT'])

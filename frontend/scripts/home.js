@@ -5,6 +5,7 @@ const pageSize = 5; // Cambia este valor si quieres más/menos filas por página
 let sensoresData = [];
 let alertasData = [];
 let usuariosData = [];
+let usuariosAllData = []; // todos los usuarios (sin filtrar por estado)
 
 let alertasTendenciaChart = null;
 let alertasSucursalesChart = null;
@@ -82,15 +83,17 @@ async function initHome() {
 async function cargarKPIs() {
     try {
         // Usa Promise.all para hacer las llamadas en paralelo
-        const [sensoresRes, alertasRes, usuariosRes] = await Promise.all([
+        const [sensoresRes, alertasRes, usuariosRes, usuariosAllRes] = await Promise.all([
             fetch('/sensores', { headers: { 'Authorization': 'Bearer ' + token } }),
             fetch('/alertas', { headers: { 'Authorization': 'Bearer ' + token } }),
-            fetch('/usuarios', { headers: { 'Authorization': 'Bearer ' + token } })
+            fetch('/usuarios', { headers: { 'Authorization': 'Bearer ' + token } }),
+            fetch('/usuarios_all', { headers: { 'Authorization': 'Bearer ' + token } })
         ]);
 
         sensoresData = await sensoresRes.json();
         alertasData = await alertasRes.json();
         usuariosData = await usuariosRes.json();
+        usuariosAllData = await usuariosAllRes.json();
 
         // Render KPI cards (these use the full datasets, not the date-filter)
         renderKPIs(sensoresData, alertasData);
@@ -205,7 +208,7 @@ function renderContenidoFiltrable(periodo) {
     renderRankingFueraRango(alertasFiltradas)
     cargarAlertasParaBarra(alertasFiltradas);
     renderKPITiempos(alertasFiltradas);
-    renderAlertasSeguridadTable(alertasFiltradas, usuariosData);
+    renderAlertasSeguridadTable(alertasFiltradas, usuariosAllData);
 }
 
 // ------------------- Bar (alert distribution) -------------------

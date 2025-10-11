@@ -16,6 +16,14 @@ def get_usuarios_controller(mongo):
     usuarios = get_usuarios_by_empresa(mongo, id_empresa)
     return jsonify(usuarios)
 
+# Nueva función para obtener todos los usuarios para HOME (sin filtrar por estado)
+def get_all_users_controller(mongo):
+    id_empresa = session.get('idEmpresa')
+    if not id_empresa:
+        return jsonify([])
+    usuarios = get_all_users_by_empresa(mongo, id_empresa)
+    return jsonify(usuarios)
+
 def usuario_actual_controller(mongo):
     user_id = session.get('user_id')
     if not user_id:
