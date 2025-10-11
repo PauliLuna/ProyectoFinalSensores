@@ -296,7 +296,21 @@ document.getElementById('closeErrorModal').onclick = function() {
 function handleBtnVolver() {
     const currentState = getFormState();
     if (currentState !== initialFormState) {
-        if (confirm("Tienes cambios sin guardar. ¿Deseas descartarlos y volver?")) {
+        // Modal de confirmación
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <p> Tienes cambios sin guardar. ¿Deseas descartarlos y volver?</p>
+                <button onclick="this.parentElement.parentElement.remove()" class="btn-danger">Cancelar</button>
+                <button id="btnConfirmar" class="btn-danger" style="background-color: #457B9D;color: #FFFFFF;">Sí</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('btnConfirmar').onclick = async function() {
             if (userRole === 'superAdmin') {
                 window.location.href = 'sensores.html';
             } else if (userRole === 'usuario') {
@@ -306,7 +320,7 @@ function handleBtnVolver() {
                 console.warn('Rol desconocido:', userRole);
                 window.location.href = 'signin.html';
             }
-        }
+        };
     } else {
         if (userRole === 'superAdmin') {
             window.location.href = 'sensores.html';
