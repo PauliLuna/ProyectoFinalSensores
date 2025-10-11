@@ -15,11 +15,15 @@ if (!userData) {
         window.location.href = 'acceso_denegado.html';
     }
 }
-// 2. Validar Rol
+// Ambos roles permitidos
+// Validar Rol
 const userRole = userData.entity_type; 
-// Si el usuario no tiene el rol requerido
 if (userRole !== REQUIRED_ROLE) {
-    window.location.href = 'acceso_denegado.html';
+    // Oculta el campo de notificación de seguridad
+    const notifSeguridad = document.getElementById('notifSeguridad');
+    if (notifSeguridad) {
+        notifSeguridad.parentElement.style.display = 'none';
+    }
 }
 // ------------------- FIN -------------------
 
