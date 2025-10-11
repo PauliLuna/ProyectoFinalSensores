@@ -231,8 +231,6 @@ async function cargarCards(sensor){
             getCantidadAperturas(sensorId)
         ]);
 
-
-
         // Última medición
         if (ultimaMed && Object.keys(ultimaMed).length > 0) {
             const intTemp = ultimaMed.valorTempInt ?? null;
@@ -324,6 +322,9 @@ async function cargarCards(sensor){
             (cantidadAperturas !== null && cantidadAperturas !== undefined) 
                 ? cantidadAperturas 
                 : 'N/A';
+
+        // Dirección
+        document.getElementById('sensor-direccion').textContent = sensor.direccion || 'N/A';
 
     }
     catch(err){
