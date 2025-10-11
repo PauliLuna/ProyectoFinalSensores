@@ -91,7 +91,19 @@
 
         <!-- Tabla: ALERTAS -->
         <div class="recent-activity" style="margin-top: 20px; margin-bottom: 20px;">
-            <h3 style="margin-bottom: 15px;">Detalle de las alertas</h3>
+            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                <h3 style="margin-right: 8px; margin-bottom: 0;">Detalle de las alertas</h3>
+                <span class="alias-tooltip-icon" tabindex="0" style="position: relative;">
+                    <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px; margin-bottom: -1px;">
+                    <span class="alias-tooltip-text">
+                        <span class="alias-tooltip-arrow"></span>
+                        Las alertas de **tipo Seguridad** hacen referencia a eventos de usuarios.
+                        Por esta razón, no tienen un sensor o sucursal asociado
+                        y se mostrarán como **N/A**.
+                    </span>
+                </span>
+            </div>
+            
             <div class="table-wrapper" style="position: relative; min-height: 585px; max-height: 585px; overflow-y: auto; padding-bottom: 10px;">
                 <table class="alerts-table">
                     <thead>
@@ -121,12 +133,30 @@
         <!-- Gráficos -->
         <div class="charts-section">
             <div class="chart-container" style="max-height: fit-content;">
-                <h3>Cantidad detectada por Tipos de Alertas</h3>
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <h3>Cantidad detectada por Tipos de Alertas</h3>
+                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative; z-index: 10000;">
+                        <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px; margin-bottom: 2px;">
+                        <span class="alias-tooltip-text">
+                            <span class="alias-tooltip-arrow"></span>
+                            Muestra la distribución porcentual de las alertas registradas (Críticas, Informativas, Preventivas, Seguridad) en el período seleccionado.
+                        </span>
+                    </span>
+                </div>
                 <canvas id="alertsPieChart"></canvas>
             </div>
 
             <div class="chart-container" style="max-height: fit-content;">
-                <h3>Cantidad de Alertas detectadas</h3>
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <h3>Cantidad de Alertas detectadas</h3>
+                    <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 4px; position: relative; z-index: 10000;">
+                        <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;margin-bottom: 2px;">
+                        <span class="alias-tooltip-text">
+                            <span class="alias-tooltip-arrow"></span>
+                            Muestra la evolución temporal de la cantidad total de alertas detectadas a lo largo del período de tiempo seleccionado.
+                        </span>
+                    </span>
+                </div>
                 <canvas id="alertsLineChart"></canvas>
             </div>
         </div>
