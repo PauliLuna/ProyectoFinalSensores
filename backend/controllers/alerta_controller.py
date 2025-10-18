@@ -910,9 +910,9 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
         return 1  # ⚠️ Devuelve 1 si se insertó una alerta
     return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
-def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
+def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=5):
     """
-    Genera alerta preventiva si el sensor tiene más de X alertas de puerta abierta prolongada
+    Genera alerta preventiva si el sensor tiene más de 5 alertas de puerta abierta prolongada
     en el mismo día.
     """
     nro_sensor = sensor["nroSensor"]
