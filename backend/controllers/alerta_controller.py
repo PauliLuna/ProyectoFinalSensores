@@ -983,7 +983,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
 
     # 1. Caso: Todos los sensores están inactivos
-    if all(s["estado"] == "OFFLINE" for s in sensores_misma_dir):
+    if all(s["estado"] == "inactive" for s in sensores_misma_dir):
         if not alerta_existente:
             # Si no existe una alerta pendiente, se crea una nueva.
             print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
