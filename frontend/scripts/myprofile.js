@@ -28,9 +28,7 @@ if (userRole !== REQUIRED_ROLE) {
 // ------------------- FIN -------------------
 
 // ------------------- DESCARGA MANUAL SEGÚN ROL -------------------
-
 const manualContainer = document.getElementById('manual-container');
-
 if (manualContainer) {
     // Definir ruta del PDF según el rol
     const manualPath = (userRole === 'superAdmin')
@@ -58,6 +56,21 @@ async function cargarPerfil() {
     document.getElementById('role').value = data.roles || '';
     document.getElementById('userName').value = data.username || '';
     document.getElementById('numCel').value = data.phone || '';
+
+    // Mostrar empresa administrada si aplica (ahora que ya tenemos `data`)
+    const adminContainer = document.getElementById('adminCompanyContainer');
+    const adminLabel = document.getElementById('adminCompanyLabel');
+    const adminEmail = data.adminCompany || '';
+
+    if (adminContainer && adminLabel) {
+        if (userRole === 'usuario' && adminEmail) {
+            adminContainer.style.display = 'block';
+            adminLabel.textContent = `📧${adminEmail}`;
+
+        } else {
+            adminContainer.style.display = 'none';
+        }
+    }
     // Preferencias de alertas
     const prefs = data.notificacionesAlertas || {};
     document.getElementById('notifCritica').checked = !!prefs.critica;

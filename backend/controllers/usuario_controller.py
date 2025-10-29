@@ -32,12 +32,24 @@ def usuario_actual_controller(mongo):
     if not usuario:
         return jsonify({"error": "Usuario no encontrado"}), 404
     if request.method == 'GET':
+        # Buscar un superAdmin activo de la misma empresa para obtener su email
+        admin_email = None
+        id_empresa = usuario.get("idEmpresa")
+        if id_empresa:
+            admin = mongo.db.usuarios.find_one({
+                "idEmpresa": id_empresa,
+                "roles": "superAdmin",
+                "estado": "Active"
+            }, {"email": 1})
+            if admin and admin.get("email"):
+                admin_email = admin.get("email")
         return jsonify({
             "email": usuario.get("email", "").strip().lower(),
             "username": usuario.get("username", ""),
             "phone": usuario.get("phone", ""),
             "roles": usuario.get("roles", ""),
-            "notificacionesAlertas": usuario.get("notificacionesAlertas") #Delete by default fields
+            "notificacionesAlertas": usuario.get("notificacionesAlertas"),
+            "adminCompany": admin_email
         })
     elif request.method == 'PUT':
         data = request.get_json()
