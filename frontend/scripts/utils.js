@@ -37,7 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (logoutLink) {
             logoutLink.addEventListener('click', e => {
                 e.preventDefault();
-                sessionStorage.removeItem('authToken');
+                // sessionStorage.removeItem('authToken');
+                sessionStorage.clear(); // o remover solo las claves específicas
+                localStorage.clear();
                 window.location.href = "signin.html";
             });
         }
@@ -76,43 +78,71 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Función para actualizar el nombre de la empresa en el top-banner
-async function actualizarNombreEmpresa() {
-    try {
-        const res = await fetch('/empresa_nombre', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
+async function getEmpresaNombreCached() {
+    const cacheKey = 'empresa_nombre';
+
+    // ¿Ya lo tengo en cache?
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) return JSON.parse(cached);
+
+    // Si no, lo pido al backend
+    const res = await fetch('/empresa_nombre', {
+        headers: { 'Authorization': 'Bearer ' + token }
     });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.companyName) {
-            const el = document.getElementById('company-name');
-            if (el) el.textContent = data.companyName;
-        }
-    } catch (e) {
-        // Opcional: manejar error
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    sessionStorage.setItem(cacheKey, JSON.stringify(data)); // Guardar en cache
+    return data;
+}
+
+async function actualizarNombreEmpresa() {
+    const data = await getEmpresaNombreCached();
+    if (data?.companyName) {
+        const el = document.getElementById('company-name');
+        if (el) el.textContent = data.companyName;
     }
 }
 
-async function actualizarUsuarioActual() {
-    try {
-        const res = await fetch('/usuario_actual', {
+// Función para actualizar el nombre del usuario en el top-banner
+async function getUsuarioActualCached() {
+    const cacheKey = 'usuario_actual';
+
+    // 1. ¿Existe en el cache?
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+        return JSON.parse(cached);
+    }
+
+    // 2. Si no existe en cache → pedir al backend
+    const res = await fetch('/usuario_actual', {
         headers: {
             'Authorization': 'Bearer ' + token
         }
     });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.username) {
-            const el = document.getElementById('user-username');
-            if (el) el.textContent = data.username;
-        }
-        if (data.roles) {
-            const el = document.getElementById('user-role');
-            if (el) el.textContent = data.roles; // ← solo string
-        }
-    } catch (e) {
-        // Opcional: manejar error
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+
+    // 3. Guardar en cache
+    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+
+    return data;
+}
+
+async function actualizarUsuarioActual() {
+    const data = await getUsuarioActualCached();
+    if (!data) return;
+
+    if (data.username) {
+        const el = document.getElementById('user-username');
+        if (el) el.textContent = data.username;
+    }
+
+    if (data.roles) {
+        const el = document.getElementById('user-role');
+        if (el) el.textContent = data.roles;
     }
 }
 

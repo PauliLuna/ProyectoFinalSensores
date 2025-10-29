@@ -910,9 +910,9 @@ def _alerta_fluctuacion_temp(mongo, sensor, mediciones, valor_min, valor_max, id
         return 1  # ⚠️ Devuelve 1 si se insertó una alerta
     return 0  # ⚠️ Devuelve 0 si no se insertó alerta
 
-def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=3):
+def _alerta_puerta_recurrente(mongo, sensor, id_empresa, max_repeticiones=5):
     """
-    Genera alerta preventiva si el sensor tiene más de X alertas de puerta abierta prolongada
+    Genera alerta preventiva si el sensor tiene más de 5 alertas de puerta abierta prolongada
     en el mismo día.
     """
     nro_sensor = sensor["nroSensor"]
@@ -983,7 +983,7 @@ def _alerta_caida_energia(mongo, sensor, id_empresa):
     alerta_existente = get_alerta_caida_energia_abierta(mongo, id_empresa, direccion)
 
     # 1. Caso: Todos los sensores están inactivos
-    if all(s["estado"] == "OFFLINE" for s in sensores_misma_dir):
+    if all(s["estado"] == "inactive" for s in sensores_misma_dir):
         if not alerta_existente:
             # Si no existe una alerta pendiente, se crea una nueva.
             print(f"⚠️ ALERTA PREVENTIVA: Caída de energía en dirección {direccion}")
