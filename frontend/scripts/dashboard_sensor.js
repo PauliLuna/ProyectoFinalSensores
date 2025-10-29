@@ -1262,28 +1262,25 @@ async function cargarAlertasParaBarra(nroSensorOrAlertList) {
         }
 
         // Contar por criticidad
-        const counts = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
+        const counts = { critica: 0, informativa: 0, preventiva: 0};
         alertas.forEach(a => {
             let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if (crit === 'critica') counts.critica++;
             else if (crit === 'informativa') counts.informativa++;
             else if (crit === 'preventiva') counts.preventiva++;
-            else if (crit === 'seguridad') counts.seguridad++;
         });
 
-        const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
+        const total = counts.critica + counts.informativa + counts.preventiva;
 
         // Actualizar la barra
         const pct = t => (total ? (counts[t] / total) * 100 : 0);
         const elCrit = document.querySelector('.bar .critica');
         const elInfo = document.querySelector('.bar .informativa');
         const elPrev = document.querySelector('.bar .preventiva');
-        const elSeg = document.querySelector('.bar .seguridad');
 
         if (elCrit) elCrit.style.width = pct('critica') + "%";
         if (elInfo) elInfo.style.width = pct('informativa') + "%";
         if (elPrev) elPrev.style.width = pct('preventiva') + "%";
-        if (elSeg) elSeg.style.width = pct('seguridad') + "%";
 
         // Mostrar porcentajes en la leyenda
         const setText = (id, val) => {
@@ -1293,7 +1290,6 @@ async function cargarAlertasParaBarra(nroSensorOrAlertList) {
         setText('pct-critica', pct('critica'));
         setText('pct-informativa', pct('informativa'));
         setText('pct-preventiva', pct('preventiva'));
-        setText('pct-seguridad', pct('seguridad'));
 
         // Escribir el total en la cabecera del dashboard_sensor
         const totalEl = document.getElementById('total_alertas_sensor');
@@ -1307,7 +1303,6 @@ async function cargarAlertasParaBarra(nroSensorOrAlertList) {
             critica: counts.critica,
             informativa: counts.informativa,
             preventiva: counts.preventiva,
-            seguridad: counts.seguridad,
             total: total
         };
 
@@ -1321,6 +1316,6 @@ async function cargarAlertasParaBarra(nroSensorOrAlertList) {
             const totalEl = document.getElementById('total_alertas_sensor');
             if (totalEl) totalEl.textContent = '0';
         } catch(e){/* ignore */}
-        return { critica: 0, informativa: 0, preventiva: 0, seguridad: 0, total: 0 };
+        return { critica: 0, informativa: 0, preventiva: 0, total: 0 };
     }
 }

@@ -100,7 +100,7 @@ def get_alertas_sensor(mongo, id_empresa, sensor_id):
         "idEmpresa": id_empresa,
         "$or": [
             {"idSensor": str(sensor_id)},
-            {"idSensor": {"$elemMatch": {"$eq": str(sensor_id)}}}
+            {"idSensor": {"$in": [str(sensor_id)]}}
         ]
     }).sort("fechaHoraAlerta", -1))
 
