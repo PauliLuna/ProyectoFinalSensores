@@ -50,14 +50,16 @@
                 <!--Gráfica de barras de alertas por criticidad-->
                 <div class="alert-kpi-card">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" style="margin-bottom: 10px;">Total de alertas del Sensor
+                        <h5 class="mb-0" style="margin: 0; flex: 1; font-weight:600;">Total de alertas del Sensor
                             <span class="alias-tooltip-icon" tabindex="0" style="margin-left: 10px; position: relative;">
                                 <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px;">
                                 <span class="alias-tooltip-text">
-                                    Muestra la distribución de todas las alertas del sensor generadas por criticidad (Crítica, Informativa, Preventiva) para el período seleccionado.
+                                    Muestra la distribución de todas las alertas del sensor generadas por criticidad para el período seleccionado.
                                 </span>
                             </span>
                         </h5>
+                        <!-- elemento que mostrará el total (ahora se muestra "Total: N" y queda alineado a la derecha) -->
+                        <h2 id="total_alertas_sensor" style="margin: 0 0 0 12px; color: #1D3557; font-size: 1rem; font-weight: 600; white-space: nowrap;"></h2>
                     </div>
                     <div class="bar" style="margin-bottom: 20px;">
                         <div class="critica"></div>

@@ -1168,81 +1168,159 @@ function addBarTooltips(counts) {
     const bar = document.querySelector('.bar');
     if (!bar) return;
 
-    // Elimina tooltips previos
+    // limpiar tooltips previos
     document.querySelectorAll('.bar-tooltip').forEach(t => t.remove());
 
-    ['critica', 'informativa', 'preventiva'].forEach(tipo => {
+    const tipos = ['critica', 'informativa', 'preventiva', 'seguridad'];
+
+    tipos.forEach(tipo => {
         const el = bar.querySelector('.' + tipo);
         if (!el) return;
 
-        el.addEventListener('mouseenter', function(e) {
-            let tooltip = document.createElement('div');
+        // remover handlers previos si existen
+        if (el._barHandlers) {
+            el.removeEventListener('mouseenter', el._barHandlers.onEnter);
+            el.removeEventListener('mousemove', el._barHandlers.onMove);
+            el.removeEventListener('mouseleave', el._barHandlers.onLeave);
+            if (el._barTooltip) { el._barTooltip.remove(); el._barTooltip = null; }
+            el._barHandlers = null;
+        }
+
+        // asegurar que el segmento recibe eventos
+        el.style.pointerEvents = 'auto';
+
+        const onEnter = (ev) => {
+            // crear tooltip
+            const tooltip = document.createElement('div');
             tooltip.className = 'bar-tooltip';
-            tooltip.innerText = `Cantidad: ${counts[tipo] || 0}`;
+            tooltip.textContent = `Cantidad: ${counts[tipo] || 0}`;
+            // estilos inline para evitar depender del css
+            Object.assign(tooltip.style, {
+                position: 'absolute',
+                pointerEvents: 'none',
+                background: '#1D3557',
+                color: '#fff',
+                padding: '6px 8px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                zIndex: '9999',
+                whiteSpace: 'nowrap',
+                opacity: '0',
+                transition: 'opacity 0.12s'
+            });
             document.body.appendChild(tooltip);
-
-            // Posiciona el tooltip cerca del mouse
-            const rect = el.getBoundingClientRect();
-            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
-            tooltip.style.top = (rect.top - 32) + 'px';
-            tooltip.style.opacity = 1;
             el._barTooltip = tooltip;
-        });
+            positionTooltip(el, tooltip);
+            // forzar aparición
+            requestAnimationFrame(() => { tooltip.style.opacity = '1'; });
+        };
 
-        el.addEventListener('mouseleave', function(e) {
+        const onMove = (ev) => {
+            if (el._barTooltip) positionTooltip(el, el._barTooltip, ev);
+        };
+
+        const onLeave = () => {
             if (el._barTooltip) {
                 el._barTooltip.remove();
                 el._barTooltip = null;
             }
-        });
+        };
+
+        // attach
+        el.addEventListener('mouseenter', onEnter);
+        el.addEventListener('mousemove', onMove);
+        el.addEventListener('mouseleave', onLeave);
+
+        el._barHandlers = { onEnter, onMove, onLeave };
     });
+
+    // helper: posiciona tooltip respecto al segmento
+    function positionTooltip(el, tooltip, ev) {
+        const rect = el.getBoundingClientRect();
+        // centro del segmento en coordenadas de página
+        const centerX = rect.left + rect.width / 2 + window.scrollX;
+        // calcular top encima del segmento
+        const top = rect.top + window.scrollY - (tooltip.offsetHeight || 24) - 8;
+        tooltip.style.left = `${centerX}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.style.transform = 'translateX(-50%)';
+    }
 }
 
-async function cargarAlertasParaBarra(nroSensor) {
+async function cargarAlertasParaBarra(nroSensorOrAlertList) {
     try {
-        const res = await fetch(`/alertas?sensor_id=${nroSensor}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const alertas = await res.json();
+        // Si la función es llamada con un número (nroSensor) queremos fetch; si recibe array, lo usamos directamente.
+        let alertas;
+        if (Array.isArray(nroSensorOrAlertList)) {
+            alertas = nroSensorOrAlertList;
+        } else {
+            const nroSensor = nroSensorOrAlertList;
+            const res = await fetch(`/alertas?sensor_id=${nroSensor}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            alertas = await res.json();
+        }
 
-       // Contar por criticidad
-        const counts = { critica: 0, informativa: 0, preventiva: 0 };
+        // Contar por criticidad
+        const counts = { critica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
         alertas.forEach(a => {
             let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if (crit === 'critica') counts.critica++;
             else if (crit === 'informativa') counts.informativa++;
             else if (crit === 'preventiva') counts.preventiva++;
+            else if (crit === 'seguridad') counts.seguridad++;
         });
 
-        // Calcular porcentajes
-        const total = counts.critica + counts.informativa + counts.preventiva;
-        const pctCritica = total ? (counts.critica / total) * 100 : 0;
-        const pctInformativa = total ? (counts.informativa / total) * 100 : 0;
-        const pctPreventiva = total ? (counts.preventiva / total) * 100 : 0;
+        const total = counts.critica + counts.informativa + counts.preventiva + counts.seguridad;
 
         // Actualizar la barra
-        document.querySelector('.bar .critica').style.width = pctCritica + "%";
-        document.querySelector('.bar .informativa').style.width = pctInformativa + "%";
-        document.querySelector('.bar .preventiva').style.width = pctPreventiva + "%";
+        const pct = t => (total ? (counts[t] / total) * 100 : 0);
+        const elCrit = document.querySelector('.bar .critica');
+        const elInfo = document.querySelector('.bar .informativa');
+        const elPrev = document.querySelector('.bar .preventiva');
+        const elSeg = document.querySelector('.bar .seguridad');
+
+        if (elCrit) elCrit.style.width = pct('critica') + "%";
+        if (elInfo) elInfo.style.width = pct('informativa') + "%";
+        if (elPrev) elPrev.style.width = pct('preventiva') + "%";
+        if (elSeg) elSeg.style.width = pct('seguridad') + "%";
 
         // Mostrar porcentajes en la leyenda
-        document.getElementById('pct-critica').textContent = `(${pctCritica.toFixed(1)}%)`;
-        document.getElementById('pct-informativa').textContent = `(${pctInformativa.toFixed(1)}%)`;
-        document.getElementById('pct-preventiva').textContent = `(${pctPreventiva.toFixed(1)}%)`;
-    
-        // Agregar tooltips
+        const setText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = `(${val.toFixed(1)}%)`;
+        };
+        setText('pct-critica', pct('critica'));
+        setText('pct-informativa', pct('informativa'));
+        setText('pct-preventiva', pct('preventiva'));
+        setText('pct-seguridad', pct('seguridad'));
+
+        // Escribir el total en la cabecera del dashboard_sensor
+        const totalEl = document.getElementById('total_alertas_sensor');
+        if (totalEl) totalEl.textContent = `Total: ${total}`; 
+
+        // Agregar tooltips usando la función anterior
         addBarTooltips(counts);
 
-        // Retornar las cantidades y el total para que sean accesibles fuera de la función
+        // Retornar las cantidades y el total
         return {
             critica: counts.critica,
             informativa: counts.informativa,
             preventiva: counts.preventiva,
+            seguridad: counts.seguridad,
             total: total
-        }
-    
+        };
+
     } catch (error) {
         console.error("Error al cargar alertas para la barra:", error);
+        // limpiar barra y total en caso de error
+        try {
+            ['pct-critica','pct-informativa','pct-preventiva','pct-seguridad'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.textContent = '(0.0%)';
+            });
+            const totalEl = document.getElementById('total_alertas_sensor');
+            if (totalEl) totalEl.textContent = '0';
+        } catch(e){/* ignore */}
         return { critica: 0, informativa: 0, preventiva: 0, seguridad: 0, total: 0 };
     }
 }
