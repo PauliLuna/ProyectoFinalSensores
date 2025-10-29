@@ -11,3 +11,4 @@ __pycache__/
 # Ignorar archivos de sistema
 .DS_Store
 Thumbs.db
+backend/ejecutar_alertas_local.py
