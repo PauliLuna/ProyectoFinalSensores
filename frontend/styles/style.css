@@ -2586,5 +2586,18 @@ select {
     display: block;
 }
 
+#manual-container {
+    text-align: right;
+}
 
+.manual-link {
+    font-size: 0.9rem;
+    color: #0066cc;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 500;
+}
 
+.manual-link:hover {
+    color: #004799;
+}

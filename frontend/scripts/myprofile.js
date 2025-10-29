@@ -27,6 +27,24 @@ if (userRole !== REQUIRED_ROLE) {
 }
 // ------------------- FIN -------------------
 
+// ------------------- DESCARGA MANUAL SEGÚN ROL -------------------
+
+const manualContainer = document.getElementById('manual-container');
+
+if (manualContainer) {
+    // Definir ruta del PDF según el rol
+    const manualPath = (userRole === 'superAdmin')
+        ? 'assets/manuales/manual-admin.pdf'
+        : 'assets/manuales/manual-user.pdf';
+
+    manualContainer.innerHTML = `
+        <a href="${manualPath}" download class="manual-link">
+            Descargar manual de usuario
+        </a>
+    `;
+}
+
+
 // 1. Poblar el formulario con los datos del usuario logueado
 async function cargarPerfil() {
     const res = await fetch('/usuario_actual', {
