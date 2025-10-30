@@ -1551,7 +1551,7 @@ button[disabled] {
 
 .kpi-card:hover,
 .kpi-card.kpi-alertas:hover {
-    cursor: default !important;
+    cursor: pointer !important;
     /* Si tenés otros efectos de hover, podés deshabilitarlos acá */
     box-shadow: none;
     transform: none;
