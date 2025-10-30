@@ -387,10 +387,11 @@ function renderRankingFueraRango(alertasFiltradas) {
     } else {
         ranking.forEach(item => {
             const horas = (item.minutos / 60).toFixed(1); // convertir a horas con 1 decimal
+            const minutos = item.minutos.toFixed(1); // redondear minutos a 1 decimal
             tbody.innerHTML += `
                 <tr>
                     <td>${item.sensor}</td>
-                    <td>${item.minutos}</td>
+                    <td>${minutos}</td>
                     <td>${horas} h</td>
                     <td>${item.porcentaje}%</td>
                 </tr>
