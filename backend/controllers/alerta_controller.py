@@ -231,6 +231,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
                     puerta_abierta_previa, alertas_puerta = _alerta_puerta(
                         mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa
                     )
+                    print(f"[DEBUG] Alertas puerta abierta prolongada generadas: {alertas_puerta}")
                     total_alertas_generadas += alertas_puerta
                 except Exception as e:
                     print(f"[ERROR] Fallo en _alerta_puerta para sensor {nro_sensor}: {e}")
@@ -257,6 +258,7 @@ def chequear_alertas_criticas(mongo, id_empresa):
                             en_ciclo, inicio_ciclo,  alertas_generadas_ciclo= _alerta_ciclo_asincronico(
                                 mongo, sensor, en_ciclo, inicio_ciclo, temp, valor_min, valor_max, fecha_actual, id_empresa
                             )
+                            print(f"[DEBUG] Alertas ciclos generadas: {alertas_generadas_ciclo}")
                             total_alertas_generadas += alertas_generadas_ciclo
                         except Exception as e:
                             print(f"[ERROR] Fallo en _alerta_ciclo_asincronico para sensor {nro_sensor}: {e}")
