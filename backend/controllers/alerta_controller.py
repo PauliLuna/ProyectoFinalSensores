@@ -787,6 +787,15 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
             if alerta_abierta:
                 inicio = alerta_abierta["fechaHoraAlerta"]
                 duracion = (fecha_actual - inicio).total_seconds() / 60
+                inicio = alerta_abierta.get("fechaHoraAlerta")
+                # Asegurar que 'inicio' sea timezone-aware (asumir UTC si es naive)
+                if inicio is None:
+                    print(f"[WARN] Alerta abierta sin fechaHoraAlerta para {alerta_abierta.get('_id')}")
+                    duracion = 0
+                else:
+                    if getattr(inicio, "tzinfo", None) is None:
+                        inicio = inicio.replace(tzinfo=pytz.UTC)
+                    duracion = (fecha_actual - inicio).total_seconds() / 60
                 duracion = round(duracion, 1)
                 updateDuracion(mongo, alerta_abierta["_id"], duracion)
                 print(f"✅ ALERTA PUERTA cerrada duración {duracion:.1f} min para sensor {sensor['nroSensor']}")
