@@ -6,6 +6,7 @@ from models.alerta import (
     get_alertas_puerta_abierta,
     q_alerta_abierta_temp,
     q_alerta_abierta_offline,
+    q_alerta_abierta_puerta,
     updateDuracion,
     get_checkpoint,
     update_checkpoint_informativas,
@@ -638,43 +639,91 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
         return 0  # Devuelve 0 si no se insertó alerta
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
-    """Detecta puerta abierta prolongada"""
+    """Detecta puerta abierta prolongada: dispara tras 10 minutos de puerta abierta.
+    - puerta_abierta_previa: False o datetime con inicio de apertura.
+    - Devuelve (nuevo_puerta_abierta_previa, alertas_generadas)
+    """
     alertas_generadas = 0
-    if puerta_estado == 1 and puerta_abierta_previa:
-        print(f"⚠️ ALERTA: puerta abierta prolongada en sensor {sensor['nroSensor']}")
-        alerta_data = {
-            "idSensor": str(sensor["nroSensor"]), # ⚠️ Convertir a string
-            "idEmpresa": id_empresa,
-            "criticidad": "Crítica",
-            "tipoAlerta": "Puerta abierta prolongada",
-            "descripcion": f"Puerta abierta ≥10 min en sensor {sensor['nroSensor']}. Riesgo de pérdida de frío.",
-            "mensajeAlerta": "Puerta abierta prolongada",
-            "fechaHoraAlerta": fecha_actual
-        }
-        print(f"[DEBUG] Insertando alerta: {alerta_data}")
-        alerta_id = insert_alerta(mongo, alerta_data)
-        print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
-        alertas_generadas = 1
 
-        emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
-        emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")    
-        # Unir ambas listas de emails y eliminar duplicados
-        emails = list(set(emails_asignados + emails_super_admins))
+    # Normalizar casos legacy: si nos pasan True en vez de datetime, convertir a timestamp aproximado
+    if puerta_abierta_previa is True:
+        puerta_abierta_previa = fecha_actual - timedelta(minutes=2)
 
-        print(f"[DEBUG] Emails asignados para alerta: {emails}")
-        if emails:
-            _enviar_mail_alerta(
-                emails, 
-                "Puerta abierta prolongada", 
-                alerta_data["descripcion"], 
-                "Crítica", 
-                sensor, 
-                alerta_data["mensajeAlerta"], 
-                fecha_actual,
-                "termi-alerta"
-            )
-    # Si no se disparó alerta, actualizamos el estado según puerta actual
-    return puerta_estado == 1, alertas_generadas  # ⚠️ Devuelve el estado y el contador
+    # Puerta abierta ahora
+    if puerta_estado == 1:
+        # Si no teníamos marca de inicio, la registramos y no disparamos aún
+        if not puerta_abierta_previa:
+            return fecha_actual, 0
+
+        # Ya había inicio: comprobar tiempo transcurrido
+        elapsed = fecha_actual - puerta_abierta_previa
+        if elapsed >= timedelta(minutes=10):
+            print(f"⚠️ ALERTA: puerta abierta ≥10 min en sensor {sensor['nroSensor']} (duración {elapsed})")
+
+            # Verificar si ya existe alerta abierta del mismo tipo
+            alerta_abierta = q_alerta_abierta_puerta(mongo, sensor["nroSensor"], id_empresa)
+
+            if not alerta_abierta:
+                # Formatear fecha inicio en zona local para la descripción
+                tz_ba = pytz.timezone('America/Argentina/Buenos_Aires')
+                inicio_local = puerta_abierta_previa.astimezone(tz_ba) if hasattr(puerta_abierta_previa, "astimezone") else puerta_abierta_previa
+                inicio_str = inicio_local.strftime('%Y-%m-%d %H:%M:%S')
+
+                alerta_data = {
+                    "idSensor": str(sensor["nroSensor"]),
+                    "idEmpresa": id_empresa,
+                    "criticidad": "Crítica",
+                    "tipoAlerta": "Puerta abierta prolongada",
+                    "descripcion": f"Puerta abierta ≥10 min en sensor {sensor['nroSensor']} (desde {inicio_str}). Riesgo de pérdida de frío.",
+                    "mensajeAlerta": "Puerta abierta prolongada",
+                    "fechaHoraAlerta": puerta_abierta_previa,
+                    "estadoAlerta": "abierta"
+                }
+                print(f"[DEBUG] Insertando alerta: {alerta_data}")
+                alerta_id = insert_alerta(mongo, alerta_data)
+                print(f"✅ Alerta puerta abierta en sensor {sensor['nroSensor']} -> ID {alerta_id}")
+                alertas_generadas = 1
+
+                emails_asignados = _obtener_emails_asignados(mongo, sensor["nroSensor"], alerta_data["criticidad"])
+                emails_super_admins = get_super_admins_by_criticidad(mongo, id_empresa, "critica")
+                emails = list(set(emails_asignados + emails_super_admins))
+
+                print(f"[DEBUG] Emails asignados para alerta: {emails}")
+                if emails:
+                    _enviar_mail_alerta(
+                        emails,
+                        "Puerta abierta prolongada",
+                        alerta_data["descripcion"],
+                        "Crítica",
+                        sensor,
+                        alerta_data["mensajeAlerta"],
+                        fecha_actual,
+                        "termi-alerta"
+                    )
+            else:
+                # Alerta ya abierta: opcional actualizar descripción
+                print(f"[DEBUG] Alerta de puerta ya abierta: {alerta_abierta['_id']}")
+        # Mantener la marca de inicio mientras siga abierta
+        return puerta_abierta_previa, alertas_generadas
+
+    # Puerta cerrada ahora
+    else:
+        # Si antes teníamos inicio, cerrar alerta si existe y resetear
+        if puerta_abierta_previa:
+            print(f"[DEBUG] Puerta cerrada sensor {sensor['nroSensor']} - inicio anterior: {puerta_abierta_previa}, cierre: {fecha_actual}")
+            
+            # Verificar si ya existe alerta abierta del mismo tipo
+            alerta_abierta = q_alerta_abierta_puerta(mongo, sensor["nroSensor"], id_empresa)
+
+            if alerta_abierta:
+                inicio = alerta_abierta["fechaHoraAlerta"]
+                duracion = (fecha_actual - inicio).total_seconds() / 60
+                duracion = round(duracion, 1)
+                updateDuracion(mongo, alerta_abierta["_id"], duracion)
+                print(f"✅ ALERTA PUERTA cerrada duración {duracion:.1f} min para sensor {sensor['nroSensor']}")
+            return False, 0
+        # No había inicio marcado: nada que hacer
+        return False, 0
 
 
 def _alerta_temp_fuera_rango(mongo, sensor, temp, valor_min, valor_max, fecha_actual, id_empresa):
