@@ -223,6 +223,10 @@ async function cargarCards(sensor){
         document.getElementById('sensor-estado').textContent = sensor.estado;
         document.getElementById('sensor-alerta').textContent = alerta;
 
+        // Actualizar los valores de min y max
+        document.getElementById('max_real_seteado').textContent = sensor.valorMax !== undefined ? sensor.valorMax : 'N/A';
+        document.getElementById('min_real_seteado').textContent = sensor.valorMin !== undefined ? sensor.valorMin : 'N/A';
+
         // Correr en paralelo
         const [ultimaMed, estadoPuerta, duracionApertura, cantidadAperturas] = await Promise.all([
             getUltimaMedicion(sensorId),
