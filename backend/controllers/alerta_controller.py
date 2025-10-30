@@ -17,7 +17,10 @@ from models.alerta import (
 from models.sensor import(
     get_mediciones,
     get_ultima_medicion,
-    updateStatus)
+    updateStatus,
+    get_sensor_by_nro,
+    update_puerta_inicio,
+    update_puerta_inicio_unset)
 from bson import ObjectId
 from datetime import datetime, timedelta
 from controllers.sensor_controller import get_all_sensors_empresa
@@ -664,37 +667,63 @@ def _alerta_offline(mongo, sensor, prev_med, fecha_actual, id_empresa):
 
 def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_actual, id_empresa):
     """Detecta puerta abierta prolongada: dispara tras 10 minutos de puerta abierta.
-    - puerta_abierta_previa: False o datetime con inicio de apertura.
+    - Persistimos 'puertaInicio' en el documento del sensor para que la marca sobreviva entre ejecuciones.
     - Devuelve (nuevo_puerta_abierta_previa, alertas_generadas)
     """
     alertas_generadas = 0
 
-    # Normalizar casos legacy: si nos pasan True en vez de datetime, convertir a timestamp aproximado
-    if puerta_abierta_previa is True:
-        puerta_abierta_previa = fecha_actual - timedelta(minutes=2)
+     # Normalizar/forzar puerta_estado a 0/1
+    try:
+        if isinstance(puerta_estado, (bool, int)):
+            puerta_estado = 1 if puerta_estado else 0
+        else:
+            puerta_estado = 1 if str(puerta_estado).strip().lower() in ("1", "true", "t", "yes", "y") else 0
+    except Exception:
+        puerta_estado = 0
 
-    # Debug: mostrar tipos y valores
-    print(f"[DEBUG][_alerta_puerta] sensor={sensor['nroSensor']} puerta_estado={puerta_estado} tipo={type(puerta_estado)} puerta_inicio={puerta_abierta_previa} fecha_actual={fecha_actual}")
+    # Asegurar fecha_actual aware (usar UTC si es naive)
+    if fecha_actual is not None and getattr(fecha_actual, "tzinfo", None) is None:
+        fecha_actual = fecha_actual.replace(tzinfo=pytz.UTC)
 
+    # Leer posible inicio persistido en BD (si existe)
+    persisted_inicio = None
+    try:
+        doc = get_sensor_by_nro(mongo, sensor["nroSensor"], id_empresa)
+        if doc and doc.get("puertaInicio"):
+            persisted_inicio = doc.get("puertaInicio")
+            # Si está almacenado como naive, marcar UTC
+            if getattr(persisted_inicio, "tzinfo", None) is None:
+                persisted_inicio = persisted_inicio.replace(tzinfo=pytz.UTC)
+    except Exception as ex:
+        print(f"[WARN] No se pudo leer puertaInicio en BD para sensor {sensor['nroSensor']}: {ex}")
+    
+    # Si no nos pasan un inicio en memoria, usar el persistido
+    if not puerta_abierta_previa and persisted_inicio:
+        puerta_abierta_previa = persisted_inicio
 
-    # Puerta abierta ahora
+    # Caso: puerta abierta ahora
     if puerta_estado == 1:
-        # Si no teníamos marca de inicio, la registramos y no disparamos aún
+        # Si no teníamos marca de inicio en memoria ni en BD, la registramos (persistimos)
         if not puerta_abierta_previa:
-            print(f"[DEBUG][_alerta_puerta] marcando inicio apertura en {fecha_actual} para sensor {sensor['nroSensor']}")
+            try:
+                # Persistir inicio en la colección sensors
+                update_puerta_inicio(mongo, sensor["nroSensor"], id_empresa, fecha_actual)  
+                print(f"[DEBUG][_alerta_puerta] Persistido puertaInicio={fecha_actual} para sensor {sensor['nroSensor']}")
+            except Exception as ex:
+                print(f"[WARN] No se pudo persistir puertaInicio para sensor {sensor['nroSensor']}: {ex}")
             return fecha_actual, 0
 
         # Ya había inicio: comprobar tiempo transcurrido
         elapsed = fecha_actual - puerta_abierta_previa
-        print(f"[DEBUG][_alerta_puerta] elapsed={elapsed} para sensor {sensor['nroSensor']}")
+        elapsed_min = elapsed.total_seconds() / 60 if elapsed else 0
+        print(f"[DEBUG][_alerta_puerta] elapsed={elapsed} (~{elapsed_min:.1f} min) para sensor {sensor['nroSensor']}")
         if elapsed >= timedelta(minutes=10):
             print(f"⚠️ ALERTA: puerta abierta ≥10 min en sensor {sensor['nroSensor']} (duración {elapsed})")
 
-            # Verificar si ya existe alerta abierta del mismo tipo
             alerta_abierta = q_alerta_abierta_puerta(mongo, sensor["nroSensor"], id_empresa)
 
             if not alerta_abierta:
-                # Formatear fecha inicio en zona local para la descripción
+                # Crear alerta usando la fecha de inicio (persistida/en memoria)
                 tz_ba = pytz.timezone('America/Argentina/Buenos_Aires')
                 inicio_local = puerta_abierta_previa.astimezone(tz_ba) if hasattr(puerta_abierta_previa, "astimezone") else puerta_abierta_previa
                 inicio_str = inicio_local.strftime('%Y-%m-%d %H:%M:%S')
@@ -731,27 +760,46 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
                         "termi-alerta"
                     )
             else:
-                # Alerta ya abierta: opcional actualizar descripción
-                print(f"[DEBUG] Alerta de puerta ya abierta: {alerta_abierta['_id']}")
+                # Alerta ya abierta: actualizar descripción opcional
+                try:
+                    tz_ba = pytz.timezone('America/Argentina/Buenos_Aires')
+                    inicio = alerta_abierta.get("fechaHoraAlerta")
+                    inicio_local = inicio.astimezone(tz_ba) if hasattr(inicio, "astimezone") else inicio
+                    actual_local = fecha_actual.astimezone(tz_ba) if hasattr(fecha_actual, "astimezone") else fecha_actual
+                    inicio_str = inicio_local.strftime('%Y-%m-%d %H:%M:%S')
+                    actual_str = actual_local.strftime('%Y-%m-%d %H:%M:%S')
+                    nueva_descripcion = f"Puerta abierta ≥10 min en sensor {sensor['nroSensor']} (desde {inicio_str} hasta {actual_str}). Riesgo de pérdida de frío."
+                    update_description_offline(mongo, alerta_abierta["_id"], nueva_descripcion)
+                    print(f"[DEBUG] Actualizada descripción alerta puerta {alerta_abierta['_id']}: {nueva_descripcion}")
+                except Exception as ex:
+                    print(f"[ERROR] No se pudo actualizar descripción de alerta puerta {alerta_abierta.get('_id')}: {ex}")
+
         # Mantener la marca de inicio mientras siga abierta
         return puerta_abierta_previa, alertas_generadas
 
-    # Puerta cerrada ahora
+    # Caso: puerta cerrada ahora
     else:
-        # Si antes teníamos inicio, cerrar alerta si existe y resetear
-        if puerta_abierta_previa:
-            print(f"[DEBUG] Puerta cerrada sensor {sensor['nroSensor']} - inicio anterior: {puerta_abierta_previa}, cierre: {fecha_actual}")
-            
-            # Verificar si ya existe alerta abierta del mismo tipo
-            alerta_abierta = q_alerta_abierta_puerta(mongo, sensor["nroSensor"], id_empresa)
+        # Si antes teníamos inicio (persistido o en memoria), cerrar alerta si existe y limpiar persistencia
+        if puerta_abierta_previa or persisted_inicio:
+            print(f"[DEBUG] Puerta cerrada sensor {sensor['nroSensor']} - inicio anterior: {puerta_abierta_previa or persisted_inicio}, cierre: {fecha_actual}")
 
+            alerta_abierta = q_alerta_abierta_puerta(mongo, sensor["nroSensor"], id_empresa)
             if alerta_abierta:
                 inicio = alerta_abierta["fechaHoraAlerta"]
                 duracion = (fecha_actual - inicio).total_seconds() / 60
                 duracion = round(duracion, 1)
                 updateDuracion(mongo, alerta_abierta["_id"], duracion)
                 print(f"✅ ALERTA PUERTA cerrada duración {duracion:.1f} min para sensor {sensor['nroSensor']}")
+
+            # Eliminar campo puertaInicio del documento sensor
+            try:
+                update_puerta_inicio_unset(mongo, sensor["nroSensor"], id_empresa)
+                print(f"[DEBUG] Eliminado puertaInicio para sensor {sensor['nroSensor']}")
+            except Exception as ex:
+                print(f"[WARN] No se pudo eliminar puertaInicio para sensor {sensor['nroSensor']}: {ex}")
+
             return False, 0
+
         # No había inicio marcado: nada que hacer
         return False, 0
 
