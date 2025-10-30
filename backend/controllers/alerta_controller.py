@@ -194,6 +194,12 @@ def chequear_alertas_criticas(mongo, id_empresa):
             prev_med = None
             en_ciclo = False
             inicio_ciclo = None
+            # Usar la última medición en BD como "prev_med" para permitir comparar
+            # con la primera medición nueva (evita necesitar 2 mediciones nuevas).
+            prev_med = get_ultima_medicion(mongo, nro_sensor)
+            # first_iter indica que la siguiente iteración es la primera medición nueva
+            first_iter = True
+            
 
             # 3️⃣ Analizar mediciones
             for med in mediciones:
@@ -215,6 +221,22 @@ def chequear_alertas_criticas(mongo, id_empresa):
                         print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
                     prev_med = med
                     continue
+
+                # --- CASO ESPECIAL: Primera medición nueva ---
+                if first_iter:
+                    # Si hay una alerta offline abierta y el sensor estaba marcado OFFLINE, cerrarla
+                    alerta_abierta = q_alerta_abierta_offline(mongo, sensor["nroSensor"], id_empresa)
+                    print(f"[DEBUG] Alerta abierta offline para sensor {sensor['nroSensor']} - {sensor.get('estado')}: {alerta_abierta}")
+                    if sensor.get('estado') in ("OFFLINE", "inactive") and alerta_abierta:
+                        inicio = alerta_abierta["fechaHoraAlerta"]
+                        duracion = (fecha_actual - inicio).total_seconds() / 60
+                        duracion = round(duracion, 1)
+                        updateDuracion(mongo, alerta_abierta["_id"], duracion)
+                        print(f"✅ ALERTA OFFLINE cerrada duración {duracion:.1f} min")
+                        updateStatus(mongo, sensor["nroSensor"], id_empresa, "active")
+                        print(f"🔄 Estado del sensor {sensor['nroSensor']} actualizado a 'active'")
+                    # No hacemos `continue`: seguimos y procesamos puerta/temp usando prev_med (que puede venir de BD)
+                    first_iter = False
 
                 # --- ALERTA OFFLINE ---
                 if prev_med:
