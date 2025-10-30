@@ -220,8 +220,25 @@ async function cargarCards(sensor){
         document.getElementById('sensor-alias').textContent = sensor.alias;
         document.getElementById('sensor-nro').textContent = sensor.nroSensor;
         document.getElementById('sensor-notas').textContent = sensor.notas || 'No hay notas disponibles.';
-        document.getElementById('sensor-estado').textContent = sensor.estado;
-        document.getElementById('sensor-alerta').textContent = alerta;
+        // Condición
+        const alertaEl = document.getElementById('sensor-alerta');
+        alertaEl.textContent = alerta;
+        alertaEl.className = ''; // Limpiar clases previas
+        if (alerta === 'En rango') {
+            alertaEl.classList.add('text-success'); // Clase para verde
+        } else if (alerta === 'Fuera de rango') {
+            alertaEl.classList.add('text-danger'); // Clase para rojo
+        }
+
+        // Estado
+        const estadoEl = document.getElementById('sensor-estado');
+        estadoEl.textContent = sensor.estado;
+        estadoEl.className = ''; // Limpiar clases previas
+        if (sensor.estado === 'ONLINE') {
+            estadoEl.classList.add('text-success'); // Clase para verde
+        } else if (sensor.estado === 'OFFLINE') {
+            estadoEl.classList.add('text-danger'); // Clase para rojo
+        }
 
         // Actualizar los valores de min y max
         document.getElementById('max_real_seteado').textContent = sensor.valorMax !== undefined ? sensor.valorMax : 'N/A';

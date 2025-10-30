@@ -2303,6 +2303,16 @@ select {
     width: 100%;
 }
 
+.text-success {
+    color: #10b981; /* Verde */
+    font-weight: bold;
+}
+
+.text-danger {
+    color: #FF6F5E; /* Rojo */
+    font-weight: bold;
+}
+
 /* Estilo para todos los párrafos dentro de .sensor-details */
 .sensor-details p {
     margin: 0;
