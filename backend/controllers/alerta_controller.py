@@ -649,14 +649,20 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
     if puerta_abierta_previa is True:
         puerta_abierta_previa = fecha_actual - timedelta(minutes=2)
 
+    # Debug: mostrar tipos y valores
+    print(f"[DEBUG][_alerta_puerta] sensor={sensor['nroSensor']} puerta_estado={puerta_estado} tipo={type(puerta_estado)} puerta_inicio={puerta_abierta_previa} fecha_actual={fecha_actual}")
+
+
     # Puerta abierta ahora
     if puerta_estado == 1:
         # Si no teníamos marca de inicio, la registramos y no disparamos aún
         if not puerta_abierta_previa:
+            print(f"[DEBUG][_alerta_puerta] marcando inicio apertura en {fecha_actual} para sensor {sensor['nroSensor']}")
             return fecha_actual, 0
 
         # Ya había inicio: comprobar tiempo transcurrido
         elapsed = fecha_actual - puerta_abierta_previa
+        print(f"[DEBUG][_alerta_puerta] elapsed={elapsed} para sensor {sensor['nroSensor']}")
         if elapsed >= timedelta(minutes=10):
             print(f"⚠️ ALERTA: puerta abierta ≥10 min en sensor {sensor['nroSensor']} (duración {elapsed})")
 
