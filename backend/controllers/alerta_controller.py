@@ -682,8 +682,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
         puerta_estado = 0
 
     # Asegurar fecha_actual aware (usar UTC si es naive)
-    if fecha_actual is not None and getattr(fecha_actual, "tzinfo", None) is None:
-        fecha_actual = _ensure_aware(fecha_actual)
+    fecha_actual = _ensure_aware(fecha_actual)
 
     # Leer posible inicio persistido en BD (si existe)
     persisted_inicio = None
@@ -691,10 +690,8 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
         doc = get_sensor_by_nro(mongo, sensor["nroSensor"], id_empresa)
         if doc and doc.get("puertaInicio"):
             persisted_inicio = doc.get("puertaInicio")
-            # Si está almacenado como naive, marcar UTC
-            if getattr(persisted_inicio, "tzinfo", None) is None:
-                persisted_inicio = persisted_inicio.replace(tzinfo=pytz.UTC)
-            persisted_inicio = _ensure_aware(doc.get("puertaInicio"))
+            # Normalizar persisted_inicio usando helper (evita usar doc.get otra vez)
+            persisted_inicio = _ensure_aware(persisted_inicio)
     except Exception as ex:
         print(f"[WARN] No se pudo leer puertaInicio en BD para sensor {sensor['nroSensor']}: {ex}")
     
@@ -715,8 +712,8 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
             return fecha_actual, 0
 
         # Ya había inicio: comprobar tiempo transcurrido
-        elapsed = fecha_actual - puerta_abierta_previa
         puerta_abierta_previa = _ensure_aware(puerta_abierta_previa)
+        elapsed = fecha_actual - puerta_abierta_previa
         elapsed_min = elapsed.total_seconds() / 60 if elapsed else 0
         print(f"[DEBUG][_alerta_puerta] elapsed={elapsed} (~{elapsed_min:.1f} min) para sensor {sensor['nroSensor']}")
         if elapsed >= timedelta(minutes=10):
@@ -783,22 +780,15 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
     # Caso: puerta cerrada ahora
     else:
         # Si antes teníamos inicio (persistido o en memoria), cerrar alerta si existe y limpiar persistencia
-        if puerta_abierta_previa or persisted_inicio:
+        inicio_ref = puerta_abierta_previa or persisted_inicio
+        if inicio_ref:
+            inicio_ref = _ensure_aware(inicio_ref)
+
+        if inicio_ref:
             print(f"[DEBUG] Puerta cerrada sensor {sensor['nroSensor']} - inicio anterior: {puerta_abierta_previa or persisted_inicio}, cierre: {fecha_actual}")
 
             alerta_abierta = q_alerta_abierta_puerta(mongo, sensor["nroSensor"], id_empresa)
             if alerta_abierta:
-                inicio = alerta_abierta["fechaHoraAlerta"]
-                duracion = (fecha_actual - inicio).total_seconds() / 60
-                inicio = alerta_abierta.get("fechaHoraAlerta")
-                # Asegurar que 'inicio' sea timezone-aware (asumir UTC si es naive)
-                if inicio is None:
-                    print(f"[WARN] Alerta abierta sin fechaHoraAlerta para {alerta_abierta.get('_id')}")
-                    duracion = 0
-                else:
-                    if getattr(inicio, "tzinfo", None) is None:
-                        inicio = inicio.replace(tzinfo=pytz.UTC)
-                    duracion = (fecha_actual - inicio).total_seconds() / 60
                 inicio = _ensure_aware(alerta_abierta.get("fechaHoraAlerta"))
                 if inicio is None:
                     print(f"[WARN] Alerta abierta sin fechaHoraAlerta para {alerta_abierta.get('_id')}")
