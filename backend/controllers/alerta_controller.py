@@ -683,7 +683,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
 
     # Asegurar fecha_actual aware (usar UTC si es naive)
     if fecha_actual is not None and getattr(fecha_actual, "tzinfo", None) is None:
-        fecha_actual = fecha_actual.replace(tzinfo=pytz.UTC)
+        fecha_actual = _ensure_aware(fecha_actual)
 
     # Leer posible inicio persistido en BD (si existe)
     persisted_inicio = None
@@ -694,6 +694,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
             # Si está almacenado como naive, marcar UTC
             if getattr(persisted_inicio, "tzinfo", None) is None:
                 persisted_inicio = persisted_inicio.replace(tzinfo=pytz.UTC)
+            persisted_inicio = _ensure_aware(doc.get("puertaInicio"))
     except Exception as ex:
         print(f"[WARN] No se pudo leer puertaInicio en BD para sensor {sensor['nroSensor']}: {ex}")
     
@@ -715,6 +716,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
 
         # Ya había inicio: comprobar tiempo transcurrido
         elapsed = fecha_actual - puerta_abierta_previa
+        puerta_abierta_previa = _ensure_aware(puerta_abierta_previa)
         elapsed_min = elapsed.total_seconds() / 60 if elapsed else 0
         print(f"[DEBUG][_alerta_puerta] elapsed={elapsed} (~{elapsed_min:.1f} min) para sensor {sensor['nroSensor']}")
         if elapsed >= timedelta(minutes=10):
@@ -765,6 +767,7 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
                     tz_ba = pytz.timezone('America/Argentina/Buenos_Aires')
                     inicio = alerta_abierta.get("fechaHoraAlerta")
                     inicio_local = inicio.astimezone(tz_ba) if hasattr(inicio, "astimezone") else inicio
+                    inicio = _ensure_aware(alerta_abierta.get("fechaHoraAlerta"))
                     actual_local = fecha_actual.astimezone(tz_ba) if hasattr(fecha_actual, "astimezone") else fecha_actual
                     inicio_str = inicio_local.strftime('%Y-%m-%d %H:%M:%S')
                     actual_str = actual_local.strftime('%Y-%m-%d %H:%M:%S')
@@ -795,6 +798,12 @@ def _alerta_puerta(mongo, sensor, puerta_estado, puerta_abierta_previa, fecha_ac
                 else:
                     if getattr(inicio, "tzinfo", None) is None:
                         inicio = inicio.replace(tzinfo=pytz.UTC)
+                    duracion = (fecha_actual - inicio).total_seconds() / 60
+                inicio = _ensure_aware(alerta_abierta.get("fechaHoraAlerta"))
+                if inicio is None:
+                    print(f"[WARN] Alerta abierta sin fechaHoraAlerta para {alerta_abierta.get('_id')}")
+                    duracion = 0
+                else:
                     duracion = (fecha_actual - inicio).total_seconds() / 60
                 duracion = round(duracion, 1)
                 updateDuracion(mongo, alerta_abierta["_id"], duracion)
@@ -1381,3 +1390,15 @@ def _obtener_parametros_ciclo(notas):
     if "frutas" in notas or "verduras" in notas:
         return {"duracion_min": 10, "duracion_max": 20, "incremento_max": 5}
     return None
+
+
+def _ensure_aware(dt):
+    """Devuelve dt como timezone-aware en UTC. Si dt es None devuelve None."""
+    if dt is None:
+        return None
+    if getattr(dt, "tzinfo", None) is None:
+        try:
+            return pytz.UTC.localize(dt)
+        except Exception:
+            return dt.replace(tzinfo=pytz.UTC)
+    return dt
