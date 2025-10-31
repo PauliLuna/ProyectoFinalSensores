@@ -69,6 +69,16 @@ def q_alerta_abierta_offline(mongo, nro_sensor, id_empresa):
     }
     return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])
 
+def q_alerta_abierta_puerta(mongo, nro_sensor, id_empresa):
+    filtro ={
+        "idSensor": str(nro_sensor),
+        "tipoAlerta": "Puerta abierta prolongada",
+        "idEmpresa": id_empresa,
+        "estadoAlerta": "abierta",
+    }
+    return mongo.db.alertas.find_one(filtro, sort=[('fechaHoraAlerta', DESCENDING)])
+
+
 def get_checkpoint(mongo, id_empresa, nro_sensor, tipo_alerta):
     return mongo.db.alerta_checkpoint.find_one({
         "idEmpresa": id_empresa,

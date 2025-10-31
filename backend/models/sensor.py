@@ -149,3 +149,22 @@ def updateStatus(mongo, nroSensor, id_empresa, estado):
         {"nroSensor": nroSensor, "idEmpresa": id_empresa},
         {"$set": {"estado": estado}}
     )
+
+def get_sensor_by_nro(mongo, nro_sensor, id_empresa):
+    return mongo.db.sensors.find_one({
+        "nroSensor": nro_sensor,
+        "idEmpresa": id_empresa},
+        {"puertaInicio": 1}
+    )
+
+def update_puerta_inicio(mongo, nro_sensor, id_empresa, nueva_fecha):
+    mongo.db.sensors.update_one(
+        {"nroSensor": nro_sensor, "idEmpresa": id_empresa},
+        {"$set": {"puertaInicio": nueva_fecha}}
+    )
+
+def update_puerta_inicio_unset(mongo, nro_sensor, id_empresa):
+    mongo.db.sensors.update_one(
+        {"nroSensor": nro_sensor, "idEmpresa": id_empresa},
+        {"$unset": {"puertaInicio": ""}}
+    )
