@@ -202,6 +202,24 @@ async function submitEditSensorForm(e) {
         minMaxHelp.style.display = 'none';
     }
 
+    // Validación: límites de valorMin y valorMax
+    const valorMinHelp = document.getElementById('valorMinHelp');
+    const valorMaxHelp = document.getElementById('valorMaxHelp');
+
+    if (valorMin < -55 || valorMin > 125) {
+        valorMinHelp.style.display = 'block';
+        hasError = true;
+    } else {
+        valorMinHelp.style.display = 'none';
+    }
+
+    if (valorMax < -55 || valorMax > 125) {
+        valorMaxHelp.style.display = 'block';
+        hasError = true;
+    } else {
+        valorMaxHelp.style.display = 'none';
+    }
+
     // Validación: alias debe tener formato "algo - algo"
     const alias = document.getElementById('alias').value.trim();
     const aliasRegex = /^.+\s*-\s*.+$/;
