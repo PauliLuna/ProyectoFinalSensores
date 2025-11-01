@@ -8,11 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="body-loading">
-
+<body>
+    <!-- Left and Top menu -->
     <div id="sidebar-container"></div>
     <div id="top-banner-container"></div>
 
+    <!-- Main Content -->
     <div class="main-content">
         <div class="header-section">
             <h1 style="margin-left: 20px; margin-bottom: 0%;">Alertas</h1>
@@ -40,13 +41,6 @@
                     <span style="color: #FDEDEC">(%)</span>
                 </div>
             </div>
-            <div class="kpi-card seguridad kpi-alertas" id="securityCard">
-                <p id="seguridadCount" class="kpi-alerta-numero"></p>
-                <div class="kpi-alerta-texto">
-                    <h3>Seguridad</h3>
-                    <span style="color: #FDEDEC">(%)</span>
-                </div>
-            </div>
         </div>
 
         <div class="filterContainer" style="margin-top: 0%;">
@@ -67,7 +61,6 @@
                     <option value="crítica">Críticas</option>
                     <option value="informativa">Informativas</option>
                     <option value="preventiva">Preventivas</option>
-                    <option value="seguridad">Seguridad</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -82,26 +75,12 @@
                     <option value="todos">Todos</option>
                 </select>
             </div>
-            <span id="refreshIcon" title="Refrescar" style="cursor: pointer; font-size: 1.5em; margin-left: 6px; color: #457B9D; display: flex; align-items: center;">
-                🔄
-            </span>
         </div>
-
-        
 
         <!-- Tabla: ALERTAS -->
         <div class="recent-activity" style="margin-top: 20px; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; margin-bottom: 5px;">
                 <h3 style="margin-right: 8px; margin-bottom: 0;">Detalle de las alertas</h3>
-                <span class="alias-tooltip-icon" tabindex="0" style="position: relative;">
-                    <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px; margin-bottom: -1px;">
-                    <span class="alias-tooltip-text">
-                        <span class="alias-tooltip-arrow"></span>
-                        Las alertas de **tipo Seguridad** hacen referencia a eventos de usuarios.
-                        Por esta razón, no tienen un sensor o sucursal asociado
-                        y se mostrarán como **N/A**.
-                    </span>
-                </span>
             </div>
             
             <div class="table-wrapper" style="position: relative; min-height: 585px; max-height: 585px; overflow-y: auto; padding-bottom: 10px;">
@@ -139,7 +118,7 @@
                         <img src="assets/informacion.png" alt="info" style="width: 16px; height: 16px; margin-bottom: 2px;">
                         <span class="alias-tooltip-text">
                             <span class="alias-tooltip-arrow"></span>
-                            Muestra la distribución porcentual de las alertas registradas (Críticas, Informativas, Preventivas, Seguridad) en el período seleccionado.
+                            Muestra la distribución porcentual de las alertas registradas (Críticas, Informativas, Preventivas) en el período seleccionado.
                         </span>
                     </span>
                 </div>
@@ -176,17 +155,10 @@
                 <p id="errorMessage"></p>
             </div>
         </div>
-    </div>
 
     <script src="scripts/utils.js"></script>
-    <script src="scripts/alertas.js"></script>
-    <script src='https://cdn.jotfor.ms/agent/embedjs/019815e01bf27cb087f8aa913c6a0b409237/embed.js?skipWelcome=1&maximizable=1'></script> <!--Chatbot -->
-    <!-- Carga el overlay del spinner -->
-    <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 9999; justify-content: center; align-items: center;">
-        <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-    </div>
-    <style>
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    <script src="scripts/alertasUser.js"></script>
+     <!---Chatbot Usuario-->
+    <script src='https://cdn.jotfor.ms/agent/embedjs/019a136b0c817a8780f1f65603e4b1ec2d84/embed.js'></script>
 </body>
 </html>

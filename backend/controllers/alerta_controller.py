@@ -4,6 +4,7 @@ from models.alerta import (
     insert_alerta, 
     get_alerta_caida_energia_abierta, 
     get_alertas_puerta_abierta,
+    get_alertas_usuario,
     q_alerta_abierta_temp,
     q_alerta_abierta_offline,
     q_alerta_abierta_puerta,
@@ -108,6 +109,78 @@ def obtener_alertas(mongo):
             alerta["direccion"] = ""
             print(f"[ERROR] No se pudo procesar la alerta porque la excepción fue: {e}")
     return jsonify(alertas), 200
+
+def obtener_alertas_usuario(mongo):
+    id_usuario = session.get("user_id")
+    if not id_usuario:
+        return jsonify({"error": "Usuario no encontrado"}), 401
+
+    # Busca solo las alertas de ese usuario
+    alertas_usuario = get_alertas_usuario(mongo, id_usuario)
+
+    
+    # Recolectar IDs válidos para join con sensores
+    sensores_ids_validos = set()
+    for alerta in alertas_usuario:
+        valor_sensor = alerta.get("idSensor")
+        if isinstance(valor_sensor, list):
+            for sensor_id in valor_sensor:
+                if sensor_id is not None and isinstance(sensor_id, str) and sensor_id.isdigit():
+                    sensores_ids_validos.add(int(sensor_id))
+        elif valor_sensor is not None and isinstance(valor_sensor, str) and valor_sensor.isdigit():
+            sensores_ids_validos.add(int(valor_sensor))
+    
+    sensores_ids = list(sensores_ids_validos)
+    sensores = list(mongo.db.sensors.find({"nroSensor": {"$in": sensores_ids}}))
+    sensor_alias = {int(s["nroSensor"]): s.get("alias", "") for s in sensores}
+    sensor_direccion = {int(s["nroSensor"]): s.get("direccion", "") for s in sensores}
+
+    # Definimos la zona horaria UTC y la zona de Argentina.
+    zona_utc = pytz.timezone('UTC')
+    zona_argentina = pytz.timezone('America/Argentina/Buenos_Aires')
+
+    for alerta in alertas_usuario:
+        try:
+            alerta["_id"] = str(alerta["_id"])
+
+            # Seguridad: no tiene idSensor, alias ni direccion
+            if alerta.get("tipoAlerta") == "Caída de energía eléctrica":
+                sensores_info = []
+                valor_sensor = alerta.get("idSensor", [])
+                for sensor_id in valor_sensor:
+                    if sensor_id is not None and isinstance(sensor_id, str) and sensor_id.isdigit():
+                        sid = int(sensor_id)
+                        sensores_info.append({
+                            "idSensor": sensor_id,
+                            "alias": sensor_alias.get(sid, ""),
+                            "direccion": sensor_direccion.get(sid, "")
+                        })
+                alerta["sensores_info"] = sensores_info
+            # Alertas normales: idSensor único
+            else:
+                valor_sensor = alerta.get("idSensor")
+                if valor_sensor is not None and isinstance(valor_sensor, str) and valor_sensor.isdigit():
+                    sid = int(valor_sensor)
+                    alerta["alias"] = sensor_alias.get(sid, "")
+                    alerta["direccion"] = sensor_direccion.get(sid, "")
+                else:
+                    alerta["alias"] = ""
+                    alerta["direccion"] = ""
+
+            # Convertir fechaHoraAlerta a zona local
+            fecha_utc = alerta["fechaHoraAlerta"]
+            fecha_utc_con_zona = zona_utc.localize(fecha_utc)
+            fecha_argentina = fecha_utc_con_zona.astimezone(zona_argentina)
+            alerta["fechaHoraAlerta"] = fecha_argentina.isoformat()
+
+        except Exception as e:
+            alerta["alias"] = ""
+            alerta["direccion"] = ""
+            print(f"[ERROR] No se pudo procesar la alerta porque la excepción fue: {e}")
+    return jsonify(alertas_usuario), 200
+
+
+
 
 
 def obtener_alertas_por_sensor(mongo, sensor_id):

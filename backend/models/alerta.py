@@ -127,3 +127,18 @@ def update_description_offline(mongo, alerta_id, descripcion):
             "descripcion": descripcion
         }}
     )
+
+def get_alertas_usuario(mongo, usuario_id):
+    asignaciones = list(mongo.db.asignaciones.find({"idUsuario": usuario_id}))
+    sensor_ids = [asignacion["idSensor"] for asignacion in asignaciones]  # ints
+
+    if not sensor_ids:
+        return []
+    sensor_ids_str = [str(s) for s in sensor_ids]
+    alertas = list(mongo.db.alertas.find({
+        "$or": [
+            {"idSensor": {"$in": sensor_ids_str}},
+            {"idSensor": sensor_ids_str}
+        ]
+        }).sort("fechaHoraAlerta", -1))
+    return alertas

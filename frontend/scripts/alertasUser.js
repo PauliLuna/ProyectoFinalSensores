@@ -1,7 +1,7 @@
 window.alertsLineChart = null;
 
 // ------------------- SEGURIDAD -------------------
-const REQUIRED_ROLE = 'superAdmin';
+const REQUIRED_ROLE = 'usuario';
 
 const token = sessionStorage.getItem('authToken');
 const userData = isTokenExpired(token);
@@ -23,16 +23,13 @@ const userRole = userData.entity_type;
 if (userRole !== REQUIRED_ROLE) {
     window.location.href = 'acceso_denegado.html';
 }
+// Token válido y el rol correcto. -> guardamos cuando unicia sesión
+sessionStorage.setItem('userData', JSON.stringify(userData));
 // ------------------- FIN -------------------
 
 let alertasData = [];
 
 function normalizarAlerta(alerta) {
-    // Si es de seguridad (no tiene idSensor pero sí idUsuario)
-    if ((!alerta.idSensor || alerta.idSensor === "") && alerta.criticidad && alerta.criticidad.toLowerCase() === "seguridad") {
-        alerta.idSensor = "N/A";
-        alerta.alias = "N/A";
-    }
     // Si idSensor es un array, conviértelo a string para mostrarlo
     if (Array.isArray(alerta.idSensor)) {
         alerta.idSensor = alerta.idSensor.filter(x => x).join(", ");
@@ -46,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         // Muestra loader
         document.body.classList.add('body-loading');
-        const response = await fetch('/alertas', {
+        const response = await fetch('/alertas_usuario', {
             headers: { 'Authorization': 'Bearer ' + token }
         });
         document.body.classList.remove('body-loading');
@@ -79,82 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             aplicarFiltrosGlobales();
         });
 
-        // Lógica específica para deshabilitar filtros cuando se selecciona "Seguridad"
-        document.getElementById('criticidadSelect').addEventListener('change', function() {
-            const crit = this.value.toLowerCase();
-            const sucursalSelect = document.getElementById('sucursalSelect');
-            const sensorSelect = document.getElementById('sensorSelect');
-            
-            if (crit === 'seguridad') {
-
-                // Limpiar filtros (resetear a "todas")
-                sucursalSelect.value = 'todas';
-                sensorSelect.value = 'todos';
-
-                // Deshabilitar selects
-               // Esperar al siguiente ciclo del event loop
-                setTimeout(() => {
-                    sucursalSelect.disabled = true;
-                    sensorSelect.disabled = true;
-                    sucursalSelect.classList.add('disabled-filter');
-                    sensorSelect.classList.add('disabled-filter');
-
-                    //Forzar re-render de alertas después de resetear selects
-                    aplicarFiltrosGlobales();
-
-                }, 50);
-
-            } else {
-                //  Habilitar nuevamente
-                sucursalSelect.disabled = false;
-                sensorSelect.disabled = false;
-                sucursalSelect.classList.remove('disabled-filter');
-                sensorSelect.classList.remove('disabled-filter');
-            }
-        });
-
-        
         // Agregar evento al botón de refrescar alertas
-        document.getElementById('refreshIcon').addEventListener('click', async () => {
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.display = 'flex';
-            try {
-                const res = await fetch('/reanalizar_alertas', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!res.ok) throw new Error("Error al reanalizar alertas");
-                const result = await res.json();
-                await cargarAlertas();
-                // Resetear filtros globales
-                document.getElementById('periodSelect').value = 'todos';
-                document.getElementById('criticidadSelect').value = 'todas';
-                document.getElementById('sucursalSelect').value = 'todas';
-                document.getElementById('sensorSelect').value = 'todos';
-
-                // ✅ Rehabilitar los selects (por si quedaron deshabilitados al elegir "seguridad")
-                const sucursalSelect = document.getElementById('sucursalSelect');
-                const sensorSelect = document.getElementById('sensorSelect');
-                sucursalSelect.disabled = false;
-                sensorSelect.disabled = false;
-                sucursalSelect.classList.remove('disabled-filter');
-                sensorSelect.classList.remove('disabled-filter');
-
-                // Vuelve a mostrar toda la data
-                filteredalertasData = [...alertasData];
-                currentPage = 1;
-                renderAll(filteredalertasData);
-                document.getElementById('successMessage').textContent =
-                result.message || "Alertas reanalizadas correctamente.";
-                document.getElementById('successModal').style.display = 'block';
-            } catch (error) {
-                document.getElementById('errorMessage').textContent =
-                    "No se pudieron reanalizar las alertas.";
-                document.getElementById('errorModal').style.display = 'block';
-            } finally {
-                overlay.style.display = 'none';
-            }
-        });
 
         renderPieChart(filteredalertasData);
         renderLineChart(filteredalertasData);
@@ -183,23 +105,21 @@ document.getElementById('closeErrorModal').onclick = function() {
 
 function updateKPICards(data) {
     // Inicializa los contadores en 0
-    const counts = { crítica: 0, informativa: 0, preventiva: 0, seguridad: 0 };
+    const counts = { crítica: 0, informativa: 0, preventiva: 0};
     data.forEach(a => {
         // Normaliza el texto para evitar problemas de tildes y mayúsculas
         let crit = (a.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (crit === 'critica') counts.crítica++;
         else if (crit === 'informativa') counts.informativa++;
         else if (crit === 'preventiva') counts.preventiva++;
-        else if (crit === 'seguridad') counts.seguridad++;
     });
 
-    const total = counts.crítica + counts.informativa + counts.preventiva + counts.seguridad;
+    const total = counts.crítica + counts.informativa + counts.preventiva;
     // Calcula porcentajes, evita división por cero
     const pct = {
         crítica: total ? (counts.crítica / total * 100).toFixed(1) : 0,
         informativa: total ? (counts.informativa / total * 100).toFixed(1) : 0,
-        preventiva: total ? (counts.preventiva / total * 100).toFixed(1) : 0,
-        seguridad: total ? (counts.seguridad / total * 100).toFixed(1) : 0
+        preventiva: total ? (counts.preventiva / total * 100).toFixed(1) : 0
     };
 
     document.getElementById('criticaCount').innerText = counts.crítica;
@@ -210,9 +130,6 @@ function updateKPICards(data) {
 
     document.getElementById('preventivaCount').innerText = counts.preventiva;
     document.querySelector('#preventivaCard .kpi-alerta-texto span').innerText = `(${pct.preventiva}%)`;
-
-    document.getElementById('seguridadCount').innerText = counts.seguridad; // Mostrará 0 si no hay
-        document.querySelector('#securityCard .kpi-alerta-texto span').innerText = `(${pct.seguridad}%)`;
 }
 
 function cargarSucursales(alertas) {
@@ -338,8 +255,6 @@ function renderPieChart(data) {
             .replace('í', 'i').replace('á', 'a');
     }
 
-    
-
     // Normaliza el nombre para comparar
     function normalizarTexto(texto) {
         return (texto || '')
@@ -370,9 +285,7 @@ function renderPieChart(data) {
         "puerta abierta recurrente": "preventiva",
         "inicio de ciclo de descongelamiento": "informativa",
         "inicio de ciclo de descongelamieno": "informativa",
-        "fin de ciclo de descongelamiento": "informativa",
-        "acceso nocturno": "seguridad",
-        "bloqueo de usuario": "seguridad"
+        "fin de ciclo de descongelamiento": "informativa"
     };
 
     // Filtra los tipos de alerta según la criticidad
@@ -537,7 +450,7 @@ let filtroFechaActivo = false;
 
 // Cargar alertas desde el backend
 async function cargarAlertas() {
-    const res = await fetch('/alertas', {
+    const res = await fetch('/alertas_usuario', {
         headers: { 'Authorization': 'Bearer ' + token }
     });
     alertasData = await res.json();
@@ -669,6 +582,3 @@ function renderAlertasPagination(totalPages) {
     });
     pagination.appendChild(nextItem);
 }
-
-// Inicializar
-// document.addEventListener('DOMContentLoaded', cargarAlertas);

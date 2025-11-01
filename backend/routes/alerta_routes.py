@@ -6,7 +6,8 @@ from controllers.alerta_controller import (
     chequear_alertas_criticas,
     chequear_alertas_preventivas,
     chequear_alertas_informativas,
-    obtener_alertas_por_sensor
+    obtener_alertas_por_sensor,
+    obtener_alertas_usuario
 )
 
 from utils.auth import token_required
@@ -23,6 +24,12 @@ def get_alertas():
         return obtener_alertas_por_sensor(mongo, sensor_id)
     else:
         return obtener_alertas(mongo)
+    
+@alerta_bp.route('/alertas_usuario', methods=['GET'])
+@token_required
+def get_alertas_usuario():
+    mongo = current_app.mongo
+    return obtener_alertas_usuario(mongo)
     
 @alerta_bp.route('/alertas_por_mes', methods=['GET'])
 @token_required
