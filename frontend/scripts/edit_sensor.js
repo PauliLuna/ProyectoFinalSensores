@@ -18,16 +18,20 @@ if (!userData) {
 }
 // ------------------- FIN -------------------
 
-// CHATBOTs - URLs de los scripts
+// CHATBOTs + Assigments - Diferenciando Roles
 const adminScriptURL = 'https://cdn.jotfor.ms/agent/embedjs/019815e01bf27cb087f8aa913c6a0b409237/embed.js?skipWelcome=1&maximizable=1';
 const userScriptURL = 'https://cdn.jotfor.ms/agent/embedjs/019a136b0c817a8780f1f65603e4b1ec2d84/embed.js';
+// Mostrar o no assigments
+const assignmentWrapper = document.getElementById('userAssignmentWrapper');
 
 let scriptToLoad = '';
 
 if (userRole === 'superAdmin') {
+    assignmentWrapper.style.display = ''; // Mostrar assigments
     // Si el rol es administrador, usa el ChatBot de admin
     scriptToLoad = adminScriptURL;
 } else if (userRole === 'usuario') {
+    assignmentWrapper.style.display = 'none'; // Ocultar completamente la assigments
     // Si el rol es usuario estándar, usa el ChatBot de usuario
     scriptToLoad = userScriptURL;
 }
