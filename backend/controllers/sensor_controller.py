@@ -462,30 +462,40 @@ GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini
 def analizar_mediciones(sensor_id, mediciones, notas):
     # Construcción del prompt
     user_prompt = (
-        "Analiza las siguientes mediciones de temperatura interna, temperatura externa "
-        "y el estado de puerta (0=cerrada, 1=abierta) de una cámara frigorífica, considerando además:\n"
-        "• Los ciclos de descongelamiento son eventos programados que detienen momentáneamente la refrigeración y "
-        "provocan aumentos temporales de temperatura interna, que luego desciende nuevamente al rango normal.\n"
-        "• Frecuencia típica de ciclos:\n"
-        "   - Cámaras de congelados (-18°C a -25°C): 3–4 ciclos/día, 20–40 min cada 6–8 h (00, 06, 12, 18 h).\n"
+        "**ROL:** Eres un Ingeniero de Análisis de Datos en Refrigeración. Tu tarea es diagnosticar "
+        "el estado operativo de la cámara frigorífica basándote en los datos. Prioriza la "
+        "identificación de fallas operativas o de refrigeración que NO sean ciclos de descongelamiento.\n\n"
+
+        "**CONOCIMIENTO Y REGLAS DE DIAGNÓSTICO:**\n"
+        "1. Ciclos de Descongelamiento (Aumento temporal de T° interna): No se consideran anomalías si la "
+        "duración y frecuencia coinciden con los rangos típicos (solo para contexto, no para diagnóstico de falla):\n"
+        "   - Cámaras de congelados (-18°C a -25°C): 3–4 ciclos/día, 20–40 min.\n"
         "   - Cámaras de helados (-20°C a -25°C): 3–4 ciclos/día, 20–30 min.\n"
         "   - Carnes frescas (-1°C a 2°C): 2–3 ciclos/día, 15–25 min.\n"
         "   - Frutas y verduras (1°C a 8°C): 1–2 ciclos/día, 10–20 min.\n"
-        "No considerar estos aumentos temporales como anomalías si coinciden con la duración y frecuencia típica.\n"
-        "Considerar que si se abre muchas veces la puerta como una anomalía .\n\n"
-        f"Contexto adicional del sensor: {notas}.\n\n"
-        "Genera un resumen breve en un formato claro y visual con íconos representativos:\n"
-        "1) **Estado actual:** usa 🟢 para funcionamiento normal, 🟠 para alerta leve, 🔴 para problemas críticos.\n"
-        "2) **Tendencias relevantes:** usa 📈 para aumento de temperatura, 📉 para descenso, ➖ para estabilidad.\n"
-        "3) **Riesgos inmediatos:** usa ⚠️ si hay algún riesgo, ✅ si no hay riesgos.\n"
-        "4) **Recomendación rápida:** usa 🛠️ si hay acciones recomendadas, 📋 si no son necesarias.\n\n"
-        "Formato de salida EXACTO (no agregar texto fuera de este bloque):\n"
-        "**Estado actual:** <texto con ícono>\n"
-        "**Tendencias relevantes:** <texto con ícono>\n"
-        "**Riesgos inmediatos:** <texto con ícono>\n"
-        "**Recomendación rápida:** <texto con ícono>\n\n"
-        f"Datos del sensor {sensor_id}:\n"
-        f"{json.dumps(mediciones, indent=2)}"
+        "2. Criterio de Anomalía de Puerta (🔴): Considerar como problema crítico si la puerta (estado=1) "
+        "se abre más de 10 veces en una hora o si permanece abierta continuamente por más de 5 minutos.\n\n"
+
+        f"--- **CONTEXTO ESPECÍFICO DEL SENSOR {sensor_id}:** ---\n"
+        f"Información de referencia: {notas}.\n\n"
+
+        "**ANÁLISIS DE SALIDA:** Genera un resumen conciso y solo usa los siguientes íconos:\n"
+        "1) **Estado actual:** 🟢 (normal), 🟠 (alerta leve), 🔴 (problemas críticos).\n"
+        "2) **Tendencias relevantes:** 📈 (aumento), 📉 (descenso), ➖ (estabilidad).\n"
+        "3) **Riesgos inmediatos:** ⚠️ (si hay riesgos), ✅ (sin riesgos).\n"
+        "4) **Recomendación rápida:** 🛠️ (acciones recomendadas), 📋 (no necesarias).\n\n"
+
+        "**FORMATO DE SALIDA (IMPERATIVO):**\n"
+        "Responde ÚNICAMENTE con el bloque de formato a continuación. No agregues texto introductorio o de cierre.\n\n"
+
+        f"Datos del sensor {sensor_id} para analizar (formato JSON):\n"
+        f"{json.dumps(mediciones, indent=2)}\n\n"
+        
+        "**<BLOQUE DE SALIDA REQUERIDO>**\n"
+        "**Estado actual:** <ÍCONO y texto descriptivo, ej: 🟠 Funcionamiento en Alerta Leve>\n"
+        "**Tendencias relevantes:** <ÍCONO y texto descriptivo, ej: 📈 Aumento sostenido de temperatura interna>\n"
+        "**Riesgos inmediatos:** <ÍCONO y texto descriptivo, ej: ⚠️ Riesgo de deterioro por apertura excesiva>\n"
+        "**Recomendación rápida:** <ÍCONO y texto descriptivo, ej: 🛠️ Revisar el sello de la puerta y limitar el acceso>"
     )
 
     payload = {

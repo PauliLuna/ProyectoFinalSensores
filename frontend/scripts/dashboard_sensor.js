@@ -417,7 +417,51 @@ function renderIAResponse(rawText, targetElementId) {
         return;
     }
 
-    let html = rawText
+    // 1. --- PASO DE LIMPIEZA CLAVE ---
+    // Eliminar el bloque de código de inicio y fin (```json, ```, ```text, etc.)
+    // Esto maneja la respuesta que viene con el formato: ```json\n{...}\n```
+    let cleanedText = rawText.trim();
+
+    // Patrón para detectar y eliminar el bloque de código de inicio (```, ```json, ```text, etc.)
+    // La 's' en el regex permite que '.' coincida con saltos de línea.
+    const codeBlockRegex = /^\s*`{3}(\w+)?\s*/s; 
+    
+    // Si el texto empieza con un bloque de código, lo eliminamos
+    if (codeBlockRegex.test(cleanedText)) {
+        cleanedText = cleanedText.replace(codeBlockRegex, '');
+    }
+
+    // Patrón para detectar y eliminar el bloque de código de cierre (```)
+    const endCodeBlockRegex = /\s*`{3}\s*$/;
+    if (endCodeBlockRegex.test(cleanedText)) {
+        cleanedText = cleanedText.replace(endCodeBlockRegex, '');
+    }
+
+    // 2. --- LIMPIEZA ADICIONAL (Para el caso en que el modelo envíe JSON sin bloque de código) ---
+    // Si el resultado es un JSON puro (como en tu ejemplo anterior), extraemos los valores.
+    if (cleanedText.startsWith('{') && cleanedText.endsWith('}')) {
+        try {
+            // Eliminar los saltos de línea para facilitar el parseo si es JSON puro
+            const jsonString = cleanedText.replace(/\n/g, ''); 
+            const data = JSON.parse(jsonString);
+
+            // Reconstruir el formato deseado (negritas + texto) a partir del JSON
+            let jsonHtml = "";
+            for (const key in data) {
+                // key.replace(/:/g, '') limpia posibles ':' que a veces incluye Gemini en la key
+                jsonHtml += `<strong>${key.replace(/:/g, '')}:</strong> ${data[key]}<br>`;
+            }
+            cleanedText = jsonHtml; // Usamos el HTML reconstruido
+            
+        } catch (e) {
+            // Si el parseo falla (JSON malformado), simplemente continuamos con cleanedText
+            console.error("Fallo al parsear JSON:", e);
+        }
+    }
+
+
+    // 3. --- PROCESAMIENTO DE MARKDOWN (Tu lógica original) ---
+    let html = cleanedText
         // **Texto** → <strong>Texto</strong>
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         // # Titulo → <h2>Titulo</h2>, ## Subtitulo → <h3>Subtitulo</h3>
@@ -433,18 +477,24 @@ function renderIAResponse(rawText, targetElementId) {
     let inOL = false;
 
     lines.forEach(line => {
-        if (line.startsWith("*")) { // Lista no ordenada
+        if (line === "") { 
+            // Línea vacía, cerrar listas abiertas
+            if (inUL) { finalHTML += "</ul>"; inUL = false; }
+            if (inOL) { finalHTML += "</ol>"; inOL = false; }
+            finalHTML += "<br>"; // Agregar un salto de línea en el HTML para el espacio
+            return; // Salir del bucle para esta línea
+        }
+        
+        if (line.startsWith("<strong>Estado actual:")) {
+             // Si el formato es el que reconstruimos desde JSON, no hacemos nada más
+             finalHTML += line;
+        } else if (line.startsWith("*")) { // Lista no ordenada
             if (!inUL) { finalHTML += "<ul>"; inUL = true; }
             finalHTML += `<li>${line.replace(/^\*\s*/, "")}</li>`;
         } 
         else if (/^\d+\.\s/.test(line)) { // Lista ordenada
             if (!inOL) { finalHTML += "<ol>"; inOL = true; }
             finalHTML += `<li>${line.replace(/^\d+\.\s*/, "")}</li>`;
-        } 
-        else if (line === "") { 
-            // Línea vacía, cerrar listas abiertas
-            if (inUL) { finalHTML += "</ul>"; inUL = false; }
-            if (inOL) { finalHTML += "</ol>"; inOL = false; }
         } 
         else {
             // Cerrar listas si veníamos dentro de una
