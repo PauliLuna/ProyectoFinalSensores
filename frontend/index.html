@@ -44,6 +44,8 @@
     <!-- Sección Hero -->
     <section class="hero">
         <img src="assets/logo2.png" alt="Logo de SensIA">
+        <img src="assets/landing_index/fondo_bienvenido.jpg" alt="Fondo Bienvenido" class="contact-background-image" onerror="this.style.display='none'">
+
         <h1>Bienvenido a SensIA</h1>
         <p>Monitorea y gestiona tus sensores fácilmente con nuestra plataforma avanzada.</p>
         <a href="#start-now" class="btn-primary" id="startNowBtn">Empezar Ahora</a>
@@ -122,15 +124,18 @@
     </section>
 
     <!-- Sección de Contacto -->
-    <section id="contact-section" class="section-padding contact fondo_contact">
-        
+    <section id="contact-section" class="section-padding contact">
+    
+        <!-- <--- ESTE ES EL BLOQUE QUE FALTABA Y DEBES AGREGAR --->
+        <img src="assets/landing_index/fondo_contact.jpg" alt="Fondo de Contacto" class="contact-background-image" onerror="this.style.display='none'">
         <!-- Contenedor Flex para las columnas -->
         <div class="contact-flex-container">
 
             <!-- Columna 1 (1/3): Mensaje de Solicitud de Demo -->
             <div class="tabla-1-3 contact-message-content">
                 <h2>SOLICITA UNA DEMO</h2>
-                <p>Estaremos encantados de mostrarte nuestro producto. Dinos algo sobre tí para adaptar la demo a tus necesidades.</p>
+                <p style="font-weight: bold;">Estaremos encantados de mostrarte nuestro producto!</p>
+                <p style="font-size: 1.3rem; margin-top: 10px;">Dinos algo sobre tí para adaptar la demo a tus necesidades.</p>
             </div>
             
             <!-- Columna 2 (2/3): Formulario -->
