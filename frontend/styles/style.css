@@ -212,7 +212,11 @@ html {
 .hero {
     text-align: center;
     padding: 100px 20px;
-    background-color: #F1FAFB;
+    background-image: url('assets/landing_index/fondo_bienvenido.jpg'); /* Cambiar el fondo */
+    background-size: cover; /* Asegura que la imagen cubra toda la sección */
+    background-position: center; /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+    color: #FFFFFF; /* Cambiar el texto a blanco para mejor contraste */
 }
 
 .hero img {
@@ -418,11 +422,21 @@ html {
 
 .contact form {
     max-width: 600px; /* Limit the form width */
-    margin: 0 auto; /* Center the form horizontally */
+    margin: 0 0 0 auto; /* Center the form horizontally */
+    margin-right: 60px;
     background-color: #FFFFFF; /* White background for contrast */
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for better visibility */
+}
+
+.contact-form-styled {
+    max-width: none; /* Quitamos el max-width para que llene el 2/3 */
+    margin: 0; /* Quitamos el margin auto que lo centraba/alineaba a la derecha */
+    background-color: #FFFFFF;
+    padding: 30px; /* Aumentamos el padding para mejor estética */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
 }
 
 .contact .form-group {
@@ -466,6 +480,39 @@ html {
 
 .contact button:hover {
     background-color: #1D3557; /* Accent color: Midnight Blue */
+}
+
+.fondo_contact {
+    background-image: url('assets/landing_index/fondo_contact.jpg'); /* Aplica el fondo de imagen */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Opcional: efecto parallax ligero */
+}
+
+.contact-flex-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: center; /* Centrado vertical para todo el contenido */
+    gap: 40px;
+    padding: 0 20px;
+}
+
+.contact-message-content {
+    /* Estilos para el texto 1/3 */
+    text-align: left;
+    color: #FFFFFF; /* Para que el texto se vea bien sobre el fondo */
+    padding: 20px;
+    border-radius: 8px;
+    background-color: rgba(29, 53, 87, 0.8); /* Fondo oscuro semi-transparente */
+}
+.contact-message-content h2 {
+    color: #E63946; /* Color de énfasis para el título de la demo */
+    font-size: 2.2rem;
+}
+.contact-message-content p {
+    color: #F1FAFB;
+    margin-bottom: 0;
 }
 
 /* Footer */
