@@ -208,37 +208,67 @@ html {
     text-decoration: underline;
 }
 
-/* Hero Section */
+/* --- SECCIÓN HERO (BIENVENIDA) --- */
+
 .hero {
+    position: relative;
+    height: 100vh; /* CLAVE: Ocupa toda la altura de la ventana */
+    display: flex;
+    align-items: center; /* Centrado vertical */
+    justify-content: center; /* Centrado horizontal */
+    overflow: hidden;
     text-align: center;
-    padding: 100px 20px;
-    background-image: url('assets/landing_index/fondo_bienvenido.jpg'); /* Cambiar el fondo */
-    background-size: cover; /* Asegura que la imagen cubra toda la sección */
-    background-position: center; /* Centra la imagen */
-    background-repeat: no-repeat; /* Evita que la imagen se repita */
-    color: #FFFFFF; /* Cambiar el texto a blanco para mejor contraste */
+    background-color: #F1FAFB; /* Fallback */
 }
 
-.hero img {
-    height: 150px;
+/* Imagen de Fondo del Hero */
+.hero-background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1; /* Detrás del contenido */
+    opacity: 0.35; /* Ligeramente más visible que el contacto */
+    pointer-events: none;
+}
+
+/* Contenedor del contenido (Logo, Título, Párrafo, Botón) */
+.hero-content {
+    position: relative;
+    z-index: 2; /* Encima de la imagen de fondo */
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-logo {
+    max-width: 150px; /* Tamaño del logo centrado */
     margin-bottom: 20px;
 }
 
 .hero h1 {
-    font-size: 2.5rem;
-    color: #1D3557;
-    margin-bottom: 20px;
+    font-size: 4.5rem; /* Título grande para impacto */
+    color: #1D3557; /* Midnight Blue */
+    margin-bottom: 10px;
+    line-height: 1.1;
 }
 
 .hero p {
-    font-size: 1.2rem;
-    color: #457B9D;
+    font-size: 1.5rem; /* Subtítulo */
+    color: #1D3557; /* Steel Blue */
     margin-bottom: 30px;
+    font-weight: 300;
 }
 
-.hero .btn-primary {
-    font-size: 1rem;
+.hero .btn-hero {
+    /* Estilos específicos para el botón del hero */
+    padding: 15px 35px;
+    font-size: 1.2rem;
+    border-radius: 8px;
 }
+
+
 
 /* Features Section */
 .features {
