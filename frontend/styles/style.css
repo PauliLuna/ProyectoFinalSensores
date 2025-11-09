@@ -408,7 +408,7 @@ html {
 
 .about-us p {
     font-size: 1rem;
-    color: #457B9D; /* Secondary color: Steel Blue */
+    color: #1D3557; /* Secondary color: Steel Blue */
     margin-bottom: 30px;
 }
 
@@ -420,17 +420,24 @@ html {
 }
 
 .team-card {
-    background-color: #F1FAFB; /* Light background */
+    background-color: #ffffff; /* Light background */
     border-radius: 10px;
     padding: 20px;
     text-align: center;
     width: 250px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-card:hover {
+    transform: translateY(-5px); /* Mueve la tarjeta ligeramente hacia arriba */
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
 }
 
 .team-card img {
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%; /* Circular images */
     object-fit: cover;
     margin-bottom: 15px;
@@ -444,7 +451,53 @@ html {
 
 .team-card p {
     font-size: 1rem;
-    color: #457B9D; /* Secondary color: Steel Blue */
+    color: #1D3557; /* Secondary color: Steel Blue */
+}
+
+.termi-team-card {
+    /* Forzamos que la altura se ajuste al contenido verticalmente */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Mantiene el contenido arriba, como las otras */
+    align-items: center;
+}
+
+/* 🔑 CLAVE: Ajustar la imagen de Termi para que se vea bien en el espacio 100x100 */
+.termi-team-card .termi-team-photo {
+    /* Usamos el mismo tamaño que las fotos de los integrantes */
+    width: 200px;
+    height: 200px;
+    
+    /* Si la imagen de Termi no es un círculo, removemos el borde y usamos 'contain' */
+    border-radius: 0;
+    object-fit: contain; /* Asegura que la imagen completa de Termi se vea sin cortarse */
+}
+
+.about-us.about-us-relative {
+    position: relative; 
+    /* Asegura el espacio alrededor del contenido */
+    padding: 60px 50px; 
+    /* Evita que cualquier parte de la imagen absoluta se desborde */
+    overflow: hidden; 
+}
+
+/* 🔑 CLAVE 2: Estilos de la imagen superpuesta (Tu técnica) */
+.about-us-background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1; /* Detrás del contenido */
+    opacity: 0.7; /* Suavidad visual (ajusta este valor si necesitas más o menos intensidad) */
+    pointer-events: none; /* Permite que los clicks pasen a elementos detrás */
+}
+
+/* 🔑 CLAVE 3: Eleva el contenido del texto */
+.about-us-content-wrapper {
+    position: relative;
+    z-index: 2; /* Por encima de la imagen (z-index: 1) */
 }
 
 /* Contact Section */
