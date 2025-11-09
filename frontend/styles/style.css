@@ -271,48 +271,64 @@ html {
 
 
 /* Features Section */
-.features {
-    padding: 50px 20px;
-    background-color: #FFFFFF;
+.features-section {
+    padding: 60px 50px;
+    text-align: center;
+    background-color: #FFFFFF; /* Fondo blanco */
 }
 
-.features h2 {
-    text-align: center;
-    font-size: 2rem;
-    color: #1D3557;
+.features-section h2 {
+    font-size: 2.2rem;
+    color: #1D3557; /* Midnight Blue */
+    margin-bottom: 10px;
+}
+
+.features-subtitle {
+    font-size: 1.1rem;
+    color: #457B9D; /* Light Blue */
     margin-bottom: 40px;
 }
 
-.features .feature-cards {
-    display: flex;
-    justify-content: center;
+.features-grid {
+    display: grid;
+    /* 3 columnas en pantallas grandes, con un espacio de 20px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
-    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .feature-card {
-    background-color: #F1FAFB;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    width: 300px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #F1FAFB; /* Fondo muy claro para la tarjeta */
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
 }
 
-.feature-card img {
-    height: 80px;
-    margin-bottom: 20px;
+.feature-card:hover {
+    transform: translateY(-5px); /* Efecto sutil al pasar el mouse */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .feature-card h3 {
-    font-size: 1.5rem;
     color: #1D3557;
+    font-size: 1.35rem;
+    margin-top: 15px;
     margin-bottom: 10px;
 }
 
 .feature-card p {
-    font-size: 1rem;
     color: #457B9D;
+    font-size: 0.95rem;
+}
+
+.feature-icon {
+    width: 50px;
+    height: 50px;
+    /* Si tienes iconos de colores, este filtro puede ser útil */
+    /* filter: drop-shadow(2px 2px 2px rgba(29, 53, 87, 0.3)); */
 }
 
 /* Nueva sección "start-now" */
