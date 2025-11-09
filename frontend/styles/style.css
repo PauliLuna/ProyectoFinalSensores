@@ -467,37 +467,50 @@ html {
 }
 
 /* 4. Estilos de Mensaje (Columna 1/3) - Adaptados a la Paleta */
-.contact-message-content {
-    /* Eliminamos background-color, padding, border-radius y box-shadow para que el texto quede sobre la imagen */
+/* La columna contenedora ahora es simple, solo para contener los elementos */
+.contact-message-column {
     text-align: left;
-    /* Mantenemos un padding mínimo lateral para separación */
-    padding: 20px 30px; 
-    /* El color del texto debe ser CLARO (o el que mejor contraste con la imagen) */
-    color: #1D3557; /* Usando Midnight Blue para alto contraste */
-    z-index: 2; /* Aseguramos que esté por encima de la imagen de fondo */
-    position: relative; /* Necesario para que z-index funcione */
+    position: relative;
+    z-index: 2;
+    padding-right: 20px;
 }
 
-/* 4b. Ajuste de Tipografía para cumplir el requisito de tamaño */
-.contact-message-content h2 {
-    font-size: 2rem; /* Tamaño GRANDE para "SOLICITA UNA DEMO" */
-    color: #1D3557; 
-    margin-bottom: 0px; 
+/* NUEVA CLASE: Contenedor con fondo blanco SOLO para el H2 */
+.title-box {
+    background-color: rgba(255, 255, 255, 0.5); /* Fondo blanco semitransparente */
+    padding: 20px 15px; /* Padding dentro del recuadro blanco */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra para destacarlo */
+    margin-bottom: 20px; /* Espacio entre el título con fondo y los párrafos sin fondo */
+    display: inline-block; /* CLAVE: Ajusta el ancho de la caja al contenido del H2 */
+    height: fit-content;
+    width: fit-content;
+    margin-left: -80px;
 }
 
-.contact-message-content p {
-    font-size: 2.3rem; /* Tamaño ligeramente más chico (1.2rem es menor que 2.2rem) */
+/* Estilo del H2 dentro de la caja blanca */
+.title-box h2 {
+    font-size: 1.3rem;
+    color: #1D3557; /* Texto oscuro */
+    margin-bottom: 10px; 
+    
+}
+
+.contact-message-column p {
+    font-size: 2.1rem; /* Tamaño ligeramente más chico (1.2rem es menor que 2.2rem) */
     color: #1D3557; /* Un azul más claro para el cuerpo del texto */
     margin-bottom: 0;
-    margin-left: -80px;
+
     margin-top: 1px;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5); /* Sombra ligera para mejorar el contraste */
 }
 
 
 .contact form {
     max-width: 600px; /* Limit the form width */
+    min-width: 550px; /* Limit the form width */
     margin: 0 0 0 auto; /* Center the form horizontally */
-    margin-right: 60px;
+    margin-left: 80px;
     background-color: #FFFFFF; /* White background for contrast */
     padding: 20px;
     border-radius: 10px;
