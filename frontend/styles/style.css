@@ -331,12 +331,12 @@ html {
     /* filter: drop-shadow(2px 2px 2px rgba(29, 53, 87, 0.3)); */
 }
 
-/* Nueva sección "start-now" */
+/* --------------------- Sección "start-now" --------------------------------------------------*/
 .start-now {
-   background: #fff;
+    background: #fff;
     border-radius: 0;
     box-shadow: none;
-    padding: 50px 0 40px 0;
+    padding: 50px 0 50px 0; /* Aumentamos el padding inferior */
     margin: 0;
     max-width: 100%;
     width: 100%;
@@ -344,7 +344,7 @@ html {
 }
 
 .start-now-inner {
-    max-width: 800px;
+    max-width: 1500px; /* Incrementamos el max-width para que el zig-zag sea visible */
     margin: 0 auto;
     padding: 0 24px;
     text-align: center;
@@ -360,26 +360,82 @@ html {
     color: #457B9D;
     font-size: 1.1rem;
     margin-bottom: 24px;
+    text-align: center; /* Asegura que el párrafo descriptivo esté centrado */
 }
 
-.start-steps h3 {
-    color: #1D3557;
+/* Contenedor principal que define la cuadrícula de 3 columnas */
+.steps-grid-container {
+    display: grid;
+    /* 🔑 CLAVE: 3 columnas de igual ancho para permitir el 2/3 */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 20px;
+    margin: 20px auto;
+    max-width: 1500px;
+    padding: 0 20px;
+}
+
+/* Estilos base de la tarjeta */
+.step-card {
+    background-color: #F1FAFB;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    /* 🔑 CLAVE 1: Reducimos la altura mínima para evitar el scroll innecesario */
+    min-height: auto; 
+    max-height: fit-content;
+    display: flex; 
+    flex-direction: column;
+}
+
+/* Efecto hover */
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.step-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #457B9D; /* Light Blue */
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
+.step-card h4 {
     font-size: 1.3rem;
-    margin-bottom: 10px;
-    text-align: left;
+    color: #1D3557; /* Midnight Blue */
+    margin-bottom: 2px;
 }
 
-.start-steps ol {
-    text-align: left;
-    margin: 0 auto 18px auto;
-    padding-left: 22px;
+.step-card p {
+    font-size: 0.95rem;
     color: #1D3557;
-    font-size: 1rem;
+    margin-top: 0px;
+    margin-bottom: 0%;
 }
 
-.start-steps li {
-    margin-bottom: 14px;
-    line-height: 1.6;
+
+/* 🔑 CLAVE 2: REGLAS DE POSICIONAMIENTO ZIG-ZAG (2/3 de Ancho) */
+
+/* Pasos 1 y 3 (Izquierda) */
+.step-card-left {
+    /* Ocupa 2 de las 3 columnas */
+    grid-column: 1 / span 2; 
+    text-align: left;
+}
+
+/* Paso 2 (Derecha) */
+.step-card-right {
+    /* Comienza en la segunda columna y ocupa 2 columnas */
+    grid-column: 2 / span 2; 
+    text-align: right; 
+}
+
+/* Asegura que el número del paso 2 se alinee a la derecha */
+.step-card-right .step-number {
+    text-align: right;
 }
 
 .start-warning {
@@ -389,11 +445,15 @@ html {
     padding: 16px 18px;
     border-radius: 8px;
     font-size: 1rem;
-    margin-top: 18px;
+    margin-top: 50px; /* Más margen para separarlo de la cuadrícula */
+    margin-bottom: 0px;
     text-align: left;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* About Us Section */
+/*----------------------------- About Us Section -----------------------------*/
 .about-us {
     padding: 50px 20px;
     background-color: #FFFFFF; /* White background for contrast */
@@ -519,7 +579,7 @@ html {
     margin-right: 5px;
 }
 
-/* Contact Section */
+/*----------------------------- Contact Section -------------------------------------------*/
 /* 1. Ajuste del Contenedor Principal (.contact) */
 .contact {
     position: relative; /* CLAVE para que la imagen de fondo funcione */
