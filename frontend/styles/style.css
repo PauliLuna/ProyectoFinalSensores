@@ -500,6 +500,25 @@ html {
     z-index: 2; /* Por encima de la imagen (z-index: 1) */
 }
 
+.linkedin-link {
+    color: #0077B5; /* Color corporativo de LinkedIn */
+    font-size: 1rem;
+    font-weight: 500;
+    display: block; /* Ocupa todo el ancho */
+    margin-top: 5px; /* Espacio debajo del nombre */
+}
+
+/* Opcional: Estilo al pasar el ratón sobre el enlace */
+.linkedin-link:hover {
+    text-decoration: underline;
+    color: #005582;
+}
+
+/* Opcional: Si quieres solo el icono y no el texto "LinkedIn" */
+.linkedin-link i {
+    margin-right: 5px;
+}
+
 /* Contact Section */
 /* 1. Ajuste del Contenedor Principal (.contact) */
 .contact {
