@@ -778,6 +778,88 @@ html {
     background-color: #1D3557; /* Accent color: Midnight Blue */
 }
 
+/* ------------ SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) ------------- */
+
+.faq-section {
+    background-color: #F1FAFB; /* Fondo claro similar al de las tarjetas del equipo */
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.faq-inner-wrapper {
+    max-width: 900px; /* Ancho máximo para el contenido del FAQ */
+    margin: 0 auto;
+}
+
+.faq-section h2 {
+    font-size: 2rem;
+    color: #1D3557; /* Color principal */
+    margin-bottom: 20px;
+}
+
+.faq-section p {
+    font-size: 1.1rem;
+    color: #457B9D; /* Color secundario */
+    margin-bottom: 40px;
+}
+
+.faq-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre cada pregunta */
+}
+
+.faq-item {
+    background-color: #FFFFFF; /* Fondo blanco para cada pregunta/respuesta */
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+    overflow: hidden; /* Asegura que la sombra se vea bien */
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1D3557; /* Color para la pregunta */
+    cursor: pointer;
+    border-bottom: 1px solid #E0E0E0; /* Línea separadora como en tu imagen */
+    transition: background-color 0.3s ease;
+}
+
+.faq-question:hover {
+    background-color: #F8F8F8; /* Un ligero cambio de color al pasar el ratón */
+}
+
+/* Estilo para el icono '+' */
+.faq-icon {
+    font-size: 1.5rem;
+    color: #457B9D; /* Color del icono */
+    transition: transform 0.3s ease;
+}
+
+/* Gira el icono cuando la pregunta está abierta */
+.faq-item[open] .faq-icon {
+    transform: rotate(45deg); /* Cambia de '+' a 'x' o un giro */
+}
+
+/* Elimina el borde inferior del summary cuando la pregunta está abierta */
+.faq-item[open] .faq-question {
+    border-bottom: none;
+}
+
+
+.faq-answer {
+    padding: 15px 25px 20px 25px;
+    font-size: 1rem;
+    color: #1D3557; /* Color del texto de la respuesta */
+    text-align: left;
+    line-height: 1.6;
+    /* Animación básica para la apertura/cierre (más avanzado requiere JS) */
+    animation: fadein 0.3s ease-out;
+}
 
 /* Footer */
 .footer {
