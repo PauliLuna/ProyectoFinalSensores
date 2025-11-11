@@ -13,3 +13,4 @@ __pycache__/
 Thumbs.db
 
 backend/ejecutar_alertas_local.py
+backend/node_modules

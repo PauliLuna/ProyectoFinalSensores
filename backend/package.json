@@ -1,0 +1,10 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "scripts": {
+    "build:obfuscate": "npx javascript-obfuscator ../frontend/scripts ../frontend/dist/scripts --config obfuscator-config.json"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.0"
+  }
+}
