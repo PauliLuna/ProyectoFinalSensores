@@ -331,6 +331,33 @@ html {
     /* filter: drop-shadow(2px 2px 2px rgba(29, 53, 87, 0.3)); */
 }
 
+.termi-chatbot-feature {
+    /* 🔑 CLAVE: Mantenemos el estilo base de la tarjeta */
+    text-align: center !important; /* Centramos el texto y la imagen */
+    background-color: #FFFFFF !important; /* Fondo blanco para destacarlo */
+}
+
+/* La imagen de Termi debe ocupar el espacio verticalmente */
+.termi-feature-img-fit {
+    /* Ocupa el 100% de la altura de la celda */
+    height: auto; 
+    /* El ancho es flexible */
+    width: 80%; 
+    
+    /* Mantiene las proporciones sin distorsionarse y se ajusta a la tarjeta */
+    object-fit: contain; 
+    
+    /* Margen superior para separarlo del título si es necesario */
+    margin-bottom: 0px; 
+    margin-top: 0px;
+}
+
+/* Ajustes de tipografía para Termi para que se vea diferente */
+.termi-chatbot-feature h3 {
+    color: #457B9D; /* Light Blue */
+    font-size: 1.2rem;
+}
+
 /* --------------------- Sección "start-now" --------------------------------------------------*/
 .start-now {
     background: #fff;
