@@ -1486,6 +1486,17 @@ button[disabled] {
     transform: translateY(-50%); /* Adjust for vertical centering */
 }
 
+.client-info p {
+    /* 🔑 CLAVE: Anula cualquier margen que Bootstrap u otras librerías agreguen a los párrafos, 
+       lo que rompe el centrado vertical de 'top: 50%; transform: translateY(-50%)'. */
+    margin: 0 !important; 
+    
+    /* Asegura que la altura de línea sea normal y no interfiera con el centrado */
+    line-height: 1.2; 
+    
+    padding: 0;
+}
+
 .logo-container {
     flex: 1; /* Center the logo */
     position: absolute; /* Position the logo absolutely within the top-banner */
