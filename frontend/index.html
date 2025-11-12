@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SensIA - Página Principal</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body id="top">
@@ -13,10 +14,11 @@
         <a href="#top">
             <img src="assets/logo1.png" alt="Logo de SensIA">
         </a>
-        <ul>
+        <ul >
             <li><a href="#features">Características</a></li>
             <li><a href="#about-us">Sobre Nosotros</a></li>
             <li><a href="#contact-form">Contáctanos</a></li>
+            <li><a href="#faq-section">FAQ</a></li>
         </ul>
         <div class="navbar-auth">
             <a href="signin.html" class="btn-link">Iniciar sesión</a>
@@ -43,76 +45,145 @@
 
     <!-- Sección Hero -->
     <section class="hero">
-        <img src="assets/logo2.png" alt="Logo de SensIA">
-        <h1>Bienvenido a SensIA</h1>
-        <p>Monitorea y gestiona tus sensores fácilmente con nuestra plataforma avanzada.</p>
-        <a href="#start-now" class="btn-primary" id="startNowBtn">Empezar Ahora</a>
+
+        <img src="assets/landing_index/fondo_bienvenido.jpg" alt="Fondo Bienvenido" class="hero-background-image" onerror="this.style.display='none'">
+
+        <!-- CONTENIDO CENTRADO -->
+        <div class="hero-content">
+            <img src="assets/logo2.png" alt="Logo de SensIA" class="hero-logo" style="margin-left: 27px;">
+            <h1>Bienvenido a SensIA</h1>
+            <p style="font-weight: bold;">Monitorea y gestiona tus sensores fácilmente con nuestra plataforma avanzada.</p>
+            <a href="#features" class="btn-primary btn-hero" id="startNowBtn">Empezar Ahora</a>
+        </div>
     </section>
 
     <!-- Sección de Características -->
-    <section class="features" id="features">
-        <h2>Nuestras Características</h2>
-        <div class="feature-cards">
+    <section id="features" class="features-section">
+        <h2>Características Clave de SensIA</h2>
+        <p class="features-subtitle">Transformamos los datos de tus sensores en decisiones inteligentes.</p>
+        
+        <div class="features-grid">
+            
             <div class="feature-card">
-                <img src="assets/sensor-icon2.png" alt="Icono de Sensor">
-                <h3>Monitoreo en Tiempo Real</h3>
-                <p>Supervisa tus sensores en tiempo real con nuestro intuitivo panel de control.</p>
+                <img src="assets/icon-trazabilidad.png" alt="Icono de Trazabilidad" class="feature-icon">
+                <h3>1. Trazabilidad y Control en Tiempo Real</h3>
+                <p>Permite la visualización continua de datos (temperatura, diferencia térmica, estado de puertas) y genera alertas inmediatas ante cualquier variación crítica.</p>
             </div>
+
             <div class="feature-card">
-                <img src="assets/dashboard-icon2.png" alt="Icono de Panel">
-                <h3>Paneles Personalizados</h3>
-                <p>Crea paneles personalizados que se adapten a tus necesidades.</p>
+                <img src="assets/icon-ia.png" alt="Icono de IA" class="feature-icon">
+                <h3>2. Inteligencia Artificial Analítica</h3>
+                <p>Impulsada por IA, analiza datos históricos para anticipar fallas y sugerir mantenimientos preventivos. Transforma los datos en información útil para la toma de decisiones.</p>
             </div>
+
             <div class="feature-card">
-                <img src="assets/alarms-icon2.png" alt="Icono de Alertas">
-                <h3>Alertas Inteligentes</h3>
-                <p>Recibe notificaciones instantáneas para eventos críticos.</p>
+                <img src="assets/icon-usuarios.png" alt="Icono de Usuarios" class="feature-icon">
+                <h3>3. Gestión Avanzada de Usuarios</h3>
+                <p>Permite una gestión de accesos granular. Asigna permisos específicos basados en el rol y responsabilidad de cada usuario (sucursal, sensor), garantizando la seguridad y el control de la información.</p>
             </div>
+            
+            <div class="feature-card">
+                <img src="assets/icon-reportes.png" alt="Icono de Reportes" class="feature-icon">
+                <h3>4. Generación de Reportes</h3>
+                <p>Ofrece la capacidad de descargar reportes detallados por sensor en diferentes formatos (PDF, CSV). Ideal para auditorías y seguimiento periódico de las condiciones operativas.</p>
+            </div>
+
+            <div class="feature-card termi-chatbot-feature">
+                <img src="assets/termi_chatbot.png" alt="Termi Chatbot" class="termi-feature-img-fit">
+                
+            </div>
+            
+            <div class="feature-card">
+                <img src="assets/icon-chatbot.png" alt="Icono de Chatbot" class="feature-icon">
+                <h3>5. Asistente Virtual Integrado (Chatbot)</h3>
+                <p>Incorpora a Termi, un chatbot interactivo que funciona como asistente virtual. Permite consultar sobre el uso de la plataforma mediante texto o voz.</p>
+            </div>
+            
         </div>
     </section>
 
     <!-- Sección Sobre Nosotros -->
-    <section class="about-us" id="about-us">
-        <h2>¿Quiénes Somos?</h2>
-        <p>Somos un grupo de estudiantes que identificamos una necesidad y aplicamos nuestro conocimiento para crear una solución. Conoce a nuestro equipo:</p>
-        <div class="team-cards">
-            <div class="team-card">
-                <img src="assets/marlene.jpg" alt="Marlene">
-                <h3>Marlene</h3>
-                <p>Tester del Proyecto</p>
-            </div>
-            <div class="team-card">
-                <img src="assets/paulina.jpg" alt="Paulina">
-                <h3>Paulina</h3>
-                <p>Desarrolladora de Software</p>
+    <section class="about-us about-us-relative" id="about-us">
+        <img src="assets/landing_index/fondo_about_us.jpg" alt="Fondo sobre nosotros sutil" class="about-us-background-image">
+        <div class="about-us-content-wrapper">
+            <h2>¿Quiénes Somos?</h2>
+            <p>
+                SensIA nació de la visión de un grupo de estudiantes dedicadas a resolver problemas reales mediante la tecnología de vanguardia. <br>
+                Identificamos una brecha crítica en la monitorización tradicional y decidimos aplicar nuestro conocimiento para desarrollar una plataforma inteligente. 
+                <br>
+                Este proyecto fué un camino de aprendizaje continuo, donde cada desafío nos permitió crecer y refinar la solución. <br>
+                <br>
+                Conocé a nuestro equipo:
+            </p>
+            <div class="team-cards">
+                <div class="team-card">
+                    <img src="assets/marlene.jpg" alt="Marlene">
+                    <h3>Marlene</h3>
+                    <a href="https://www.linkedin.com/in/marlene-spitteler/" target="_blank" class="linkedin-link">
+                        <i class="fab fa-linkedin"></i> marlene-spitteler
+                    </a>
+                </div>
+                <div class="team-card termi-team-card">
+                    <img src="assets/termi.png" alt="Termi Asistente Inteligente" class="termi-team-photo">
+                    <h3>Termi</h3>
+                </div>
+                <div class="team-card">
+                    <img src="assets/paulina.jpg" alt="Paulina">
+                    <h3>Paulina</h3>
+                    <a href="https://www.linkedin.com/in/paulina-luna/" target="_blank" class="linkedin-link">
+                        <i class="fab fa-linkedin"></i> paulina-luna
+                    </a>
+                </div>
             </div>
         </div>
+        
     </section>
 
     <!-- Sección de Empezar ahora -->
     <section class="start-now" id="start-now">
-         
+    
         <h2>¿Querés comenzar a utilizar nuestra aplicación?</h2>
         <p style="text-align: center; max-width: 1250px; margin: 0 auto; margin-bottom: 20px;">
             Si tenés consultas o deseás acceder a nuestra plataforma, este es el primer paso. A través del formulario de contacto podrás iniciar el proceso para comenzar a usar la app.
         </p>
+        
         <div class="start-now-inner"> 
             <div class="start-steps">
                 <h3>¿Cómo funciona?</h3>
-                <ol>
-                    <li>
-                        <strong>Completá el formulario de contacto.</strong><br>
-                        Es fundamental que nos envíes tu consulta o solicitud mediante el formulario que aparece a continuación.
-                    </li>
-                    <li>
-                        <strong>Coordinamos una demo personalizada.</strong><br>
-                        Una vez que recibamos tu mensaje, nos pondremos en contacto para agendar una demostración y explicarte cómo funciona la aplicación.
-                    </li>
-                    <li>
-                        <strong>Generamos tu usuario.</strong><br>
-                        Luego de la demo, crearemos tu usuario y te daremos acceso a la plataforma.
-                    </li>
-                </ol>
+            
+                <div class="steps-grid-container">
+                    
+                    <div class="step-card step-card-left">
+                        <div class="step-number">1</div>
+                        <h4>Completá el formulario de contacto</h4>
+                        <p>Es fundamental que nos envíes tu consulta o solicitud mediante el formulario que aparece a continuación.</p>
+                    </div>
+
+                    <div class="termi-visual termi-visual-top"> 
+                        <img src="assets/termi_pensativo.png" alt="Termi interesado en la app" class="termi-img-fit">
+                    </div>
+                    
+                    <div class="termi-visual termi-visual-middle">
+                        <img src="assets/termi-informativo.png" alt="Termi asistiendo" class="termi-img-fit">
+                    </div>
+                    <div class="step-card step-card-right">
+                        <div class="step-number">2</div>
+                        <h4>Coordinamos una demo personalizada</h4>
+                        <p>Una vez que recibamos tu mensaje, nos pondremos en contacto para agendar una demo y explicarte la app.</p>
+                    </div>
+                    
+                    <div class="step-card step-card-left">
+                        <div class="step-number">3</div>
+                        <h4>Generamos tu usuario</h4>
+                        <p>Luego de la demo, crearemos tu usuario y te daremos acceso a la plataforma para empezar a monitorear sensores!</p>
+                    </div>
+
+                    <div class="termi-visual termi-visual-bottom"> 
+                        <img src="assets/termi-inteligente.png" alt="Termi asistiendo" class="termi-img-fit">
+                    </div>
+                    
+                </div>
+                
                 <div class="start-warning">
                     <span style="font-size:1.5em; color:#e76f51; vertical-align:middle;">&#9888;&#65039;</span>
                     <strong>Importante:</strong> Si no recibimos tu mensaje, no podremos avanzar con la demo ni generar tu acceso. <u>Contactarte es el primer paso necesario.</u>
@@ -122,25 +193,130 @@
     </section>
 
     <!-- Sección de Contacto -->
-    <section class="contact">
-        <h2>Contáctanos</h2>
-        <p>Completa el formulario a continuación para comenzar con la experiencia SensIA.</p>
-        <form id="contact-form">
-            <div class="form-group">
-                <label for="name">Nombre</label>
-                <input type="text" id="name" name="name" placeholder="Tu Nombre" required>
+    <section id="contact-section" class="section-padding contact">
+    
+        <!-- <--- ESTE ES EL BLOQUE QUE FALTABA Y DEBES AGREGAR --->
+        <img src="assets/landing_index/fondo_contact.jpg" alt="Fondo de Contacto" class="contact-background-image" onerror="this.style.display='none'">
+        <!-- Contenedor Flex para las columnas -->
+        <div class="contact-flex-container">
+
+            <!-- Columna 1 (1/3): Mensaje de Solicitud de Demo -->
+            <div class="tabla-1-3 contact-message-column">
+                
+                <!-- INICIO DEL BLOQUE AISLADO CON FONDO BLANCO -->
+                <div class="title-box">
+                    <h2>SOLICITA UNA DEMO</h2>
+                    <p style="font-weight: bold;">Estaremos encantados de mostrarte nuestro producto!</p>
+                    <p style="font-size: 1.3rem; margin-top: 10px;">Contanos algo sobre tí para adaptar la demo a tus necesidades.</p>
+                </div>
+                
             </div>
-            <div class="form-group">
-                <label for="email">Correo Electrónico</label>
-                <input type="email" id="email" name="email" placeholder="Tu Correo Electrónico" required>
+            
+            <!-- Columna 2 (2/3): Formulario -->
+            <div class="tabla-2-3">
+                <form id="contact-form">
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input type="text" id="name" name="name" placeholder="Tu Nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" placeholder="Tu Correo Electrónico" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Mensaje</label>
+                        <textarea id="message" name="message" placeholder="Tu Mensaje" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Enviar Mensaje</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="message">Mensaje</label>
-                <textarea id="message" name="message" placeholder="Tu Mensaje" rows="5" required></textarea>
-            </div>
-            <button type="submit" class="btn-primary">Enviar Mensaje</button>
-        </form>
+        </div>
     </section>
+
+    <!-- Sección de Preguntas Frecuentes -->
+    <section id="faq-section" class="faq-section">
+        <div class="faq-inner-wrapper">
+            <h2>Preguntas Frecuentes</h2>
+            <p>Encuentra respuestas rápidas a las dudas más comunes sobre SensIA.</p>
+
+            <div class="faq-container">
+                
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        ¿Qué tipo de sensores son compatibles con SensIA?
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>Nuestra solución es integral: Sensor + Aplicación. Trabajamos con un proveedor específico de hardware certificado. El proveedor se encarga de la instalación y mantenimiento del sensor (temperatura, estado de puertas), mientras que SensIA te proporciona la plataforma y la IA para el monitoreo y análisis avanzado de los datos.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        ¿Cómo funciona la Inteligencia Artificial en SensIA?
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>Nuestra IA analiza los datos y mediciones de tus sensores en tiempo real para detectar patrones, predecir posibles fallas y optimizar los umbrales de alerta. Esto te permite tomar decisiones proactivas y evitar problemas mayores.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        ¿Qué tipos de alertas maneja la plataforma SensIA?
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>SensIA clasifica las alertas para priorizar la atención:</p>
+                        <ul>
+                            <li>Críticas (requieren acción inmediata): Temperatura fuera de rango (Alta/Baja), Puerta abierta prolongada, Ciclo de refrigeramiento asincrónico y Sensor offline.</li>
+                            <li>Preventivas (requieren revisión): Fluctuación de temperatura excesiva y Alertas recurrentes de puerta abierta en el mismo día.</li>
+                            <li>Informativas (monitoreo y análisis): Inicio y Fin de ciclo de descongelamiento (útiles para evaluar la duración de estos eventos).</li>
+                            <li>Seguridad (solo para Administradores): Intentos de acceso no autorizados y Acceso fuera de horario / horario atípico.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        ¿Puedo personalizar las alertas que recibo?
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>Sí. Los usuarios pueden configurar en su perfil qué tipos de alertas desean recibir (Críticas, Preventivas, Informativas o de Seguridad). Por defecto, solo los usuarios administradores tienen acceso a las alertas de Seguridad. Actualmente, todas las notificaciones de alerta se envían exclusivamente por correo electrónico.</p>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        ¿Qué diferencia a SensIA de otros sistemas de monitoreo?
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>SensIA combina la simplicidad con la inteligencia de datos:</p>
+                        <ul>
+                            <li>IA Predictiva: Análisis avanzado de datos para prevenir fallos antes de que ocurran.</li>
+                            <li>Roles de Usuario: Ofrecemos dos roles (Admin y User), permitiendo una gestión de permisos clara y organizada.</li>
+                            <li>Escalabilidad: Nuestra arquitectura es escalable para adaptarse al número de sucursales y sensores que maneje tu negocio.</li>
+                            <li>KPIs y Dashboards: Proporcionamos dashboards muy completos para el monitoreo de indicadores clave de rendimiento (KPIs) y datos históricos.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        ¿Cuál es el costo de SensIA?
+                        <span class="faq-icon">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>Ofrecemos diferentes planes que se adaptan a las necesidades de pequeñas y grandes empresas. Te invitamos a completar nuestro formulario de contacto para que podamos ofrecerte una demo personalizada y una propuesta ajustada a tus requerimientos.</p>
+                    </div>
+                </details>
+
+            </div>
+        </div>
+    </section>
+
 
     <!-- Modal de éxito -->
     <div id="successModal" class="modal">
