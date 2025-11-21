@@ -670,14 +670,30 @@ function renderAlertaSucursalesChart(alertas, sensores) {
             return crit !== 'seguridad';
         })
         .reduce((acc, alerta) => {
-            // tomar id de la alerta (idSensor en alertas) y normalizar a string
-            const rawSensorId = alerta.idSensor;
-            const sensorKey = rawSensorId != null ? String(rawSensorId).trim() : null;
+            // Priorizar direccion incluida en la alerta (si existe)
+            let direccion = (alerta.direccion && String(alerta.direccion).trim()) || null;
 
-            // buscar por nroSensor en el mapa
-            const direccion = sensorKey && sensoresMap.hasOwnProperty(sensorKey)
-                ? sensoresMap[sensorKey]
-                : 'Sin Dirección';
+            // Si no viene direccion en la alerta, intentar resolver por idSensor
+            if (!direccion) {
+                const rawSensorId = alerta.idSensor;
+                if (Array.isArray(rawSensorId)) {
+                    // si es array, buscar la primera coincidencia en sensoresMap
+                    for (const id of rawSensorId) {
+                        const key = id != null ? String(id).trim() : null;
+                        if (key && sensoresMap.hasOwnProperty(key)) {
+                            direccion = sensoresMap[key];
+                            break;
+                        }
+                    }
+                } else {
+                    const key = rawSensorId != null ? String(rawSensorId).trim() : null;
+                    if (key && sensoresMap.hasOwnProperty(key)) {
+                        direccion = sensoresMap[key];
+                    }
+                }
+            }
+
+            if (!direccion) direccion = 'Sin Dirección';
 
             // normalizar criticidad
             const criticidadNormalizada = (alerta.criticidad || '')
@@ -690,19 +706,20 @@ function renderAlertaSucursalesChart(alertas, sensores) {
             }
             if (acc[direccion].hasOwnProperty(criticidadNormalizada)) {
                 acc[direccion][criticidadNormalizada]++;
-            } else {
-                // Si llega un tipo nuevo, lo incluimos como informativa por defecto (opcional)
-                // O comentar la línea siguiente si preferís ignorar tipos desconocidos.
-                // acc[direccion].informativa++;
             }
 
             return acc;
         }, {});
 
-    // Debug: ver cuántas alertas quedaron sin match
+    // Debug: ver cuántas alertas quedaron sin match (soporta idSensor array y alerta.direccion)
     const sinMatch = alertas.filter(a => {
+        if (a.direccion && String(a.direccion).trim()) return false; // ya tiene dirección explícita
         const key = a.idSensor;
-        return !key || !sensoresMap.hasOwnProperty(String(key).trim());
+        if (!key) return true;
+        if (Array.isArray(key)) {
+            return !key.some(k => k != null && sensoresMap.hasOwnProperty(String(k).trim()));
+        }
+        return !sensoresMap.hasOwnProperty(String(key).trim());
     }).length;
     console.debug('Alertas sin match (caen en "Sin Dirección"):', sinMatch);
 
@@ -794,19 +811,45 @@ function renderAlertasRecurrentesTable(alertas, sensores) {
     const dataAgrupada = alertas
         .filter(alerta => {
             const crit = (alerta.criticidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            return crit !== 'seguridad' && alerta.idSensor;
+            return crit !== 'seguridad';
         })
         .reduce((acc, alerta) => {
-            const sensorKey = String(alerta.idSensor).trim();
-            const direccion = sensoresMap[sensorKey] || 'Sin Dirección';
+            // PRIORIDAD 1: usar alerta.direccion si viene del backend
+            let direccion = alerta.direccion && String(alerta.direccion).trim();
+
+            // PRIORIDAD 2: si existe sensores_info (backend para caida de energia), tomar la primera direccion válida
+            if (!direccion && Array.isArray(alerta.sensores_info) && alerta.sensores_info.length) {
+                for (const s of alerta.sensores_info) {
+                    if (s && s.direccion) { direccion = String(s.direccion).trim(); break; }
+                }
+            }
+
+            // PRIORIDAD 3: si no hay sensores_info, resolver a partir de idSensor (puede ser array)
+            if (!direccion) {
+                const raw = alerta.idSensor;
+                if (Array.isArray(raw)) {
+                    for (const id of raw) {
+                        if (id == null) continue;
+                        const key = String(id).trim();
+                        if (sensoresMap[key]) { direccion = sensoresMap[key]; break; }
+                    }
+                } else if (raw != null) {
+                    const key = String(raw).trim();
+                    direccion = sensoresMap[key] || null;
+                }
+            }
+
+            if (!direccion) direccion = 'Sin Dirección';
+
             const tipoAlerta = alerta.tipoAlerta || 'Desconocido';
             const criticidad = alerta.criticidad || 'N/A';
-            
-            if (!acc[direccion]) acc[direccion] = {};
 
+            if (!acc[direccion]) acc[direccion] = {};
             if (!acc[direccion][tipoAlerta]) {
                 acc[direccion][tipoAlerta] = { count: 0, criticidad: criticidad };
             }
+
+            // Contabilizar una alerta por documento (no por sensor) para preventivas que tienen idSensor array
             acc[direccion][tipoAlerta].count++;
             return acc;
         }, {});
