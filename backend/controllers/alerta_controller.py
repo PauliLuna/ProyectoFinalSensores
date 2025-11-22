@@ -86,7 +86,15 @@ def obtener_alertas(mongo):
                             "direccion": sensor_direccion.get(sid, "")
                         })
                 alerta["sensores_info"] = sensores_info
-                # No sobrescribas 'direccion' si ya existe en la alerta
+                # Si la alerta no incluye 'direccion', inferirla desde los sensores asociados
+                if not alerta.get('direccion'):
+                    # buscar la primera direccion no vacia
+                    direccion_inferida = ''
+                    for s in sensores_info:
+                        if s.get('direccion'):
+                            direccion_inferida = s.get('direccion')
+                            break
+                    alerta['direccion'] = direccion_inferida or ''
             # Alertas normales: idSensor único
             else:
                 valor_sensor = alerta.get("idSensor")
@@ -156,6 +164,13 @@ def obtener_alertas_usuario(mongo):
                             "direccion": sensor_direccion.get(sid, "")
                         })
                 alerta["sensores_info"] = sensores_info
+                if not alerta.get('direccion'):
+                    direccion_inferida = ''
+                    for s in sensores_info:
+                        if s.get('direccion'):
+                            direccion_inferida = s.get('direccion')
+                            break
+                    alerta['direccion'] = direccion_inferida or ''
             # Alertas normales: idSensor único
             else:
                 valor_sensor = alerta.get("idSensor")
