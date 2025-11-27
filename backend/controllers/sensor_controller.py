@@ -477,7 +477,7 @@ def analizar_mediciones(sensor_id, mediciones, notas):
         "se abre más de 10 veces en una hora o si permanece abierta continuamente por más de 5 minutos.\n\n"
 
         f"--- **CONTEXTO ESPECÍFICO DEL SENSOR {sensor_id}:** ---\n"
-        f"Información de referencia: {notas}.\n\n"
+        f"Información de referencia (Tipo y **Rango Óptimo** a extraer): {notas}.\n\n"
 
         "**ANÁLISIS DE SALIDA:** Genera un resumen conciso y solo usa los siguientes íconos:\n"
         "1) **Estado actual:** 🟢 (normal), 🟠 (alerta leve), 🔴 (problemas críticos).\n"
